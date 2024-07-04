@@ -1,4 +1,4 @@
-# :callender: 2024.07.03
+# 📅 2024.07.03
 :thought_balloon: 사전 계획 및 구상 수립
 
 :clipboard: 진행 사항
@@ -15,7 +15,7 @@
     * 테스트용 지형 리소스 수집 중입니다.
 
 ---
-# :callender: 2024.07.02
+# 📅 2024.07.02
 :bulb: 과제 선정 (GI → Navigation System 변경)
  * __Dynamic Navigation Mesh 자동 생성 시스템 & Path Finding 구현.__
  * Recast & Detour와 같은 오픈소스 라이브러리를 사용하지 않고 Dynamic 환경에서 Navigation Mesh 자동 생성 및 빠른 갱신, 경로 탐색 기능 구현을 목표로 합니다.
@@ -34,6 +34,6 @@
  * [Hierarchical Path-Finding for Navigation Meshes (HNA*), Nuria Pelechano et al.](https://upcommons.upc.edu/bitstream/handle/2117/98738/Pelechano_HNAstar_prePrint.pdf)
     
 ---
-# :callender: 2024.07.01
+# 📅 2024.07.01
 :bulb: 과제 선정
  * Global Illumination
