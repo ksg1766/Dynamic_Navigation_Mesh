@@ -27,6 +27,14 @@ public:
 	virtual HRESULT	DebugRender()			override;
 
 private:
+	void	ShowNavMesh(_bool bOnOff) {	m_isNavMeshOn = bOnOff; }
+
+	HRESULT	BakeNavMesh();
+
+private:
+	HRESULT	DebugRenderLegacy();
+
+private:
 	void	Input();
 	_bool	Pick(_uint screenX, _uint screenY);
 
@@ -40,6 +48,10 @@ private:
 
 private:
 	struct CellData;
+
+	_bool				m_isNavMeshOn = false;
+
+	///////////////////////////////////////////////////
 
 	wstring				m_strPickedObject;
 	CGameObject*		m_pPickedObject = nullptr;

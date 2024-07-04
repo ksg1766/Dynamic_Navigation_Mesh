@@ -11,9 +11,9 @@
 
 struct CNavMeshView::CellData
 {
-	_float3 vPoints[3];
+	_float3 vPoints[3] = { _float3(0.f, 0.f, 0.f), _float3(0.f, 0.f, 0.f), _float3(0.f, 0.f, 0.f) };
 
-	CellData() { ZeroMemory(vPoints, 3 * sizeof(_float3)); }
+	//CellData() { ZeroMemory(vPoints, 3 * sizeof(_float3)); }
 	void CW()
 	{
 		Vec3 vA(vPoints[0].x, 0.f, vPoints[0].z);
@@ -93,6 +93,107 @@ HRESULT CNavMeshView::DebugRender()
 	m_pEffect->Apply(m_pContext);
 	m_pContext->IASetInputLayout(m_pInputLayout);
 
+	if (!m_vecCells.empty())
+	{
+		for (_int i = 0; i < m_vecCells.size(); ++i)
+		{
+			_float3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.2f, 0.f);
+			_float3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.2f, 0.f);
+			_float3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.2f, 0.f);
+
+			m_pBatch->Begin();
+			DX::DrawTriangle(m_pBatch, XMLoadFloat3(&vP0), XMLoadFloat3(&vP1), XMLoadFloat3(&vP2), Colors::Cyan);
+			m_pBatch->End();
+		}		
+	}	
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::BakeNavMesh()
+{
+	if (false == m_vecCells.empty())
+	{
+		for (auto iter : m_vecCells)
+		{
+			delete iter;
+		}
+
+		m_vecCells.clear();
+	}
+
+	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
+		
+	map<LAYERTAG, class CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
+	if (iter == mapLayers.end())
+	{
+		return S_OK;
+	}
+
+	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
+
+	for (auto iter : vecObjects)
+	{
+		CModel* pModel = iter->GetModel();
+
+		if (nullptr != pModel)
+		{
+			vector<Vec3>& vecSurfaceVtx = pModel->GetSurfaceVtx();
+			vector<FACEINDICES32>& vecSurfaceIdx = pModel->GetSurfaceIdx();
+		
+			for (auto idx : vecSurfaceIdx)
+			{
+				Vec3 v0 = Vec3::Transform(vecSurfaceVtx[idx._0], iter->GetTransform()->WorldMatrix());
+				Vec3 v1 = Vec3::Transform(vecSurfaceVtx[idx._1], iter->GetTransform()->WorldMatrix());
+				Vec3 v2 = Vec3::Transform(vecSurfaceVtx[idx._2], iter->GetTransform()->WorldMatrix());
+
+				Vec3 v10 = v1 - v0;
+				Vec3 v21 = v2 - v1;
+				Vec3 vResult;
+				v10.Cross(v21, vResult);
+
+				if (0 > vResult.y)
+				{
+					Vec3 vTemp = v1;
+					v1 = v2;
+					v2 = vTemp;
+				}
+
+				vResult.Normalize();
+
+				Vec3 vFloor(vResult.x, 0.0f, vResult.z);
+				vFloor.Normalize();
+
+				if (cosf(XMConvertToRadians(45.0f)) >= vResult.Dot(vFloor))
+				{
+					CellData* tCellData = new CellData;
+					tCellData->vPoints[0] = v0;
+					tCellData->vPoints[1] = v1;
+					tCellData->vPoints[2] = v2;
+
+					m_vecCells.push_back(tCellData);
+				}
+			}
+		}
+		else
+		{
+			continue;
+		}		
+	}
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::DebugRenderLegacy()
+{
+	m_pEffect->SetWorld(XMMatrixIdentity());
+
+	m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
+	m_pEffect->SetProjection(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_PROJ));
+
+	m_pEffect->Apply(m_pContext);
+	m_pContext->IASetInputLayout(m_pInputLayout);
+
 
 	if (2 == m_vecPoints.size())
 	{
@@ -106,7 +207,7 @@ HRESULT CNavMeshView::DebugRender()
 
 		XMStoreFloat4(&verts[0].color, Colors::Cyan);
 		XMStoreFloat4(&verts[1].color, Colors::Cyan);
-		
+
 		m_pBatch->Begin();
 		m_pBatch->Draw(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, verts, 2);
 		m_pBatch->End();
@@ -348,6 +449,11 @@ void CNavMeshView::InfoView()
 	}
 	ImGui::NewLine();
 
+	if (ImGui::Button("BakeNav"))
+	{
+		BakeNavMesh();
+	}ImGui::SameLine();
+	
 	if (ImGui::Button("SaveNav"))
 	{
 		Save();

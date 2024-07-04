@@ -329,7 +329,7 @@ HRESULT CModel::BindMaterialTexture(CShader* pShader, const _char* pConstantName
 	return m_Materials[iMaterialIndex].pTextures[eType]->Bind_ShaderResource(pShader, pConstantName, 0);
 }
 
-HRESULT CModel::UpdateTweenData(const _float& fTimeDelta)
+HRESULT CModel::UpdateTweenData(_float fTimeDelta)
 {
 	if (m_iCurrentAnimIndex < 0)
 		m_iCurrentAnimIndex = m_Animations.size() - 1;
@@ -411,7 +411,7 @@ CBone* CModel::GetBone(const _char* pNodeName)
 	return *iter;
 }
 
-CBone* CModel::GetBone(const _int& iIndex)
+CBone* CModel::GetBone(_int iIndex)
 {
 	if (m_Bones.size() < iIndex || iIndex < 0)
 		return nullptr;
@@ -431,7 +431,7 @@ _int CModel::GetAnimationIndexByName(const wstring& strAnimName)
 	return iter->second;
 }
 
-_float CModel::GetAnimationTimeByIndex(const _int& iIndex)
+_float CModel::GetAnimationTimeByIndex(_int iIndex)
 {
 	_float fAnimTime = m_Animations[iIndex]->GetDuaration() / m_Animations[iIndex]->GetTickPerSecond();
 	return fAnimTime;
@@ -447,7 +447,7 @@ void CModel::SetNextAnimationIndex(_int iAnimIndex)
 	m_iNextAnimIndex = iAnimIndex;
 }
 
-HRESULT CModel::EquipParts(const _int& iSocketIndex, CModel* pModel)
+HRESULT CModel::EquipParts(_int iSocketIndex, CModel* pModel)
 {
 	if (iSocketIndex >= m_vecSocketBones.size())
 		return E_FAIL;
@@ -607,20 +607,20 @@ HRESULT CModel::Ready_Meshes(const wstring& strModelFilePath, Matrix matPivot)
 		for (size_t j = 0; j < iNumBoneIndices; j++)
 			BoneIndices.push_back(file->Read<_int>());
 
-		//CLevelManager* pInstance = GET_INSTANCE(CLevelManager);
-		//if (/*LEVEL_GAMETOOL*//*3 == pInstance->GetCurrentLevelIndex() && */!bAnim)
-		//{
-		//	for (size_t i = 0; i < StaticVertices.size(); ++i)
-		//	{
-		//		m_vecSurfaceVtx.push_back(StaticVertices[i].vPosition);
-		//	}
-		//	for (size_t i = 0; i < Indiecs.size() / 3; ++i)
-		//	{
-		//		FACEINDICES32 idx = { Indiecs[3 * i], Indiecs[3 * i + 1], Indiecs[3 * i + 2] };
-		//		m_vecSurfaceIdx.push_back(idx);
-		//	}
-		//}
-		//RELEASE_INSTANCE(CLevelManager);
+		CLevelManager* pInstance = GET_INSTANCE(CLevelManager);
+		if (/*LEVEL_GAMETOOL*/3 == pInstance->GetCurrentLevelIndex() && !bAnim)
+		{
+			for (size_t i = 0; i < StaticVertices.size(); ++i)
+			{
+				m_vecSurfaceVtx.push_back(StaticVertices[i].vPosition);
+			}
+			for (size_t i = 0; i < Indiecs.size() / 3; ++i)
+			{
+				FACEINDICES32 idx = { Indiecs[3 * i], Indiecs[3 * i + 1], Indiecs[3 * i + 2] };
+				m_vecSurfaceIdx.push_back(idx);
+			}
+		}
+		RELEASE_INSTANCE(CLevelManager);
 
 		/* Create Mesh */
 		CMesh* pMesh = nullptr;

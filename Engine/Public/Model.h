@@ -49,8 +49,8 @@ public:
 	HRESULT			RenderInstancing(CVIBuffer_Instance*& pInstanceBuffer);
 
 public:
-	HRESULT			UpdateTweenData(const _float& fTimeDelta);
-	void			PauseAnimation(const _bool& bPauseAnimation) { m_IsAnimPaused = bPauseAnimation;	}
+	HRESULT			UpdateTweenData(_float fTimeDelta);
+	void			PauseAnimation(_bool bPauseAnimation) { m_IsAnimPaused = bPauseAnimation;	}
 
 	void			PushTweenData(const InstancedTweenDesc& desc);
 	HRESULT			BindMaterialTexture(class CShader* pShader, const _char* pConstantName, _uint iMaterialIndex, aiTextureType eType);
@@ -105,16 +105,16 @@ public:
 	vector<CMesh*>& GetMeshes()								{ return m_Meshes; }
 	_uint			GetMaterialIndex(_uint iMeshIndex);
 	CBone*			GetBone(const _char* pNodeName);
-	CBone*			GetBone(const _int& iIndex);
+	CBone*			GetBone(_int iIndex);
 	_int			GetAnimationIndexByName(const wstring& strAnimName);
-	_float			GetAnimationTimeByIndex(const _int& iIndex);
+	_float			GetAnimationTimeByIndex(_int iIndex);
 	const _int		GetCurAnimationIndex() const			{ return m_iCurrentAnimIndex; }
 	const _int		GetNextAnimationIndex() const			{ return m_iNextAnimIndex; }
 	
 	// Instancing
 	_bool			IsAnimModel()							{ return m_eModelType; }
 	TweenDesc&		GetTweenDesc()							{ return m_TweenDesc; }
-	const _int&		GetInstanceID() const					{ return m_iInstanceID; }
+	_int			GetInstanceID() const					{ return m_iInstanceID; }
 	const _float4x4&GetPivotMatrix() const					{ return m_matPivot; }
 	const _int&		GetSocketBoneIndex() const				{ return m_iSocketBoneIndex; }
 
@@ -128,8 +128,8 @@ public:
 	void			SetNextAnimationIndex(_int iAnimIndex);
 	void			SetTweenDesc(TweenDesc& TweenDesc)		{ m_TweenDesc = TweenDesc; }
 	void			SetSRV(ID3D11ShaderResourceView*& pSRV)	{ m_pSRV = pSRV; }
-	void			SetShader(CShader*& pShader)			{ m_pShader = pShader; }
-	HRESULT			EquipParts(const _int& iSocketIndex, CModel* pModel);
+	void			SetShader(CShader* pShader)				{ m_pShader = pShader; }
+	HRESULT			EquipParts(_int iSocketIndex, CModel* pModel);
 
 	static HRESULT	ReleaseAllVTF();
 

@@ -314,9 +314,9 @@ HRESULT CMainApp::Ready_Prototype_Components()
 		return E_FAIL;
 	
 	/* For.Prototype_Component_Texture_SkyBox */
-	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_SkyBox"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SkyBox/Sunset.dds")))))
-		return E_FAIL;*/
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_SkyBox"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SkyBox/SkyBox1.dds")))))
+		return E_FAIL;
 
 	/* For.Prototype_Component_Model_Static */
 	{
@@ -327,10 +327,15 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			const wstring& strFileName = entry.path().stem();
 			//SOCKETDESC desc = SOCKETDESC();
 
+			SOCKETDESC desc = SOCKETDESC();
+			Matrix matPivot = Matrix::Identity;
+
 			if (TEXT("EmeraldSquare_Day") == strFileName)
 			{
-				SOCKETDESC desc = SOCKETDESC();
-				Matrix matPivot = Matrix::Identity;
+				//
+				continue;
+				//
+
 				XMStoreFloat4x4(&matPivot, XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
 
 				if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model_" + strFileName),
@@ -339,8 +344,10 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			}
 			else
 			{
+				XMStoreFloat4x4(&matPivot, XMMatrixScaling(0.1f, 0.1f, 0.1f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
+
 				if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model_" + strFileName),
-					CModel::Create(m_pDevice, m_pContext, strStaticFilePath + strFileName))))
+					CModel::Create(m_pDevice, m_pContext, strStaticFilePath + strFileName, desc, matPivot))))
 					return E_FAIL;
 			}
 		}

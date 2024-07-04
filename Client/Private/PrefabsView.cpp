@@ -104,11 +104,14 @@ void CPrefabsView::TapGroups()
 	ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 	if (ImGui::BeginTabBar("Tool", tab_bar_flags))
 	{
-		if (ImGui::BeginTabItem("Terrain"))
+		if (ImGui::BeginTabItem("Ground"))
 		{
-			const _char* items[] =
+			static const _char* items[] =
 			{
-				"StaticTest", "EmeraldSquare_Day"
+				"Barrel", "Bucket", "Building_a", "Building_b", "Building_c", "Building_d", "Building_f", "Cart_a", "Cart_Wheel_a", "Crate",
+				"Fence_a", "Fence_b", "Fence_c", "Grass", "Lantern_post", "Logs_a", "Mushroom_a", "Mushroom_b", "Mushroom_c", "Mushroom_d",
+				"Rock_a", "Rock_c", "Rock_d", "Sack_a", "Sewers_entrance", "Sign_a", "Sign_b", "Sign_c", "Tent", "Well",
+				"EmeraldSquare_Day"
 			};
 
 			if (m_Item_Current >= IM_ARRAYSIZE(items))
@@ -121,15 +124,17 @@ void CPrefabsView::TapGroups()
 		}
 		if (ImGui::BeginTabItem("Obstacle"))
 		{
-			const _char* items[] = 
+			static const _char* items[] =
 			{
-				"empty"
+				"Barrel", "Bucket", "Building_a", "Building_b", "Building_c", "Building_d", "Building_f", "Cart_a", "Cart_Wheel_a", "Crate",
+				"Fence_a", "Fence_b", "Fence_c", "Grass", "Lantern_post", "Logs_a", "Mushroom_a", "Mushroom_b", "Mushroom_c", "Mushroom_d",
+				"Rock_a", "Rock_c", "Rock_d", "Sack_a", "Sewers_entrance", "Sign_a", "Sign_b", "Sign_c", "Tent", "Well"
 			};
 
 			if (m_Item_Current >= IM_ARRAYSIZE(items))
 				m_Item_Current = IM_ARRAYSIZE(items) - 1;
 
-			ImGui::ListBox("Wall Objects", &m_Item_Current, items, IM_ARRAYSIZE(items), 10);
+			ImGui::ListBox("Obstacle Objects", &m_Item_Current, items, IM_ARRAYSIZE(items), 10);
 			m_ePickedLayerTag = LAYERTAG::WALL;
 			m_strPickedObject = Utils::ToWString(items[m_Item_Current]);
 			
@@ -137,7 +142,7 @@ void CPrefabsView::TapGroups()
 		}
 		if (ImGui::BeginTabItem("IgnoreCollision"))
 		{
-			const _char* items[] = 
+			static const _char* items[] =
 			{
 				"empty"
 			};
