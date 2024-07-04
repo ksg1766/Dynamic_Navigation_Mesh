@@ -640,8 +640,8 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GameTool()
 		return E_FAIL;*/
 
 	/* For.Prototype_GameObject_SkyBox*/
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_SkyBox"), CSkyBox::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
+	/*if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_SkyBox"), CSkyBox::Create(m_pDevice, m_pContext))))
+		return E_FAIL;*/
 
 	/* For.Prototype_GameObject_FlyingCamera */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_FlyingCamera"), CFlyingCamera::Create(m_pDevice, m_pContext))))

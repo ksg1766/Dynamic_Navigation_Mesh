@@ -314,9 +314,9 @@ HRESULT CMainApp::Ready_Prototype_Components()
 		return E_FAIL;
 	
 	/* For.Prototype_Component_Texture_SkyBox */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_SkyBox"),
+	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_SkyBox"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SkyBox/SkyBox1.dds")))))
-		return E_FAIL;
+		return E_FAIL;*/
 
 	/* For.Prototype_Component_Model_Static */
 	{
