@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="98.Default">
+      <UniqueIdentifier>{5ae98360-b539-4e73-9d26-af4fea999120}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00.Main">
+      <UniqueIdentifier>{12b1fea6-0879-41b2-bb8f-d8f2e567c354}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99.Defines">
+      <UniqueIdentifier>{b192b5a9-5ca9-4d70-8d7e-814f3fe6abcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Converter">
+      <UniqueIdentifier>{9be51a3a-694b-442d-ad74-000bb5b7e285}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99.Utils">
+      <UniqueIdentifier>{ebfd77f2-5c40-436f-9b09-5614186dcd5b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Private\ConverterMain.cpp">
+      <Filter>00.Main</Filter>
+    </ClCompile>
+    <ClCompile Include="BinaryConverter.cpp">
+      <Filter>98.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>98.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Converter.cpp">
+      <Filter>01.Converter</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Public\ConverterMain.h">
+      <Filter>00.Main</Filter>
+    </ClInclude>
+    <ClInclude Include="BinaryConverter.h">
+      <Filter>98.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>98.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>98.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>98.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Converter_Defines.h">
+      <Filter>99.Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Converter.h">
+      <Filter>01.Converter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\AsTypes.h">
+      <Filter>99.Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
