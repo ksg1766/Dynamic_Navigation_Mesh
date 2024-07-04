@@ -314,6 +314,7 @@
     <ClInclude Include="..\Public\SkyBox.h" />
     <ClInclude Include="..\Public\SphereSwirl.h" />
     <ClInclude Include="..\Public\StaticBase.h" />
+    <ClInclude Include="..\Public\StaticScene.h" />
     <ClInclude Include="..\Public\StaticTest.h" />
     <ClInclude Include="..\Public\Strife_Ammo.h" />
     <ClInclude Include="..\Public\Strife_Ammo_Beam.h" />
@@ -468,6 +469,7 @@
     <ClCompile Include="..\Private\SkyBox.cpp" />
     <ClCompile Include="..\Private\SphereSwirl.cpp" />
     <ClCompile Include="..\Private\StaticBase.cpp" />
+    <ClCompile Include="..\Private\StaticScene.cpp" />
     <ClCompile Include="..\Private\StaticTest.cpp" />
     <ClCompile Include="..\Private\Strife_Ammo.cpp" />
     <ClCompile Include="..\Private\Strife_Ammo_Beam.cpp" />

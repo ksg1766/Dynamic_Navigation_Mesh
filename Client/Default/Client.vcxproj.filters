@@ -448,6 +448,9 @@
     <Filter Include="03.GameObjects\03.Boss\01.Dagon\Effect\WaterShield">
       <UniqueIdentifier>{dfbe18bd-bdc0-4ea6-b852-23bcc1bb5ce8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03.GameObjects\00.Static\StaticScene">
+      <UniqueIdentifier>{29654f1c-3463-4ee1-a341-7d0cc73610ad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -942,6 +945,9 @@
     <ClInclude Include="..\Public\WaterShield.h">
       <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\WaterShield</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\StaticScene.h">
+      <Filter>03.GameObjects\00.Static\StaticScene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -1378,6 +1384,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\WaterShield.cpp">
       <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\WaterShield</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\StaticScene.cpp">
+      <Filter>03.GameObjects\00.Static\StaticScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

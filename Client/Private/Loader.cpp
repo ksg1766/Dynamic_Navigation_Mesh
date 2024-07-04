@@ -20,6 +20,7 @@
 #include "MainCamera.h"
 #include "StaticTest.h"
 #include "StaticBase.h"
+#include "StaticScene.h"
 #include "Arena.h"
 #include "P_Strife.h"
 #include "HellHound.h"
@@ -560,6 +561,10 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GamePlay()
 	/* For.Prototype_GameObject_WaterShield */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_WaterShield"), CWaterShield::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	
+	/* For.Prototype_GameObject_StaticScene */
+	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_StaticScene"), CStaticScene::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 
 	/* For.Prototype_GameObject_Static */
 	wstring strStaticFilePath = TEXT("../Bin/Resources/Models/Static/");
@@ -567,22 +572,7 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GamePlay()
 	{
 		const wstring& strFileName = entry.path().stem();
 
-		if (strFileName == TEXT("Strife_GunL") || strFileName == TEXT("Strife_GunR") ||
-			strFileName == TEXT("Lava_East_B1") || strFileName == TEXT("Water_Pond") ||
-			strFileName == TEXT("Moloch_Sword") || strFileName == TEXT("TremorCrystal_A") ||
-			strFileName == TEXT("TremorCrystal_B") || strFileName == TEXT("Moloch_Sword_Slash") ||
-			strFileName == TEXT("Arena") || strFileName == TEXT("Bubble") ||
-			strFileName == TEXT("Wave_Ring") || strFileName == TEXT("TremorCrystal_G") ||
-			strFileName == TEXT("TremorCrystal_H") || strFileName == TEXT("TremorCrystal_I") ||
-			strFileName == TEXT("TremorCrystal_L") || strFileName == TEXT("TremorCrystal_M") ||
-			strFileName == TEXT("Sun") || strFileName == TEXT("Bolts0") || strFileName == TEXT("Bolts1") ||
-			strFileName == TEXT("Bolts2") || strFileName == TEXT("Bolts3") || strFileName == TEXT("Lightning_Spark0") ||
-			strFileName == TEXT("Lightning_Spark1") || strFileName == TEXT("Lightning_Spark2") ||
-			strFileName == TEXT("Lightning_Spark3") || strFileName == TEXT("Orb") || strFileName == TEXT("SphereSwirl") ||
-			strFileName == TEXT("Waterfall_Foar") || strFileName == TEXT("Ring_Flat_Wave") ||
-			strFileName == TEXT("WaterShield")
-			/* || strFileName == TEXT("LavaUpdate2") ||
-			strFileName == TEXT("LavaUpdate") || strFileName == TEXT("Lava_East_A1")*/)
+		if (strFileName == TEXT("CStaticScene"))
 			continue;
 
 		if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_") + strFileName, CStaticBase::Create(m_pDevice, m_pContext))))
