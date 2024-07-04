@@ -1,6 +1,4 @@
 # 📅 2024.07.03
-:thought_balloon: 사전 계획 및 구상 수립
-
 :clipboard: 진행 사항
  * 논문 분석 및 학습
    * A navigation mesh for dynamic environments, Wouter van Toll et al.
