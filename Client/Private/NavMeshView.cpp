@@ -69,8 +69,8 @@ HRESULT CNavMeshView::Tick()
 	ImGui::Begin("NavMeshTool");
 
 	InfoView();
-	PointGroup();
-	CellGroup();
+	//PointGroup();
+	//CellGroup();
 
 	ImGui::End();
 
@@ -164,7 +164,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 				Vec3 vFloor(vResult.x, 0.0f, vResult.z);
 				vFloor.Normalize();
 
-				if (cosf(XMConvertToRadians(45.0f)) >= vResult.Dot(vFloor))
+				if (cosf(XMConvertToRadians(90.f - m_fSlopeDegree)) >= vResult.Dot(vFloor))
 				{
 					CellData* tCellData = new CellData;
 					tCellData->vPoints[0] = v0;
@@ -392,7 +392,7 @@ HRESULT CNavMeshView::Save()
 	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
 
 	shared_ptr<FileUtils> file = make_shared<FileUtils>();
-	file->Open(TEXT("../Bin/LevelData/NavMesh/") + m_strFilePath + TEXT(".dat"), Write);
+	file->Open(TEXT("../Bin/LevelData/NavMesh/") + m_strFilePath + TEXT(".nav"), Write);
 
 	for (auto& iter : m_vecCells)
 		file->Write(*iter);
@@ -403,7 +403,7 @@ HRESULT CNavMeshView::Save()
 HRESULT CNavMeshView::Load()
 {
 	shared_ptr<FileUtils> file = make_shared<FileUtils>();
-	file->Open(TEXT("../Bin/LevelData/NavMesh/") + m_strFilePath + TEXT(".dat"), Read);
+	file->Open(TEXT("../Bin/LevelData/NavMesh/") + m_strFilePath + TEXT(".nav"), Read);
 
 	while (true)
 	{
@@ -448,6 +448,8 @@ void CNavMeshView::InfoView()
 		}
 	}
 	ImGui::NewLine();
+
+	ImGui::InputFloat("Slope(degree)", &m_fSlopeDegree);
 
 	if (ImGui::Button("BakeNav"))
 	{

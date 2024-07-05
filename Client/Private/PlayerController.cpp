@@ -2,8 +2,6 @@
 #include "PlayerController.h"
 #include "GameInstance.h"
 #include "GameObject.h"
-#include "Strife_Ammo_Default.h"
-#include "Strife_Ammo_Static.h"
 #include "Particle.h"
 #include "ParticleController.h"
 

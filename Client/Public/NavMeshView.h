@@ -50,7 +50,7 @@ private:
 	struct CellData;
 
 	_bool				m_isNavMeshOn = false;
-
+	_float				m_fSlopeDegree = 0.f;
 	///////////////////////////////////////////////////
 
 	wstring				m_strPickedObject;

@@ -11,9 +11,6 @@
 #include "P_Strife_State_Dash.h"
 #include "P_Strife_State_Impact.h"
 
-//
-#include "Particle_Waterfall.h"
-
 CP_Strife::CP_Strife(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: Super(pDevice, pContext)
 {
@@ -53,30 +50,6 @@ HRESULT CP_Strife::Initialize(void* pArg)
 void CP_Strife::Tick(const _float& fTimeDelta)
 {
 	Super::Tick(fTimeDelta);
-
-	if (KEY_PRESSING(KEY::CTRL) && KEY_DOWN(KEY::L))
-	{
-		CParticle_Waterfall* pWaterfallSplash = static_cast<CParticle_Waterfall*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Particle_Waterfall"), LAYERTAG::IGNORECOLLISION));
-		pWaterfallSplash->SetEmitDirection(GetTransform()->GetUp());
-		//pWaterfallSplash->SetEmitDirection(GetTransform()->GetForward());
-		pWaterfallSplash->SetLifeTime(10.f);
-		//pWaterLightning->GetTransform()->SetScale(Vec3(2.7f, 1.2f, 2.7f));
-
-		//TODO :: 
-		pWaterfallSplash->GetTransform()->SetPosition(3.f * Vec3::UnitY + GetTransform()->GetPosition());
-		//SetEmitDirection();
-		//SetLifeTime();
-	}
-	if (KEY_PRESSING(KEY::CTRL) && KEY_DOWN(KEY::K))
-	{
-		CParticle_Waterfall* pWaterfallSplash = static_cast<CParticle_Waterfall*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Particle_Waterfall"), LAYERTAG::IGNORECOLLISION));
-		//pWaterfallSplash->SetEmitDirection(GetTransform()->GetUp());
-		pWaterfallSplash->SetEmitDirection(GetTransform()->GetForward());
-		pWaterfallSplash->SetLifeTime(10.f);
-		//pWaterLightning->GetTransform()->SetScale(Vec3(2.7f, 1.2f, 2.7f));
-		//TODO ::
-		pWaterfallSplash->GetTransform()->SetPosition(3.f * Vec3::UnitY + GetTransform()->GetPosition());
-	}
 }
 
 void CP_Strife::LateTick(const _float& fTimeDelta)

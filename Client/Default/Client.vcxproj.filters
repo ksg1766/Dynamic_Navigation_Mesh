@@ -79,9 +79,6 @@
     <Filter Include="03.GameObjects\02.Monster\CollisionTestCube\01.Script">
       <UniqueIdentifier>{55bff19f-cc5b-4634-997a-3cd2a3a214de}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound">
-      <UniqueIdentifier>{b3285322-f3e6-414e-a3f7-6b1034fd245d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\00.Static">
       <UniqueIdentifier>{c4e8b885-4768-40de-8227-7c9b20688169}</UniqueIdentifier>
     </Filter>
@@ -178,50 +175,14 @@
     <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Ammo\Base">
       <UniqueIdentifier>{254b5cf2-ca93-45d5-b979-bc4eb8e8c205}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Ammo\Defaut">
-      <UniqueIdentifier>{d582029f-a2ac-4ffd-bd74-0c64bccc4200}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\00.Static\LavaTerrain">
       <UniqueIdentifier>{6cdf4d51-3305-435c-a6ad-79f0ba1ae653}</UniqueIdentifier>
     </Filter>
     <Filter Include="01.Levels\02.GameTool\View\NavMeshView">
       <UniqueIdentifier>{c6dc7fa4-a266-4b6f-98b6-de967c3ebeea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior">
-      <UniqueIdentifier>{a05c84e9-2d8e-4785-99af-33f36879eab1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\02.Monster\Script">
       <UniqueIdentifier>{b89f1ef8-48f4-4cde-9a89-2548fc76681c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior\01.Dead">
-      <UniqueIdentifier>{cc21f3a4-2e8d-4380-824a-0b88f709938e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior\02.Attack">
-      <UniqueIdentifier>{99bdc28d-2737-4f50-8a94-83044997213a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior\05.Chase">
-      <UniqueIdentifier>{69d2062c-435a-433d-a4e4-9eb86ad651b0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior\07.Idle">
-      <UniqueIdentifier>{89b5f963-af3a-4aa4-88fc-fa6441216da7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior\08.Roaming">
-      <UniqueIdentifier>{38e83ade-ff56-445b-a8fd-81525960e527}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior\04.Wait">
-      <UniqueIdentifier>{2140a87c-5f0d-4f95-8f46-7ebe15d61821}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior\03.StepBack">
-      <UniqueIdentifier>{31036d20-c604-4f62-ab70-b9a1647a7070}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior\99.Decorator">
-      <UniqueIdentifier>{db3994c7-d555-45c5-aa43-7c3bbd9bdf3b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior\98.Composite">
-      <UniqueIdentifier>{70c772af-77f2-4386-99a0-e3454fc689fa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Ammo\Static">
-      <UniqueIdentifier>{ce52ed99-b126-4552-9725-dd2012f4aa24}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\05.Particle">
       <UniqueIdentifier>{12377550-5943-4235-a460-ed11c4fa3ea9}</UniqueIdentifier>
@@ -231,111 +192,6 @@
     </Filter>
     <Filter Include="03.GameObjects\01.Playable\00.P_Strife\MotionTrail">
       <UniqueIdentifier>{c9d6acb2-b31e-4b9c-9e63-eea59647ce87}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Ammo\Beam">
-      <UniqueIdentifier>{646703a9-b60d-41be-a761-3683e53d3f23}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute">
-      <UniqueIdentifier>{3a55bc59-aff3-448e-addc-36328c9fe659}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellHound\Behavior\00.Spwan%28보류%29">
-      <UniqueIdentifier>{fdfc7495-5be9-482f-be81-3bb03feeb7c7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute\Behavior">
-      <UniqueIdentifier>{e86cb4c1-b1a0-44d4-bb72-4cca8e4814b8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute\Behavior\00.Spawn%28보류%29">
-      <UniqueIdentifier>{f8014d2a-80b7-45b5-90e2-165c7320b81c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute\Behavior\01.Dead">
-      <UniqueIdentifier>{81e4f089-2958-4a74-b5c0-8a2e62389f2f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute\Behavior\02.Attack">
-      <UniqueIdentifier>{83085d18-90f6-43ca-bcca-a003b0b464b7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute\Behavior\98.Composite">
-      <UniqueIdentifier>{330d5447-9a02-4b37-adbe-4d7abc495bce}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute\Behavior\99.Decorator">
-      <UniqueIdentifier>{e497a3bb-2682-4a56-9930-ef336b355dce}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute\Behavior\03.Wait">
-      <UniqueIdentifier>{64a469ec-753c-4b32-92db-0e513fb4b463}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute\Behavior\05.Idle">
-      <UniqueIdentifier>{480f4e75-3a77-4597-8320-beff3310f2d2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute\Behavior\06.Roaming">
-      <UniqueIdentifier>{d105341d-93ea-4288-842c-9996e98eb0df}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\HellBrute\Behavior\04.Fire">
-      <UniqueIdentifier>{ee8b80ec-bd99-461d-91a5-1dbd698a9581}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin">
-      <UniqueIdentifier>{95f9da97-3f2e-4706-9856-b610378f8584}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\DemonCaster">
-      <UniqueIdentifier>{1dee27e1-b47b-449d-85db-379cfd354eb5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin\Behavior">
-      <UniqueIdentifier>{e8ab7a97-1f9c-4066-90dc-93e2dbbc1c70}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\DemonCaster\Behavior">
-      <UniqueIdentifier>{66867931-93b8-4a3d-a2f0-ef7c83901110}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin\Behavior\00.Spawn%28보류%29">
-      <UniqueIdentifier>{b56dc5ff-3e3d-43ee-a880-f43db12374d4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin\Behavior\01.Dead">
-      <UniqueIdentifier>{7c7d00ac-d62f-4e1f-a837-b78dd8d5b2be}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin\Behavior\03.Chase">
-      <UniqueIdentifier>{6ee2d230-8846-45cf-b00c-77aa1ff1ef98}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin\Behavior\04.Idle">
-      <UniqueIdentifier>{f2285755-095b-426e-9463-49acc7e087cd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin\Behavior\05.Roaming">
-      <UniqueIdentifier>{21fd438b-878c-43d1-b383-1a88a10cd178}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin\Behavior\98.Composite">
-      <UniqueIdentifier>{1a8732f9-364a-49e1-b114-70239935646f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin\Behavior\99.Decorator">
-      <UniqueIdentifier>{bc950dba-729d-426c-9730-dbb7163747f6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\DemonCaster\Behavior\00.Spawn%28보류%29">
-      <UniqueIdentifier>{2625ef30-9cf3-46f6-8692-b95f789b1a0d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\DemonCaster\Behavior\01.Dead">
-      <UniqueIdentifier>{b8c3b576-3742-4da6-a61f-4044a1be3b81}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\DemonCaster\Behavior\98.Composite">
-      <UniqueIdentifier>{e08e47af-e42e-4e12-82f2-0c94da60c0b7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\DemonCaster\Behavior\99.Decorator">
-      <UniqueIdentifier>{3d06e4f6-ab58-4765-8911-151bb2cc00b8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin\Behavior\02.Suicide">
-      <UniqueIdentifier>{e0b76233-7ffb-4e77-a7e9-78991e336a85}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Goblin\Behavior\06.Wait">
-      <UniqueIdentifier>{90b6b019-3b45-442f-9d07-92970da70331}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\DemonCaster\Behavior\02.Spell">
-      <UniqueIdentifier>{59df31be-95a5-4db5-968c-5c3a7a902c91}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\DemonCaster\Behavior\03.Idle">
-      <UniqueIdentifier>{a25ea5be-9070-4395-9219-a7430d41b8fb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\DemonCaster\Behavior\04.Roaming">
-      <UniqueIdentifier>{18effc81-515a-491d-80bb-c8dd45c30fd1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\DemonCaster\Behavior\05.StepBack">
-      <UniqueIdentifier>{10806104-fd97-46bc-916c-a6bd2f15ac88}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\06.PostProcessing">
-      <UniqueIdentifier>{f82fc678-6211-4a3e-ac44-e0b9f1f17242}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\00.Static\SkyBox">
       <UniqueIdentifier>{f4a2fcae-ca40-4f7a-bed8-a4f0c9f40e69}</UniqueIdentifier>
@@ -349,104 +205,17 @@
     <Filter Include="03.GameObjects\03.Boss\Script">
       <UniqueIdentifier>{ede43305-b7f1-49ab-8f14-550acbefbc0c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch">
-      <UniqueIdentifier>{546e4c06-2a47-4082-a035-35feade9bb79}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Parts">
-      <UniqueIdentifier>{e9be3400-5b9d-4b03-99bb-68e452a9e77a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Behavior">
-      <UniqueIdentifier>{b18d083f-2427-4893-918d-f22b301ee37c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Behavior\Composite">
-      <UniqueIdentifier>{f72cec1b-d121-4ac4-8da7-6b0e8b0e4b33}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Behavior\Decorator">
-      <UniqueIdentifier>{d4b2daac-0512-4d06-a518-0c6795e93888}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Behavior\Action">
-      <UniqueIdentifier>{55d289a8-e71d-4bea-aef8-3b93f17cf297}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase1">
-      <UniqueIdentifier>{9ad8fce7-9a7c-4218-aa48-ed603d86b095}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2">
-      <UniqueIdentifier>{3dbd03bd-b3aa-438d-aa75-af51369ab53d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase3">
-      <UniqueIdentifier>{67578574-9b07-4699-bf1a-3497558aadb3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Common">
-      <UniqueIdentifier>{3f7a5e60-38fe-4fe3-ab73-f061f9a702d5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\01.Dagon">
-      <UniqueIdentifier>{fa0d3f1f-9886-4dd5-adc5-ad8fb7ca846c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\01.Dagon\Behavior">
-      <UniqueIdentifier>{cdf30a19-befa-4c8c-affd-ed8d900e2aaa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\01.Dagon\Behavior\Action">
-      <UniqueIdentifier>{beb350f7-e2d2-46d6-912b-0aa43c82a248}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\01.Dagon\Behavior\Composite">
-      <UniqueIdentifier>{8284363e-4eac-4b5e-9356-5915a591b1e4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\01.Dagon\Behavior\Decorator">
-      <UniqueIdentifier>{28e9cd9c-8bb9-45e9-972e-ec9ab6626a0a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\TremorCrystal">
-      <UniqueIdentifier>{beb98f89-2329-47a2-9135-ec8a5d77e5e1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Effect">
-      <UniqueIdentifier>{62999c5a-2429-4300-b4ce-de6b6dc5650d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Effect\MotionTrail">
-      <UniqueIdentifier>{b44ce67c-8910-483d-8a9e-a31ab6162f95}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\Water">
-      <UniqueIdentifier>{51312512-0744-4eab-89c9-743be1ce8211}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\05.Particle\Fire">
       <UniqueIdentifier>{b1103f29-f8f6-4936-b279-fa90986234b4}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\05.Particle\Lightning">
       <UniqueIdentifier>{a235c40b-71a1-4bdf-b21b-e3d218e3b552}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\05.Particle\Crystal">
-      <UniqueIdentifier>{12bc31e9-c8ff-42a4-aac0-f3215b8130e1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Ammo\Nature">
-      <UniqueIdentifier>{c43e5f3f-a45e-4925-8b6c-bd22393a9f4c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\00.Static\Sun">
       <UniqueIdentifier>{08e19640-0c2a-452a-883d-1ce51d5dcabf}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\05.Particle\Particle">
       <UniqueIdentifier>{a3e64665-a652-4752-bc78-eade768fb7bc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\00.Moloch\Effect\SwordTrail">
-      <UniqueIdentifier>{d6baac35-7dcf-453d-8451-8e3954ee5b58}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\05.Particle\WaterLightning">
-      <UniqueIdentifier>{01e0ec1c-46c1-4144-8aea-944368567741}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\Bolts">
-      <UniqueIdentifier>{4eac4057-04f0-4385-b9d8-75ccf6c0a241}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\01.Dagon\Effect">
-      <UniqueIdentifier>{97e145bc-1f19-461e-8982-8274228ca69b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\01.Dagon\Effect\Orb">
-      <UniqueIdentifier>{d42bd742-13d7-4da1-93b2-c9f0f026dffd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\01.Dagon\Effect\Wave">
-      <UniqueIdentifier>{468fdfc1-7ade-4270-a6e0-320fef5a0c98}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\01.Dagon\Effect\Ring_Flat_Wave">
-      <UniqueIdentifier>{964c6512-cf6a-4394-9c6d-ade0b1c588ad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\01.Dagon\Effect\WaterShield">
-      <UniqueIdentifier>{dfbe18bd-bdc0-4ea6-b852-23bcc1bb5ce8}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\00.Static\StaticScene">
       <UniqueIdentifier>{29654f1c-3463-4ee1-a341-7d0cc73610ad}</UniqueIdentifier>
@@ -570,9 +339,6 @@
     <ClInclude Include="..\Public\P_Strife.h">
       <Filter>03.GameObjects\01.Playable\00.P_Strife</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\HellHound.h">
-      <Filter>03.GameObjects\02.Monster\HellHound</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Strife_GunL.h">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\Parts</Filter>
     </ClInclude>
@@ -609,9 +375,6 @@
     <ClInclude Include="..\Public\Strife_Ammo.h">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Strife_Ammo_Default.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Defaut</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\LavaTerrain.h">
       <Filter>03.GameObjects\00.Static\LavaTerrain</Filter>
     </ClInclude>
@@ -621,143 +384,17 @@
     <ClInclude Include="..\Public\DebugDraw.h">
       <Filter>99.Defines</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\HellHound_BT_Idle.h">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\07.Idle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellHound_BT_Attack.h">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\02.Attack</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellHound_BT_StepBack.h">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\03.StepBack</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\MonsterController.h">
       <Filter>03.GameObjects\02.Monster\Script</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\HellHound_BT_Wait.h">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\04.Wait</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellHound_BT_Chase.h">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\05.Chase</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellHound_BT_Spawn.h">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\00.Spwan%28보류%29</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellHound_BT_Dead.h">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\01.Dead</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellHound_BT_Roaming.h">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\08.Roaming</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellHound_BT_IF_InSight.h">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\99.Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellHound_BT_IF_Dead.h">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\99.Decorator</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\MonsterStats.h">
       <Filter>03.GameObjects\02.Monster\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Strife_Ammo_Static.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Static</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ParticleController.h">
       <Filter>03.GameObjects\05.Particle\Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Strife_MotionTrail.h">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\MotionTrail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Strife_Ammo_Beam.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Beam</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellBrute.h">
-      <Filter>03.GameObjects\02.Monster\HellBrute</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellBrute_BT_Melee.h">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\02.Attack</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellBrute_BT_Dead.h">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\01.Dead</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellBrute_BT_Idle.h">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\05.Idle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellBrute_BT_IF_Dead.h">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\99.Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellBrute_BT_IF_InSight.h">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\99.Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellBrute_BT_Roaming.h">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\06.Roaming</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellBrute_BT_Spawn.h">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\00.Spawn%28보류%29</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellBrute_BT_Wait.h">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\03.Wait</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\HellBrute_BT_Fire.h">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\04.Fire</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Goblin.h">
-      <Filter>03.GameObjects\02.Monster\Goblin</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DemonCaster.h">
-      <Filter>03.GameObjects\02.Monster\DemonCaster</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Goblin_BT_Spawn.h">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\00.Spawn%28보류%29</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Goblin_BT_Dead.h">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\01.Dead</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Goblin_BT_Suicide.h">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\02.Suicide</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Goblin_BT_Chase.h">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\03.Chase</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Goblin_BT_Idle.h">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\04.Idle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Goblin_BT_Roaming.h">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\05.Roaming</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Goblin_BT_IF_Dead.h">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\99.Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Goblin_BT_IF_InSight.h">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\99.Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DemonCaster_BT_Spawn.h">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\00.Spawn%28보류%29</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DemonCaster_BT_Dead.h">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\01.Dead</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DemonCaster_BT_Spell.h">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\02.Spell</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DemonCaster_BT_Idle.h">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\03.Idle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DemonCaster_BT_Roaming.h">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\04.Roaming</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DemonCaster_BT_IF_Dead.h">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\99.Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DemonCaster_BT_IF_InSight.h">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\99.Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Goblin_BT_Wait.h">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\06.Wait</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DemonCaster_BT_StepBack.h">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\05.StepBack</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Shockwave.h">
-      <Filter>03.GameObjects\06.PostProcessing</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\SkyBox.h">
       <Filter>03.GameObjects\00.Static\SkyBox</Filter>
@@ -768,182 +405,17 @@
     <ClInclude Include="..\Public\BossController.h">
       <Filter>03.GameObjects\03.Boss\Script</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Moloch.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_Sword.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Parts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_WHILE_Phase1.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_IF_Dead.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_WHILE_Phase2.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_REPEAT.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Idle.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Dead.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Chase.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Dash.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase1</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_FullDash2.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase3</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_FullDash1.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Swing1.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Swing2.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Swipe.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase1</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Swing3.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase3</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Eruption1.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_IF_StartP2.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_IF_StartP3.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_TremorPulse.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Geyser1.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase3</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_BT_Geyser2.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase3</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Dagon.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Dagon_BT_Idle.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Dagon_BT_IF_Dead.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Dagon_BT_Dead.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Dagon_BT_Lightning.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Dagon_BT_Orb.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Dagon_BT_Tentacle.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Dagon_BT_Wave.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Dagon_BT_WhirlPool.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Dagon_BT_WaveLoop.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_MotionTrail.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Effect\MotionTrail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\TremorCrystal.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\TremorCrystal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Moloch_SwordSlash.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Effect</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Water.h">
-      <Filter>03.GameObjects\00.Static\Water</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Fire.h">
       <Filter>03.GameObjects\05.Particle\Fire</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Lightning.h">
-      <Filter>03.GameObjects\05.Particle\Lightning</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Arena.h">
       <Filter>03.GameObjects\00.Static\StaticBase</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Wave_Ring.h">
-      <Filter>03.GameObjects\05.Particle\Lightning</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Bubble.h">
-      <Filter>03.GameObjects\05.Particle\Lightning</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\GeyserCrack.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\TremorCrystal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\CrystalParticle.h">
-      <Filter>03.GameObjects\05.Particle\Crystal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Strife_Ammo_Nature.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Nature</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Sun.h">
       <Filter>03.GameObjects\00.Static\Sun</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Particle.h">
       <Filter>03.GameObjects\05.Particle\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\SwordTrail.h">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Effect\SwordTrail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\WaterLightning.h">
-      <Filter>03.GameObjects\05.Particle\WaterLightning</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Bolts.h">
-      <Filter>03.GameObjects\00.Static\Bolts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Lightning_Spark.h">
-      <Filter>03.GameObjects\05.Particle\WaterLightning</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Orb.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\Orb</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\SphereSwirl.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\Orb</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DagonWave.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\Wave</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Particle_Rain.h">
-      <Filter>03.GameObjects\05.Particle\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Particle_WaveSplash.h">
-      <Filter>03.GameObjects\05.Particle\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Particle_Waterfall.h">
-      <Filter>03.GameObjects\05.Particle\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Waterfall_Foar.h">
-      <Filter>03.GameObjects\00.Static\StaticBase</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Ring_Flat_Wave.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\Ring_Flat_Wave</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\WaterShield.h">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\WaterShield</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\StaticScene.h">
       <Filter>03.GameObjects\00.Static\StaticScene</Filter>
@@ -1052,9 +524,6 @@
     <ClCompile Include="..\Private\P_Strife.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\HellHound.cpp">
-      <Filter>03.GameObjects\02.Monster\HellHound</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Strife_GunL.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\Parts</Filter>
     </ClCompile>
@@ -1091,9 +560,6 @@
     <ClCompile Include="..\Private\Strife_Ammo.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Strife_Ammo_Default.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Defaut</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Strife_Ammo.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Base</Filter>
     </ClCompile>
@@ -1106,119 +572,17 @@
     <ClCompile Include="..\Private\DebugDraw.cpp">
       <Filter>99.Defines</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\HellHound_BT_Idle.cpp">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\07.Idle</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellHound_BT_Roaming.cpp">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\08.Roaming</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellHound_BT_Attack.cpp">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\02.Attack</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellHound_BT_StepBack.cpp">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\03.StepBack</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\MonsterController.cpp">
       <Filter>03.GameObjects\02.Monster\Script</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\HellHound_BT_Wait.cpp">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\04.Wait</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellHound_BT_Chase.cpp">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\05.Chase</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellHound_BT_Spawn.cpp">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\00.Spwan%28보류%29</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellHound_BT_Dead.cpp">
-      <Filter>03.GameObjects\02.Monster\HellHound\Behavior\01.Dead</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\MonsterStats.cpp">
       <Filter>03.GameObjects\02.Monster\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Strife_Ammo_Static.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Static</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\ParticleController.cpp">
       <Filter>03.GameObjects\05.Particle\Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Strife_MotionTrail.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\MotionTrail</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Strife_Ammo_Beam.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Beam</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellBrute.cpp">
-      <Filter>03.GameObjects\02.Monster\HellBrute</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellBrute_BT_Wait.cpp">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\03.Wait</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellBrute_BT_Spawn.cpp">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\00.Spawn%28보류%29</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellBrute_BT_Roaming.cpp">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\06.Roaming</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellBrute_BT_Idle.cpp">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\05.Idle</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellBrute_BT_Dead.cpp">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\01.Dead</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellBrute_BT_Melee.cpp">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\02.Attack</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\HellBrute_BT_Fire.cpp">
-      <Filter>03.GameObjects\02.Monster\HellBrute\Behavior\04.Fire</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Goblin.cpp">
-      <Filter>03.GameObjects\02.Monster\Goblin</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\DemonCaster.cpp">
-      <Filter>03.GameObjects\02.Monster\DemonCaster</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Goblin_BT_Spawn.cpp">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\00.Spawn%28보류%29</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Goblin_BT_Dead.cpp">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\01.Dead</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Goblin_BT_Suicide.cpp">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\02.Suicide</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Goblin_BT_Chase.cpp">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\03.Chase</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Goblin_BT_Idle.cpp">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\04.Idle</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Goblin_BT_Roaming.cpp">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\05.Roaming</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\DemonCaster_BT_Spawn.cpp">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\00.Spawn%28보류%29</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\DemonCaster_BT_Dead.cpp">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\01.Dead</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\DemonCaster_BT_Spell.cpp">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\02.Spell</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\DemonCaster_BT_Idle.cpp">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\03.Idle</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\DemonCaster_BT_Roaming.cpp">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\04.Roaming</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Goblin_BT_Wait.cpp">
-      <Filter>03.GameObjects\02.Monster\Goblin\Behavior\06.Wait</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\DemonCaster_BT_StepBack.cpp">
-      <Filter>03.GameObjects\02.Monster\DemonCaster\Behavior\05.StepBack</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Shockwave.cpp">
-      <Filter>03.GameObjects\06.PostProcessing</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\SkyBox.cpp">
       <Filter>03.GameObjects\00.Static\SkyBox</Filter>
@@ -1229,161 +593,17 @@
     <ClCompile Include="..\Private\BossController.cpp">
       <Filter>03.GameObjects\03.Boss\Script</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Moloch.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_Sword.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Parts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Idle.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Dead.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Chase.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Dash.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase1</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_FullDash1.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_FullDash2.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Swing1.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Swing2.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Swipe.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase1</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Swing3.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Eruption1.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_TremorPulse.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Geyser1.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_BT_Geyser2.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Behavior\Action\Phase3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Dagon.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Dagon_BT_Idle.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Dagon_BT_Dead.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Dagon_BT_Lightning.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Dagon_BT_Orb.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Dagon_BT_Tentacle.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Dagon_BT_Wave.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Dagon_BT_WhirlPool.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Dagon_BT_WaveLoop.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Behavior\Action</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_MotionTrail.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Effect\MotionTrail</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\TremorCrystal.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\TremorCrystal</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Moloch_SwordSlash.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Effect</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Water.cpp">
-      <Filter>03.GameObjects\00.Static\Water</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Fire.cpp">
       <Filter>03.GameObjects\05.Particle\Fire</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Lightning.cpp">
-      <Filter>03.GameObjects\05.Particle\Lightning</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Arena.cpp">
       <Filter>03.GameObjects\00.Static\StaticBase</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Wave_Ring.cpp">
-      <Filter>03.GameObjects\05.Particle\Lightning</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Bubble.cpp">
-      <Filter>03.GameObjects\05.Particle\Lightning</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\GeyserCrack.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\TremorCrystal</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\CrystalParticle.cpp">
-      <Filter>03.GameObjects\05.Particle\Crystal</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Strife_Ammo_Nature.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Nature</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Sun.cpp">
       <Filter>03.GameObjects\00.Static\Sun</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Particle.cpp">
       <Filter>03.GameObjects\05.Particle\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\SwordTrail.cpp">
-      <Filter>03.GameObjects\03.Boss\00.Moloch\Effect\SwordTrail</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\WaterLightning.cpp">
-      <Filter>03.GameObjects\05.Particle\WaterLightning</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Bolts.cpp">
-      <Filter>03.GameObjects\00.Static\Bolts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Lightning_Spark.cpp">
-      <Filter>03.GameObjects\05.Particle\WaterLightning</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Orb.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\Orb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\SphereSwirl.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\Orb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\DagonWave.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\Wave</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Particle_Rain.cpp">
-      <Filter>03.GameObjects\05.Particle\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Particle_WaveSplash.cpp">
-      <Filter>03.GameObjects\05.Particle\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Particle_Waterfall.cpp">
-      <Filter>03.GameObjects\05.Particle\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Waterfall_Foar.cpp">
-      <Filter>03.GameObjects\00.Static\StaticBase</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Ring_Flat_Wave.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\Ring_Flat_Wave</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\WaterShield.cpp">
-      <Filter>03.GameObjects\03.Boss\01.Dagon\Effect\WaterShield</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\StaticScene.cpp">
       <Filter>03.GameObjects\00.Static\StaticScene</Filter>
