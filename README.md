@@ -2,10 +2,14 @@
 :clipboard: 진행 사항
   * 리소스 수집 및 렌더러 제작
     * NVIDIA Emerald Square City Scene, Unity Asset Store 등 활용해 공개된 리소스 수집
+      
     * 리소스 데이터 바이너리 경량화
     * 렌더러 제작
   * 네비게이션 작업 툴 구현 중
     * Slope에 따라 메쉬 삼각형 추려내어 로드
+
+   ![FPS_61-RELEASE2024-07-0511-13-04-ezgif com-speed](https://github.com/ksg1766/Navigation_System/assets/37239034/aeee1ca8-6602-424e-b051-9fd0aeda2c5b)
+ 
 ---
 # 📅 2024.07.03
 :clipboard: 진행 사항
