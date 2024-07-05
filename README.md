@@ -1,16 +1,25 @@
+# 📅 2024.07.04
+:clipboard: 진행 사항
+  * 리소스 수집 및 렌더러 제작
+    * NVIDIA Emerald Square City Scene, Unity Asset Store 등 활용해 공개된 리소스 수집
+    * 리소스 데이터 바이너리 경량화
+    * 렌더러 제작
+  * 네비게이션 작업 툴 구현 중
+    * Slope에 따라 메쉬 삼각형 추려내어 로드
+---
 # 📅 2024.07.03
 :clipboard: 진행 사항
- * 논문 분석 및 학습
-   * A navigation mesh for dynamic environments, Wouter van Toll et al.
-   * Automatic Generated Navigation Mesh Algorithm on 3D Game Scene, Xiang Xu et al.
-   * 위 자료 기반으로 Rough하게 아래와 같이 구상했습니다.
-     1. 지형 메쉬의 정점 집합과 Delaunay Triangulation 이용해 삼각형 집합 구성.
-     2. 생성된 삼각형 집합 이용해 Voronoi Diagram 생성
-     3. Diagram 확장해 최초 Navigation Mesh 생성.
-     4. 이후 장애물 추가, 삭제 등으로 인한 NavMesh 갱신은 논문 참고해 Voronoi Diagram 수정.
-     5. Voronoi Diagram Or 가시성 검사 등 경로 탐색 수행
- * 리소스 수집 및 렌더러 제작 시작
-    * 테스트용 지형 리소스 수집 중입니다.
+  * 논문 분석 및 학습
+    * A navigation mesh for dynamic environments, Wouter van Toll et al.
+    * Automatic Generated Navigation Mesh Algorithm on 3D Game Scene, Xiang Xu et al.
+    * 위 자료 기반으로 Rough하게 아래와 같이 구상했습니다.
+      1. 지형 메쉬의 정점 집합과 Delaunay Triangulation 이용해 삼각형 집합 구성.
+      2. 생성된 삼각형 집합 이용해 Voronoi Diagram 생성
+      3. Diagram 확장해 최초 Navigation Mesh 생성.
+      4. 이후 장애물 추가, 삭제 등으로 인한 NavMesh 갱신은 논문 참고해 Voronoi Diagram 수정.
+      5. Voronoi Diagram Or 가시성 검사 등 경로 탐색 수행.
+    * 리소스 수집 및 렌더러 제작 시작
+      * 테스트용 지형 리소스 수집 중입니다.
 
 ---
 # 📅 2024.07.02
