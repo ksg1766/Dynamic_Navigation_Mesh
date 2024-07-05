@@ -23,48 +23,15 @@
 #include "StaticScene.h"
 #include "Arena.h"
 #include "P_Strife.h"
-#include "HellHound.h"
-#include "HellBrute.h"
-#include "Goblin.h"
-#include "DemonCaster.h"
 #include "Strife_GunL.h"
 #include "Strife_GunR.h"
-#include "Moloch.h"
-#include "Moloch_Sword.h"
-#include "TremorCrystal.h"
-#include "Dagon.h"
-#include "DagonWave.h"
-#include "Strife_Ammo_Default.h"
-#include "Strife_Ammo_Beam.h"
-#include "Strife_Ammo_Nature.h"
 #include "SkyBox.h"
 #include "Particle.h"
-#include "Particle_Rain.h"
-#include "Particle_WaveSplash.h"
-#include "Particle_Waterfall.h"
 #include "ParticleController.h"
 #include "Strife_MotionTrail.h"
-#include "Moloch_MotionTrail.h"
-#include "Moloch_SwordSlash.h"
-#include "Shockwave.h"
 #include "Lava.h"
-#include "Water.h"
 #include "Fire.h"
-#include "Lightning.h"
-#include "WaterLightning.h"
-#include "Lightning_Spark.h"
-#include "Bubble.h"
-#include "Orb.h"
-#include "Bolts.h"
-#include "Wave_Ring.h"
-#include "GeyserCrack.h"
-#include "CrystalParticle.h"
 #include "Sun.h"
-#include "SphereSwirl.h"
-#include "Waterfall_Foar.h"
-#include "Ring_Flat_Wave.h"
-#include "WaterShield.h"
-#include "SwordTrail.h"
 
 CLoader::CLoader(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: m_pDevice(pDevice)
@@ -378,22 +345,6 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GamePlay()
 	/* For.Prototype_GameObject_P_Strife */
   	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_P_Strife"), CP_Strife::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
-	
-	/* For.Prototype_GameObject_HellHound */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_HellHound"), CHellHound::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_HellBrute */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_HellBrute"), CHellBrute::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Goblin */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Goblin"), CGoblin::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_DemonCaster */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_DemonCaster"), CDemonCaster::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
 
 	/* For.Prototype_GameObject_Strife_GunL */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Strife_GunL"), CStrife_GunL::Create(m_pDevice, m_pContext))))
@@ -401,34 +352,6 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GamePlay()
 	
 	/* For.Prototype_GameObject_Strife_GunR */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Strife_GunR"), CStrife_GunR::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Moloch */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Moloch"), CMoloch::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Moloch_Sword */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Moloch_Sword"), CMoloch_Sword::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Dagon */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Dagon"), CDagon::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_DagonWave */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_DagonWave"), CDagonWave::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Strife_Ammo_Default */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Strife_Ammo_Default"), CStrife_Ammo_Default::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Strife_Ammo_Static */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Strife_Ammo_Beam"), CStrife_Ammo_Beam::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Strife_Ammo_Nature */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Strife_Ammo_Nature"), CStrife_Ammo_Nature::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_GameObject_Strife_Ammo_Static */
@@ -439,28 +362,8 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GamePlay()
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Fire"), CFire::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* For.Prototype_GameObject_Lightning */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Lightning"), CLightning::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_WaterLightning */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_WaterLightning"), CWaterLightning::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
 	/* For.Prototype_GameObject_Particle */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Particle"), CParticle::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Particle_Rain */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Particle_Rain"), CParticle_Rain::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Particle_WaveSplash */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Particle_WaveSplash"), CParticle_WaveSplash::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Particle_Waterfall */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Particle_Waterfall"), CParticle_Waterfall::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_GameObject_SkyBox */
@@ -471,97 +374,18 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GamePlay()
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Strife_MotionTrail"), CStrife_MotionTrail::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* For.Prototype_GameObject_Moloch_MotionTrail */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Moloch_MotionTrail"), CMoloch_MotionTrail::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Shockwave */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Shockwave"), CShockwave::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
 	/* For.Prototype_GameObject_Lava_East_B1 */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Lava_East_B1"), CLava::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Water */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Water"), CWater::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_TremorCrystal_A */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_TremorCrystal_A"), CTremorCrystal::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_TremorCrystal_B */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_TremorCrystal_B"), CTremorCrystal::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Bubble */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Bubble"), CBubble::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Wave_Ring */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Wave_Ring"), CWave_Ring::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Moloch_SwordSlash */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Moloch_Sword_Slash"), CMoloch_SwordSlash::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_GameObject_Arena */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Arena"), CArena::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 	
-	/* For.Prototype_GameObject_GeyserCrack */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_GeyserCrack"), CGeyserCrack::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
 	/* For.Prototype_GameObject_Sun */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Sun"), CSun::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
-	
-	/* For.Prototype_GameObject_SwordTrail */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_SwordTrail"), CSwordTrail::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Waterfall_Foar */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Waterfall_Foar"), CWaterfall_Foar::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
 
-	/* For.Prototype_GameObject_TremorCrystal_ */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_TremorCrystal_G"), CCrystalParticle::Create(m_pDevice, m_pContext))) ||
-		FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_TremorCrystal_H"), CCrystalParticle::Create(m_pDevice, m_pContext))) ||
-		FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_TremorCrystal_I"), CCrystalParticle::Create(m_pDevice, m_pContext))) ||
-		FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_TremorCrystal_L"), CCrystalParticle::Create(m_pDevice, m_pContext))) ||
-		FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_TremorCrystal_M"), CCrystalParticle::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Bolts */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Bolts0"), CBolts::Create(m_pDevice, m_pContext))) ||
-		FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Bolts1"), CBolts::Create(m_pDevice, m_pContext))) ||
-		FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Bolts2"), CBolts::Create(m_pDevice, m_pContext))) ||
-		FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Bolts3"), CBolts::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Lightning_Spark */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Lightning_Spark"), CLightning_Spark::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Orb */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Orb"), COrb::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_SphereSwirl */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_SphereSwirl"), CSphereSwirl::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Ring_Flat_Wave */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Ring_Flat_Wave"), CRing_Flat_Wave::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_WaterShield */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_WaterShield"), CWaterShield::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
 	/* For.Prototype_GameObject_StaticScene */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_StaticScene"), CStaticScene::Create(m_pDevice, m_pContext))))
 		return E_FAIL;

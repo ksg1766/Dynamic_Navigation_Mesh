@@ -82,7 +82,7 @@ HRESULT CMainApp::Render()
 	{
 #ifdef _DEBUG
 		swprintf_s(m_szFPS, L"FPS : %d - DEBUG", m_iFps);
-#elif
+#else
 		swprintf_s(m_szFPS, L"FPS : %d - RELEASE", m_iFps);
 #endif
 		SetWindowText(g_hWnd, m_szFPS);
@@ -333,7 +333,7 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			if (TEXT("EmeraldSquare_Day") == strFileName)
 			{
 				//
-				continue;
+				//continue;
 				//
 
 				XMStoreFloat4x4(&matPivot, XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));

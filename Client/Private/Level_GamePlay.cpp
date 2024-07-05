@@ -3,11 +3,9 @@
 
 #include "GameInstance.h"
 #include "GameObject.h"
-#include "Water.h"
 #include "FileUtils.h"
 #include "Utils.h"
 #include "Cell.h"
-#include "Particle_Waterfall.h"
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: CLevel(pDevice, pContext)
@@ -148,11 +146,6 @@ HRESULT CLevel_GamePlay::Ready_Layer_Terrain()
 	CGameObject* pGameObject = nullptr;
 	LAYERTAG	eLayerTag = LAYERTAG::TERRAIN;
 
-	//CWater::WATER_DESC tWaterDesc = { Vec3(0.f, 28.25f, 265.f), Vec2(1280.f, 500.f) };
-	CWater::WATER_DESC tWaterDesc = { Vec3(0.f, 0.f, 265.f), Vec2(1280.f, 500.f) };
-	pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Water"), &tWaterDesc);
-	if (nullptr == pGameObject)	return E_FAIL;
-
 	return S_OK;
 }
 
@@ -196,32 +189,6 @@ HRESULT CLevel_GamePlay::Ready_Layer_IgnoreCollision()
 	CGameObject* pGameObject = nullptr;
 	LAYERTAG	eLayerTag = LAYERTAG::IGNORECOLLISION;
 
-	for (_int i = 0; i < 5; ++i)
-	{
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Particle_Waterfall"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		static_cast<CParticle_Waterfall*>(pGameObject)->SetEmitDirection(Vec3(0.f, 0.f, -1.f));
-		pGameObject->GetTransform()->Translate(Vec3(-154.5f + 4.0f * i, 48.f, 251.5f));
-	}
-
-	pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Particle_Waterfall"));
-	if (nullptr == pGameObject)	return E_FAIL;
-	static_cast<CParticle_Waterfall*>(pGameObject)->SetEmitDirection(Vec3(0.205f, 0.f, -1.f));
-	pGameObject->GetTransform()->Translate(Vec3(-170.f, 45.5f, 245.f));
-
-	pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Particle_Waterfall"));
-	if (nullptr == pGameObject)	return E_FAIL;
-	static_cast<CParticle_Waterfall*>(pGameObject)->SetEmitDirection(Vec3(-0.215f, 0.f, -1.f));
-	pGameObject->GetTransform()->Translate(Vec3(-124.15f, 45.5f, 245.f));
-
-	for (_int i = 0; i < 5; ++i)
-	{
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Particle_Waterfall"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		static_cast<CParticle_Waterfall*>(pGameObject)->SetEmitDirection(Vec3(0.f, 1.f, -0.05f));
-		pGameObject->GetTransform()->Translate(0.33f * Vec3::UnitY + Vec3(-154.5f + 4.0f * i, 29.f, 242.7f));
-	}
-
 	return S_OK;
 }
 
@@ -231,142 +198,6 @@ HRESULT CLevel_GamePlay::Ready_Layer_UnitGround()
 	CGameObject* pGameObject = nullptr;
 	LAYERTAG	eLayerTag = LAYERTAG::UNIT_GROUND;
 
-	/*pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellHound"));
-	if (nullptr == pGameObject)	return E_FAIL;
-	pGameObject->GetNavMeshAgent()->SetCurrentIndex(34);
-
-	{
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellHound"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(80);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Goblin"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(81);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellBrute"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(82);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellHound"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(83);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Goblin"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(84);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellBrute"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(85);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Goblin"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(86);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellHound"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(87);
-	}
-
-	for (_int i = 0; i < 5; ++i)
-	{
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellHound"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(124 + 4 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Goblin"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(125 + 4 * i);
-	}
-
-	pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellBrute"));
-	if (nullptr == pGameObject)	return E_FAIL;
-	pGameObject->GetNavMeshAgent()->SetCurrentIndex(135);
-
-	pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellBrute"));
-	if (nullptr == pGameObject)	return E_FAIL;
-	pGameObject->GetNavMeshAgent()->SetCurrentIndex(139);
-
-	{
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_DemonCaster"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(162);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_DemonCaster"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(164);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_DemonCaster"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(165);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_DemonCaster"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(166);
-	}
-
-	for (_int i = 0; i < 6; ++i)
-	{
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellHound"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(246 + 6 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellHound"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(251 + 6 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Goblin"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(250 + 6 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Goblin"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(248 + 6 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellBrute"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(247 + 6 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_DemonCaster"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(249 + 6 * i);
-	}
-
-	for (_int i = 0; i < 11; ++i)
-	{
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellHound"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(284 + 6 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellHound"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(285 + 6 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Goblin"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(286 + 6 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_Goblin"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(287 + 6 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellBrute"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(288 + 6 * i);
-
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_DemonCaster"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(289 + 6 * i);
-	}
-
-	for (_int i = 0; i < 9; ++i)
-	{
-		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_DemonCaster"));
-		if (nullptr == pGameObject)	return E_FAIL;
-		pGameObject->GetNavMeshAgent()->SetCurrentIndex(401 + i);
-	}
-	*/
 	{
 		pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_HellBrute"));
 		if (nullptr == pGameObject)	return E_FAIL;
