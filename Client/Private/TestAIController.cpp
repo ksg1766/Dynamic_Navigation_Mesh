@@ -37,12 +37,12 @@ HRESULT CTestAIController::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CTestAIController::Tick(const _float& fTimeDelta)
+void CTestAIController::Tick(_float fTimeDelta)
 {
 	AutoMove(fTimeDelta);
 }
 
-void CTestAIController::LateTick(const _float& fTimeDelta)
+void CTestAIController::LateTick(_float fTimeDelta)
 {
 }
 
@@ -50,7 +50,7 @@ void CTestAIController::DebugRender()
 {
 }
 
-void CTestAIController::AutoMove(const _float& fTimeDelta)
+void CTestAIController::AutoMove(_float fTimeDelta)
 {
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 

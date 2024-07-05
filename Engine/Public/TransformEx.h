@@ -16,8 +16,8 @@ public:
 	virtual HRESULT Initialize_Prototype()				override;
 	virtual HRESULT Initialize(void* pArg)				override;	// Start
 
-	virtual void	Tick(const _float& fTimeDelta)		override;
-	virtual void	LateTick(const _float& fTimeDeltaa)	override;
+	virtual void	Tick(_float fTimeDelta)		override;
+	virtual void	LateTick(_float fTimeDeltaa)	override;
 	//virtual HRESULT FixedUpdate(const _float& fTimeDelta)	override;
 
 	virtual void	DebugRender()						override;
@@ -57,7 +57,7 @@ public:
 	const vector<CTransformEx*>& GetChildren() { return m_vecChildren; }
 	void AddChild(CTransformEx* child) { m_vecChildren.push_back(child); }
 
-	HRESULT Bind_ShaderResources(class CShader* pShader, const char* pConstantName);
+	HRESULT Bind_ShaderResources(class CShader* pShader, const _char* pConstantName);
 
 private:
 	Vec3 m_vLocalScale = { 1.f, 1.f, 1.f }; 

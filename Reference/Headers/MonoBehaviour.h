@@ -13,11 +13,11 @@ protected:
 	virtual ~CMonoBehaviour() = default;
 	
 public:
-	virtual void	Tick(const _float& fTimeDelta)		override;
-	virtual void	LateTick(const _float& fTimeDelta)	override;
+	virtual void	Tick(_float fTimeDelta)		override;
+	virtual void	LateTick(_float fTimeDelta)	override;
 	//virtual HRESULT FixedUpdate(const _float& fTimeDelta)	override;
 
-	virtual void	DebugRender()						override;
+	virtual void	DebugRender()				override;
 
 protected:
 	CGameInstance* m_pGameInstance = nullptr;

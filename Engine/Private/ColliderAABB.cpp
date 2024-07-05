@@ -24,14 +24,14 @@ HRESULT CAABBCollider::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CAABBCollider::Tick(const _float& fTimeDelta)
+void CAABBCollider::Tick(_float fTimeDelta)
 {
 	CTransform* pTransform = GetGameObject()->GetTransform();
 
 	m_tBoundingBox.Center = pTransform->GetPosition();
 }
 
-void CAABBCollider::LateTick(const _float& fTimeDelta)
+void CAABBCollider::LateTick(_float fTimeDelta)
 {
 }
 

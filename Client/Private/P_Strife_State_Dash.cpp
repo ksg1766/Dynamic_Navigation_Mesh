@@ -3,7 +3,6 @@
 #include "GameInstance.h"
 #include "P_Strife_State_Dash.h"
 #include "PlayerController.h"
-#include "Strife_MotionTrail.h"
 
 CP_Strife_State_Dash::CP_Strife_State_Dash()
 	:Super()
@@ -32,13 +31,6 @@ HRESULT CP_Strife_State_Dash::Enter(_int i)
 void CP_Strife_State_Dash::Tick(const _float& fTimeDelta)
 {
 	CPlayerController* pController = static_cast<CPlayerController*>(m_pController);
-
-	if (3 == m_iFrameCounter++)
-	{
-		CStrife_MotionTrail::MOTIONTRAIL_DESC desc{ m_pModel, &m_pModel->GetTweenDesc(), m_pGameObject->GetTransform()->WorldMatrix(), 0.18f };
-		m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Strife_MotionTrail"), LAYERTAG::IGNORECOLLISION, &desc);
-		m_iFrameCounter = 0;
-	}
 
 	m_fTimeSum += fTimeDelta;
 	pController->ForceHeight();

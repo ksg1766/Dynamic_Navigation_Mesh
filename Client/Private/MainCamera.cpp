@@ -30,14 +30,14 @@ HRESULT CMainCamera::Initialize(void * pArg)
 	return S_OK;
 }
 
-void CMainCamera::Tick(const _float& fTimeDelta)
+void CMainCamera::Tick(_float fTimeDelta)
 {
 	Super::Tick(fTimeDelta);
 
 
 }
 
-void CMainCamera::LateTick(const _float& fTimeDelta)
+void CMainCamera::LateTick(_float fTimeDelta)
 {
 	Super::LateTick(fTimeDelta);
 

@@ -22,7 +22,7 @@ HRESULT CTransform::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CTransform::Tick(const _float& fTimeDelta)
+void CTransform::Tick(_float fTimeDelta)
 {
 }
 

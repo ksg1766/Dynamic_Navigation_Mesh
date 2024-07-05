@@ -40,10 +40,10 @@ private:
 	virtual ~CModel() = default;
 
 public:
-	HRESULT			Initialize_Prototype(const wstring& strModelFilePath, const SOCKETDESC& desc, _fmatrix& matPivot);
-	virtual HRESULT Initialize(void* pArg)			override;
-	virtual void	Tick(const _float& fTimeDelta)	override;
-	void			DebugRender()					override;
+	HRESULT			Initialize_Prototype(const wstring& strModelFilePath, const SOCKETDESC& desc, _fmatrix matPivot);
+	virtual HRESULT Initialize(void* pArg)	override;
+	virtual void	Tick(_float fTimeDelta)	override;
+	void			DebugRender()			override;
 	HRESULT			Render();
 	HRESULT			RenderShadowInstancing(CVIBuffer_Instance*& pInstanceBuffer);
 	HRESULT			RenderInstancing(CVIBuffer_Instance*& pInstanceBuffer);

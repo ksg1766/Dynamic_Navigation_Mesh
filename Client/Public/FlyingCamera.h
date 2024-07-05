@@ -14,10 +14,10 @@ private:
 	virtual ~CFlyingCamera() = default;
 
 public:
-	virtual HRESULT Initialize_Prototype()				override;
-	virtual HRESULT Initialize(void* pArg)				override;
-	virtual void	Tick(const _float& fTimeDelta)		override;
-	virtual void	LateTick(const _float& fTimeDelta)	override;
+	virtual HRESULT Initialize_Prototype()		override;
+	virtual HRESULT Initialize(void* pArg)		override;
+	virtual void	Tick(_float fTimeDelta)		override;
+	virtual void	LateTick(_float fTimeDelta)	override;
 
 private:
 	HRESULT			Ready_FixedComponents();

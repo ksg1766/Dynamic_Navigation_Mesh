@@ -31,13 +31,13 @@ HRESULT CStaticTest::Initialize(void * pArg)
 	return S_OK;
 }
 
-void CStaticTest::Tick(const _float& fTimeDelta)
+void CStaticTest::Tick(_float fTimeDelta)
 {
 	Super::Tick(fTimeDelta);
 
 }
 
-void CStaticTest::LateTick(const _float& fTimeDelta)
+void CStaticTest::LateTick(_float fTimeDelta)
 {
 	Super::LateTick(fTimeDelta);
 

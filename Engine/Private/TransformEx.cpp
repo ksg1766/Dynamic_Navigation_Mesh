@@ -38,11 +38,11 @@ HRESULT CTransformEx::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CTransformEx::Tick(const _float& fTimeDelta)
+void CTransformEx::Tick(_float fTimeDelta)
 {
 }
 
-void CTransformEx::LateTick(const _float& fTimeDelta)
+void CTransformEx::LateTick(_float fTimeDelta)
 {
 }
 

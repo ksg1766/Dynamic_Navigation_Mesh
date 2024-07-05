@@ -13,11 +13,11 @@ CMonoBehaviour::CMonoBehaviour(const CMonoBehaviour& rhs)
 
 }
 
-void CMonoBehaviour::Tick(const _float& fTimeDelta)
+void CMonoBehaviour::Tick(_float fTimeDelta)
 {
 }
 
-void CMonoBehaviour::LateTick(const _float& fTimeDelta)
+void CMonoBehaviour::LateTick(_float fTimeDelta)
 {
 }
 

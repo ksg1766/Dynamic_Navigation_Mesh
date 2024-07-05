@@ -27,11 +27,11 @@ HRESULT CRigidBody::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CRigidBody::Tick(const _float& fTimeDelta)
+void CRigidBody::Tick(_float fTimeDelta)
 {
 }
 
-void CRigidBody::LateTick(const _float& fTimeDelta)
+void CRigidBody::LateTick(_float fTimeDelta)
 {
 }
 

@@ -30,12 +30,12 @@ HRESULT CSkyBox::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CSkyBox::Tick(const _float& fTimeDelta)
+void CSkyBox::Tick(_float fTimeDelta)
 {
 	Super::Tick(fTimeDelta);
 }
 
-void CSkyBox::LateTick(const _float& fTimeDelta)
+void CSkyBox::LateTick(_float fTimeDelta)
 {
 	Super::LateTick(fTimeDelta);
 

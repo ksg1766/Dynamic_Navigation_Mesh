@@ -29,14 +29,14 @@ HRESULT CFlyingCamera::Initialize(void * pArg)
 	return S_OK;
 }
 
-void CFlyingCamera::Tick(const _float& fTimeDelta)
+void CFlyingCamera::Tick(_float fTimeDelta)
 {
 	Super::Tick(fTimeDelta);
 
 
 }
 
-void CFlyingCamera::LateTick(const _float& fTimeDelta)
+void CFlyingCamera::LateTick(_float fTimeDelta)
 {
 	Super::LateTick(fTimeDelta);
 

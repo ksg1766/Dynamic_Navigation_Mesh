@@ -28,12 +28,12 @@ HRESULT CDebugTerrainGrid::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CDebugTerrainGrid::Tick(const _float& fTimeDelta)
+void CDebugTerrainGrid::Tick(_float fTimeDelta)
 {
 	// Input(fTimeDelta);
 }
 
-void CDebugTerrainGrid::LateTick(const _float& fTimeDelta)
+void CDebugTerrainGrid::LateTick(_float fTimeDelta)
 {
 }
 

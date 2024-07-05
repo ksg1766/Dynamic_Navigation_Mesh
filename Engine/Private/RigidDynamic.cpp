@@ -51,7 +51,7 @@ HRESULT CRigidDynamic::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CRigidDynamic::Tick(const _float& fTimeDelta)	// FixedUpdate 처럼 동작하기 위해 RigidBody의 업데이트를 가장 우선 호출해야 함.
+void CRigidDynamic::Tick(_float fTimeDelta)	// FixedUpdate 처럼 동작하기 위해 RigidBody의 업데이트를 가장 우선 호출해야 함.
 {
 	//m_vPrePosition = GetTransform()->GetPosition();
 
@@ -74,7 +74,7 @@ void CRigidDynamic::Tick(const _float& fTimeDelta)	// FixedUpdate 처럼 동작하기 
 		KineticUpdate(fTimeDelta);
 }
 
-void CRigidDynamic::LateTick(const _float& fTimeDelta)
+void CRigidDynamic::LateTick(_float fTimeDelta)
 {
 }
 
@@ -83,7 +83,7 @@ void CRigidDynamic::DebugRender()
 	Super::DebugRender();
 }
 
-void CRigidDynamic::KineticUpdate(const _float& fTimeDelta)
+void CRigidDynamic::KineticUpdate(_float fTimeDelta)
 {
 	if (m_UseGravity)
 		m_vLinearVelocity.y += -9.81f * fTimeDelta /**/ * 2.f;
@@ -110,7 +110,7 @@ void CRigidDynamic::KineticUpdate(const _float& fTimeDelta)
 	UpdateTransform(fTimeDelta);
 }
 
-void CRigidDynamic::KinematicUpdate(const _float& fTimeDelta)
+void CRigidDynamic::KinematicUpdate(_float fTimeDelta)
 {
 	UpdateTransform(fTimeDelta);
 
@@ -119,7 +119,7 @@ void CRigidDynamic::KinematicUpdate(const _float& fTimeDelta)
 	ClearTorque(ForceMode::VELOCITY_CHANGE);
 }
 
-void CRigidDynamic::UpdateTransform(const _float& fTimeDelta)
+void CRigidDynamic::UpdateTransform(_float fTimeDelta)
 {
 	CTransform* pTransform = GetTransform();
 
@@ -127,7 +127,7 @@ void CRigidDynamic::UpdateTransform(const _float& fTimeDelta)
 	pTransform->Translate(m_vLinearVelocity * fTimeDelta);
 }
 
-void CRigidDynamic::AddForce(const Vec3& vForce, const ForceMode& eMode)
+void CRigidDynamic::AddForce(const Vec3& vForce, ForceMode eMode)
 {
 	switch (eMode)
 	{
@@ -148,7 +148,7 @@ void CRigidDynamic::AddForce(const Vec3& vForce, const ForceMode& eMode)
 	WakeUp();
 }
 
-void CRigidDynamic::AddTorque(const Vec3& vTorque, const ForceMode& eMode)
+void CRigidDynamic::AddTorque(const Vec3& vTorque, ForceMode eMode)
 {
 	switch (eMode)
 	{
@@ -169,7 +169,7 @@ void CRigidDynamic::AddTorque(const Vec3& vTorque, const ForceMode& eMode)
 	WakeUp();
 }
 
-void CRigidDynamic::SetForceAndTorque(const Vec3& vForce, const Vec3& vTorque, const ForceMode& eMode)
+void CRigidDynamic::SetForceAndTorque(const Vec3& vForce, const Vec3& vTorque, ForceMode eMode)
 {
 	switch (eMode)
 	{
@@ -194,7 +194,7 @@ void CRigidDynamic::SetForceAndTorque(const Vec3& vForce, const Vec3& vTorque, c
 	WakeUp();
 }
 
-void CRigidDynamic::ClearForce(const ForceMode& eMode)
+void CRigidDynamic::ClearForce(ForceMode eMode)
 {
 	switch (eMode)
 	{
@@ -213,7 +213,7 @@ void CRigidDynamic::ClearForce(const ForceMode& eMode)
 	}
 }
 
-void CRigidDynamic::ClearTorque(const ForceMode& eMode)
+void CRigidDynamic::ClearTorque(ForceMode eMode)
 {
 	switch (eMode)
 	{

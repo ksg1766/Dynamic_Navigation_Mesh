@@ -43,12 +43,12 @@ protected:
 
 public:
 	virtual HRESULT Initialize_Prototype();
-	virtual HRESULT Initialize(void* pArg)				PURE;
-	virtual void	Tick(const _float& fTimeDelta)		{};
-	virtual void	LateTick(const _float& fTimeDelta)	{};
+	virtual HRESULT Initialize(void* pArg)		PURE;
+	virtual void	Tick(_float fTimeDelta)		{};
+	virtual void	LateTick(_float fTimeDelta)	{};
 	//virtual HRESULT FixedUpdate(_float fTimeDelta)	PURE;
 
-	virtual void	DebugRender()						{};
+	virtual void	DebugRender()				{};
 
 public:
 	ComponentType	GetType() const { return m_eType; }

@@ -27,8 +27,8 @@ public:
 	virtual HRESULT		Initialize_Prototype()				override;
 	virtual HRESULT		Initialize(void* pArg)				override;
 	//virtual HRESULT	FixedUpdate(const _float& fTimeDelta)	PURE;
-	virtual void		Tick(const _float& fTimeDelta)		override;
-	virtual void		LateTick(const _float& fTimeDelta)	override;
+	virtual void		Tick(_float fTimeDelta)				override;
+	virtual void		LateTick(_float fTimeDelta)			override;
 	virtual void		DebugRender()						override;
 
 	HRESULT				InitializeCollider();

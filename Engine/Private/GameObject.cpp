@@ -38,7 +38,7 @@ HRESULT CGameObject::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CGameObject::Tick(const _float& fTimeDelta)
+void CGameObject::Tick(_float fTimeDelta)
 {
 	for (auto& iter : m_arrComponents)
 		if(iter)	iter->Tick(fTimeDelta);
@@ -46,7 +46,7 @@ void CGameObject::Tick(const _float& fTimeDelta)
 		iter->Tick(fTimeDelta);
 }
 
-void CGameObject::LateTick(const _float& fTimeDelta)
+void CGameObject::LateTick(_float fTimeDelta)
 {
 	for (auto& iter : m_arrComponents)
 		if(iter)	iter->LateTick(fTimeDelta);

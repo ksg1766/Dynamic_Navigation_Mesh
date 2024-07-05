@@ -25,7 +25,7 @@ HRESULT CStaticScene::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CStaticScene::Tick(const _float& fTimeDelta)
+void CStaticScene::Tick(_float fTimeDelta)
 {
 	/*if (m_bRendered)
 		return;*/
@@ -33,7 +33,7 @@ void CStaticScene::Tick(const _float& fTimeDelta)
 	Super::Tick(fTimeDelta);
 }
 
-void CStaticScene::LateTick(const _float& fTimeDelta)
+void CStaticScene::LateTick(_float fTimeDelta)
 {
 	if (m_bRendered)
 		return;

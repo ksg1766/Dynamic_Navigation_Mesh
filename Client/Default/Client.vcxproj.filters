@@ -121,9 +121,6 @@
     <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Script">
       <UniqueIdentifier>{cc513126-8d06-4a05-86f2-19b84d62430f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Parts">
-      <UniqueIdentifier>{9d79ba9a-4824-49a3-a4b1-6e45ce8401da}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\99.BackGround">
       <UniqueIdentifier>{327a42a0-45f0-4b4d-b8cd-bb209baedc94}</UniqueIdentifier>
     </Filter>
@@ -157,26 +154,17 @@
     <Filter Include="03.GameObjects\01.Playable\00.P_Strife\State\01.Run">
       <UniqueIdentifier>{9c0cd635-02f3-42c6-9316-ebd23f49ee80}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\State\02.Aim">
-      <UniqueIdentifier>{4c37db3e-5ee4-4d8d-9b54-e27d267003f8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\01.Playable\00.P_Strife\State\03.Jump">
       <UniqueIdentifier>{5ed3e432-9bcf-4a33-9d14-5527d4bd1864}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\01.Playable\00.P_Strife\State\04.Dash">
       <UniqueIdentifier>{c6c83032-262d-4c93-9e18-2f36a6b15849}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\State\05.Impact">
-      <UniqueIdentifier>{ae95e2f3-5da1-4275-962b-f9854f3cae5b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Ammo">
       <UniqueIdentifier>{44d0eb6d-1b6d-4731-8770-291a16644535}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Ammo\Base">
       <UniqueIdentifier>{254b5cf2-ca93-45d5-b979-bc4eb8e8c205}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\LavaTerrain">
-      <UniqueIdentifier>{6cdf4d51-3305-435c-a6ad-79f0ba1ae653}</UniqueIdentifier>
     </Filter>
     <Filter Include="01.Levels\02.GameTool\View\NavMeshView">
       <UniqueIdentifier>{c6dc7fa4-a266-4b6f-98b6-de967c3ebeea}</UniqueIdentifier>
@@ -195,24 +183,6 @@
     </Filter>
     <Filter Include="03.GameObjects\00.Static\SkyBox">
       <UniqueIdentifier>{f4a2fcae-ca40-4f7a-bed8-a4f0c9f40e69}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\Lava">
-      <UniqueIdentifier>{1dbfd0a5-8971-4e3e-aa9e-cac0c8d92e72}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss">
-      <UniqueIdentifier>{a8664eb1-4d99-4643-812e-753640cd5621}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\03.Boss\Script">
-      <UniqueIdentifier>{ede43305-b7f1-49ab-8f14-550acbefbc0c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\05.Particle\Fire">
-      <UniqueIdentifier>{b1103f29-f8f6-4936-b279-fa90986234b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\05.Particle\Lightning">
-      <UniqueIdentifier>{a235c40b-71a1-4bdf-b21b-e3d218e3b552}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\Sun">
-      <UniqueIdentifier>{08e19640-0c2a-452a-883d-1ce51d5dcabf}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\05.Particle\Particle">
       <UniqueIdentifier>{a3e64665-a652-4752-bc78-eade768fb7bc}</UniqueIdentifier>
@@ -339,12 +309,6 @@
     <ClInclude Include="..\Public\P_Strife.h">
       <Filter>03.GameObjects\01.Playable\00.P_Strife</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Strife_GunL.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Parts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Strife_GunR.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Parts</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\MainCamera.h">
       <Filter>03.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
     </ClInclude>
@@ -360,23 +324,11 @@
     <ClInclude Include="..\Public\P_Strife_State_Run.h">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\State\01.Run</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\P_Strife_State_Aim.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\02.Aim</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\P_Strife_State_Dash.h">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\State\04.Dash</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\P_Strife_State_Jump.h">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\State\03.Jump</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\P_Strife_State_Impact.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\05.Impact</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Strife_Ammo.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\LavaTerrain.h">
-      <Filter>03.GameObjects\00.Static\LavaTerrain</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\NavMeshView.h">
       <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
@@ -384,38 +336,8 @@
     <ClInclude Include="..\Public\DebugDraw.h">
       <Filter>99.Defines</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\MonsterController.h">
-      <Filter>03.GameObjects\02.Monster\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\MonsterStats.h">
-      <Filter>03.GameObjects\02.Monster\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ParticleController.h">
-      <Filter>03.GameObjects\05.Particle\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Strife_MotionTrail.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\MotionTrail</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\SkyBox.h">
       <Filter>03.GameObjects\00.Static\SkyBox</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Lava.h">
-      <Filter>03.GameObjects\00.Static\Lava</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\BossController.h">
-      <Filter>03.GameObjects\03.Boss\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Fire.h">
-      <Filter>03.GameObjects\05.Particle\Fire</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Arena.h">
-      <Filter>03.GameObjects\00.Static\StaticBase</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Sun.h">
-      <Filter>03.GameObjects\00.Static\Sun</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Particle.h">
-      <Filter>03.GameObjects\05.Particle\Particle</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\StaticScene.h">
       <Filter>03.GameObjects\00.Static\StaticScene</Filter>
@@ -524,12 +446,6 @@
     <ClCompile Include="..\Private\P_Strife.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Strife_GunL.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Parts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Strife_GunR.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Parts</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\MainCamera.cpp">
       <Filter>03.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
     </ClCompile>
@@ -545,26 +461,14 @@
     <ClCompile Include="..\Private\P_Strife_State_Run.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\State\01.Run</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\P_Strife_State_Aim.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\02.Aim</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\P_Strife_State_Dash.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\State\04.Dash</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\P_Strife_State_Jump.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\State\03.Jump</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\P_Strife_State_Impact.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\05.Impact</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Strife_Ammo.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Strife_Ammo.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\LavaTerrain.cpp">
-      <Filter>03.GameObjects\00.Static\LavaTerrain</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\NavMeshView.cpp">
       <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
@@ -572,38 +476,8 @@
     <ClCompile Include="..\Private\DebugDraw.cpp">
       <Filter>99.Defines</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\MonsterController.cpp">
-      <Filter>03.GameObjects\02.Monster\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\MonsterStats.cpp">
-      <Filter>03.GameObjects\02.Monster\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ParticleController.cpp">
-      <Filter>03.GameObjects\05.Particle\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Strife_MotionTrail.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\MotionTrail</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\SkyBox.cpp">
       <Filter>03.GameObjects\00.Static\SkyBox</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Lava.cpp">
-      <Filter>03.GameObjects\00.Static\Lava</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\BossController.cpp">
-      <Filter>03.GameObjects\03.Boss\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Fire.cpp">
-      <Filter>03.GameObjects\05.Particle\Fire</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Arena.cpp">
-      <Filter>03.GameObjects\00.Static\StaticBase</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Sun.cpp">
-      <Filter>03.GameObjects\00.Static\Sun</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Particle.cpp">
-      <Filter>03.GameObjects\05.Particle\Particle</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\StaticScene.cpp">
       <Filter>03.GameObjects\00.Static\StaticScene</Filter>
@@ -656,9 +530,6 @@
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimInstancing.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VTFSocket.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Client_Shader_Defines.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
@@ -669,24 +540,6 @@
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_ComputeParticles.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Shockwave.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Fire.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Lightning.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Sphere.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Sun.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_SwordTrail.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_ParticleSystem_Draw.hlsl">

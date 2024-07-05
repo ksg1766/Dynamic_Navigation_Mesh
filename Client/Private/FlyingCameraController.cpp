@@ -42,12 +42,12 @@ HRESULT CFlyingCameraController::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CFlyingCameraController::Tick(const _float& fTimeDelta)
+void CFlyingCameraController::Tick(_float fTimeDelta)
 {
 	Input(fTimeDelta);
 }
 
-void CFlyingCameraController::LateTick(const _float& fTimeDelta)
+void CFlyingCameraController::LateTick(_float fTimeDelta)
 {
 }
 
@@ -55,7 +55,7 @@ void CFlyingCameraController::DebugRender()
 {
 }
 
-void CFlyingCameraController::Input(const _float& fTimeDelta)
+void CFlyingCameraController::Input(_float fTimeDelta)
 {
 	if (KEY_PRESSING(KEY::W) || KEY_DOWN(KEY::W))
 		m_pTransform->Translate(fTimeDelta * m_fLinearSpeed * m_pTransform->GetForward());

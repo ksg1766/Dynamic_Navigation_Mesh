@@ -24,7 +24,7 @@ HRESULT CRigidStatic::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CRigidStatic::Tick(const _float& fTimeDelta)
+void CRigidStatic::Tick(_float fTimeDelta)
 {
 	// ColliderUpdate
 	if (3/*LEVEL_GAMETOOL*/ == CLevelManager::GetInstance()->GetCurrentLevelIndex())
@@ -34,7 +34,7 @@ void CRigidStatic::Tick(const _float& fTimeDelta)
 	}
 }
 
-void CRigidStatic::LateTick(const _float& fTimeDelta)
+void CRigidStatic::LateTick(_float fTimeDelta)
 {
 }
 

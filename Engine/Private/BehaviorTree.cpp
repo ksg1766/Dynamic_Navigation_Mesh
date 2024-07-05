@@ -27,12 +27,12 @@ HRESULT CBehaviorTree::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CBehaviorTree::Tick(const _float& fTimeDelta)
+void CBehaviorTree::Tick(_float fTimeDelta)
 {
 	m_pRootNode->Tick(fTimeDelta);
 }
 
-void CBehaviorTree::LateTick(const _float& fTimeDelta)
+void CBehaviorTree::LateTick(_float fTimeDelta)
 {
 	
 }

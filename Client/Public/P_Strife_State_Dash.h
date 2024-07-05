@@ -37,8 +37,6 @@ private:
 	void	Input(const _float& fTimeDelta);
 
 private:
-	_int	m_iFrameCounter = 0;
-
 	_bool	m_bSoundOn = false;
 
 public:

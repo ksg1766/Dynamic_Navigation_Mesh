@@ -9,7 +9,7 @@ class CMainCameraController : public CMonoBehaviour
 {
 	using Super = CMonoBehaviour;
 public:
-	enum class CameraMode { Default = 0, Dagon, DagonToBase, GodRay, GodRayToBase, Moloch, MolochToBase, End };
+	enum class CameraMode { Default = 0, End };
 
 private:
 	CMainCameraController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -19,8 +19,8 @@ private:
 public:
 	virtual HRESULT Initialize_Prototype()				override;
 	virtual HRESULT Initialize(void* pArg)				override;
-	virtual void	Tick(const _float& fTimeDelta)		override;
-	virtual void	LateTick(const _float& fTimeDelta)	override;
+	virtual void	Tick(_float fTimeDelta)		override;
+	virtual void	LateTick(_float fTimeDelta)	override;
 	virtual void	DebugRender()						override;
 
 public:
@@ -29,18 +29,8 @@ public:
 	void	SetCameraMode(CameraMode eCameraMode)	{ m_eCameraMode = eCameraMode; }
 
 private:
-	void	Input(const _float& fTimeDelta);
-	void	Trace(const _float& fTimeDelta);
-
-	void	Dagon(const _float& fTimeDelta);
-	void	DagonToBase(const _float& fTimeDelta);
-
-	void	GodRayScene(const _float& fTimeDelta);
-	void	GodRayEnd(const _float& fTimeDelta);
-
-	void	Moloch(const _float& fTimeDelta);
-	void	MolochToBase(const _float& fTimeDelta);
-
+	void	Input(_float fTimeDelta);
+	void	Trace(_float fTimeDelta);
 
 private:
 	CTransform*		m_pTransform = nullptr;

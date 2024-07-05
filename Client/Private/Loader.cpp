@@ -9,9 +9,6 @@
 #include "TempCube.h"
 #include "CollisionTest.h"
 #include "PlayerController.h"
-#include "MonsterController.h"
-#include "BossController.h"
-#include "MonsterStats.h"
 #include "MainCameraController.h"
 #include "StateMachine.h"
 #include "BehaviorTree.h"
@@ -21,17 +18,8 @@
 #include "StaticTest.h"
 #include "StaticBase.h"
 #include "StaticScene.h"
-#include "Arena.h"
 #include "P_Strife.h"
-#include "Strife_GunL.h"
-#include "Strife_GunR.h"
 #include "SkyBox.h"
-#include "Particle.h"
-#include "ParticleController.h"
-#include "Strife_MotionTrail.h"
-#include "Lava.h"
-#include "Fire.h"
-#include "Sun.h"
 
 CLoader::CLoader(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: m_pDevice(pDevice)
@@ -185,71 +173,6 @@ HRESULT CLoader::Loading_Components_For_Level_GamePlay()
 {
 	CGameInstance* pGameInstance = GET_INSTANCE(CGameInstance);
 
-	/* For.Prototype_Component_Texture_Strife_Ammo_Default*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Strife_Ammo_Default"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Effect/Ammo/Strife_Ammo_Default_%d.png"), 4))))
-		return E_FAIL;
-	
-	/* For.Prototype_Component_Texture_Strife_Ammo_Static*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Strife_Ammo_Beam"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Effect/Ammo/Strife_Ammo_Beam_%d.png"), 2))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_Texture_Strife_Muzzle_Default*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Strife_Muzzle_Default"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Effect/Ammo/Strife_Muzzle_%d.png"), 8))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_Texture_FlameMask*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_FlameMask"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Effect/Particles/FlameMask_%d.png"), 4))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_Texture_Water_Normal*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Water_Normal"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Noise/Water_normal%d.png"), 3))))
-		return E_FAIL;
-	
-	/* For.Prototype_Component_Texture_Raindrop*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Raindrop"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Effect/Particles/Raindrop.dds")))))
-		return E_FAIL;
-	
-	/* For.Prototype_Component_Texture_CloudSplash*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_CloudSplash"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Effect/Particles/CloudSplash_%d.png"), 4))))
-		return E_FAIL;
-	
-	/* For.Prototype_Component_Texture_WaterfallSplash*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_WaterfallSplash"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Effect/Particles/WaterfallSplash_%d.png"), 4))))
-		return E_FAIL;
-
-	///* For.Prototype_Component_Texture_Mask_Swipe*/
-	//if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Mask_Swipe"),
-	//	CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Mask/Mask_Swipe.png")))))
-	//	return E_FAIL;
-
-	///* For.Prototype_Component_Texture_Noise_RGB*/
-	//if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Noise_RGB"),
-	//	CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Noise/Noise_RGB.png")))))
-	//	return E_FAIL;
-
-	/* For.Prototype_Component_Texture_SwordSwordTrail_Gradient*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_SwordTrail_Gradient"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Effect/SwordTrail/SwordTrail_Gradient.png")))))
-		return E_FAIL;
-	
-	/* For.Prototype_Component_Texture_SwordSwordTrail_Mask*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_SwordTrail_Mask"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Effect/SwordTrail/SwordTrail_Mask.png")))))
-		return E_FAIL;
-	
-	/* For.Prototype_Component_Texture_Shockwave*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Shockwave"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Effect/ScreenSpace/Shockwave.png")))))
-		return E_FAIL;
-
 	/* For.Prototype_Component_StateMachine */
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_StateMachine"),
 		CStateMachine::Create(m_pDevice, m_pContext))))
@@ -277,26 +200,6 @@ HRESULT CLoader::Loading_Scripts_For_Level_GamePlay()
 	/* For.Prototype_Component_PlayerController*/
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_PlayerController"),
 		CPlayerController::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_MonsterController*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_MonsterController"),
-		CMonsterController::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_BossController*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_BossController"),
-		CBossController::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_ParticleController*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_ParticleController"),
-		CParticleController::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_MonsterStats*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_MonsterStats"),
-		CMonsterStats::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_Component_MainCameraController*/
@@ -346,44 +249,8 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GamePlay()
   	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_P_Strife"), CP_Strife::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* For.Prototype_GameObject_Strife_GunL */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Strife_GunL"), CStrife_GunL::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Strife_GunR */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Strife_GunR"), CStrife_GunR::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Strife_Ammo_Static */
-	/*if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Strife_Ammo_Static"), CStrife_Ammo_Static::Create(m_pDevice, m_pContext))))
-		return E_FAIL;*/
-
-	/* For.Prototype_GameObject_Fire*/
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Fire"), CFire::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Particle */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Particle"), CParticle::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
 	/* For.Prototype_GameObject_SkyBox */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_SkyBox"), CSkyBox::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Strife_MotionTrail */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Strife_MotionTrail"), CStrife_MotionTrail::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Lava_East_B1 */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Lava_East_B1"), CLava::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_Arena */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Arena"), CArena::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Sun */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Sun"), CSun::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_GameObject_StaticScene */

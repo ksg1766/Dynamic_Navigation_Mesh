@@ -22,11 +22,11 @@ private:
 	virtual ~CRigidDynamic() = default;
 
 public:
-	virtual HRESULT Initialize_Prototype()				override;
-	virtual HRESULT Initialize(void* pArg)				override;
-	virtual void	Tick(const _float& fTimeDelta)		override;
-	virtual void	LateTick(const _float& fTimeDelta)	override;
-	virtual void	DebugRender()						override;
+	virtual HRESULT Initialize_Prototype()		override;
+	virtual HRESULT Initialize(void* pArg)		override;
+	virtual void	Tick(_float fTimeDelta)		override;
+	virtual void	LateTick(_float fTimeDelta)	override;
+	virtual void	DebugRender()				override;
 
 public:
 
@@ -44,31 +44,31 @@ public:
 	void	SetMaterialAngularDrag(_float fMaterialAngularDrag)	
 															{ m_fMaterialAngularDrag = fMaterialAngularDrag; }
 
-	_bool	IsFrozePosition(const Axis& eAxis)				{ return m_byConstraints & 1 << (_int)eAxis; }
-	void	FreezePosition(const Axis& eAxis)				{ m_byConstraints ^= 1 << (_int)eAxis; }		// Switch On/Off
-	_bool	IsFrozeRotation(const Axis& eAxis)				{ return m_byConstraints & 1 << ((_int)eAxis + 3); }
-	void	FreezeRotation(const Axis& eAxis)				{ m_byConstraints ^= 1 << ((_int)eAxis + 3); }	// Switch On/Off
+	_bool	IsFrozePosition(Axis eAxis)						{ return m_byConstraints & 1 << (_int)eAxis; }
+	void	FreezePosition(Axis eAxis)						{ m_byConstraints ^= 1 << (_int)eAxis; }		// Switch On/Off
+	_bool	IsFrozeRotation(Axis eAxis)						{ return m_byConstraints & 1 << ((_int)eAxis + 3); }
+	void	FreezeRotation(Axis eAxis)						{ m_byConstraints ^= 1 << ((_int)eAxis + 3); }	// Switch On/Off
 
 	// Velocity
 	Vec3	GetLinearVelocity()	const						{ return m_vLinearVelocity; }
 	void	SetLinearVelocity(const Vec3& vLinearVelocity);
-	_float	GetLinearAxisVelocity(const Axis& eAxis) const	{ return *((_float*)&m_vLinearVelocity + (_int)eAxis); }
-	void	SetLinearAxisVelocity(const Axis& eAxis, const _float& fVelocity)
+	_float	GetLinearAxisVelocity(Axis eAxis) const	{ return *((_float*)&m_vLinearVelocity + (_int)eAxis); }
+	void	SetLinearAxisVelocity(Axis eAxis, _float fVelocity)
 															{ *((_float*)&m_vLinearVelocity + (_int)eAxis) = fVelocity; }
 
 	Vec3	GetAngularVelocity()							{ return m_vAngularVelocity; }
 	void	SetAngularVelocity(const Vec3& vAngularVelocity);
-	_float	GetAngularAxisVelocity(const Axis& eAxis) const	{ return *((_float*)&m_vAngularVelocity + (_int)eAxis); }
-	void	SetAngularAxisVelocity(const Axis& eAxis, const _float& fVelocity)
+	_float	GetAngularAxisVelocity(Axis eAxis) const	{ return *((_float*)&m_vAngularVelocity + (_int)eAxis); }
+	void	SetAngularAxisVelocity(Axis eAxis, _float fVelocity)
 															{ *((_float*)&m_vAngularVelocity + (_int)eAxis) = fVelocity; }
 
 	// Force/Torque modifiers
-	void	AddForce(const Vec3& vForce, const ForceMode& eMode);
-	void	AddTorque(const Vec3& vTorque, const ForceMode& eMode);
-	void	SetForceAndTorque(const Vec3& vForce, const Vec3& vTorque, const ForceMode& eMode);
+	void	AddForce(const Vec3& vForce, ForceMode eMode);
+	void	AddTorque(const Vec3& vTorque, ForceMode eMode);
+	void	SetForceAndTorque(const Vec3& vForce, const Vec3& vTorque, ForceMode eMode);
 
-	void	ClearForce(const ForceMode& eMode);
-	void	ClearTorque(const ForceMode& eMode);
+	void	ClearForce(ForceMode eMode);
+	void	ClearTorque(ForceMode eMode);
 	void	ClearNetPower();
 #pragma endregion Property
 
@@ -79,10 +79,10 @@ public:
 #pragma endregion Collision
 
 private:
-	void	KineticUpdate(const _float& fTimeDelta);
-	void	KinematicUpdate(const _float& fTimeDelta);
+	void	KineticUpdate(_float fTimeDelta);
+	void	KinematicUpdate(_float fTimeDelta);
 
-	void	UpdateTransform(const _float& fTimeDelta);
+	void	UpdateTransform(_float fTimeDelta);
 
 	void	Sleep()		{ ClearNetPower(); m_IsSleeping = true;	}
 	void	WakeUp()	{ m_IsSleeping = false; }

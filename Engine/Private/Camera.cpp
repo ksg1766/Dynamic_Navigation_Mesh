@@ -81,7 +81,7 @@ HRESULT CCamera::Initialize(void* pArg)
     return S_OK;
 }
 
-void CCamera::Tick(const _float& fTimeDelta)
+void CCamera::Tick(_float fTimeDelta)
 {
 	///* 카메라 월드행렬의 역행렬 == 뷰스페이스 변환행렬. */
 	//m_pPipeLine->Set_Transform(CPipeLine::D3DTS_VIEW, m_pTransform->WorldMatrix().Invert());
@@ -98,7 +98,7 @@ void CCamera::Tick(const _float& fTimeDelta)
 	//}
 }
 
-void CCamera::LateTick(const _float& fTimeDelta)
+void CCamera::LateTick(_float fTimeDelta)
 {/* 카메라 월드행렬의 역행렬 == 뷰스페이스 변환행렬. */
 	m_pPipeLine->Set_Transform(CPipeLine::D3DTS_VIEW, m_pTransform->WorldMatrix().Invert());
 	//m_pPipeLine->Set_Transform(CPipeLine::D3DTS_PROJ, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));

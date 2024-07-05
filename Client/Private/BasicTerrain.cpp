@@ -30,12 +30,12 @@ HRESULT CBasicTerrain::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CBasicTerrain::Tick(const _float& fTimeDelta)
+void CBasicTerrain::Tick(_float fTimeDelta)
 {
 	Super::Tick(fTimeDelta);
 }
 
-void CBasicTerrain::LateTick(const _float& fTimeDelta)
+void CBasicTerrain::LateTick(_float fTimeDelta)
 {
 	Super::Tick(fTimeDelta);
 	GetRenderer()->Add_RenderGroup(CRenderer::RG_NONLIGHT, this);

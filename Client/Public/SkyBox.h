@@ -21,12 +21,12 @@ private:
 	virtual ~CSkyBox() = default;
 
 public:
-	virtual HRESULT Initialize_Prototype()				override;
-	virtual HRESULT Initialize(void* pArg)				override;
-	virtual void	Tick(const _float& fTimeDelta)		override;
-	virtual void	LateTick(const _float& fTimeDelta)	override;
-	virtual void	DebugRender()						override;
-	virtual HRESULT Render()							override;
+	virtual HRESULT Initialize_Prototype()		override;
+	virtual HRESULT Initialize(void* pArg)		override;
+	virtual void	Tick(_float fTimeDelta)		override;
+	virtual void	LateTick(_float fTimeDelta)	override;
+	virtual void	DebugRender()				override;
+	virtual HRESULT Render()					override;
 
 private:
 	HRESULT			Bind_ShaderResources(); /* 셰이더 전역변수에 값 던진다. */

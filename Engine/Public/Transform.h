@@ -18,7 +18,7 @@ private:
 public:
 	virtual HRESULT Initialize_Prototype()				override;
 	virtual HRESULT Initialize(void* pArg)				override;	// Start
-	virtual void	Tick(const _float& fTimeDelta)		override;
+	virtual void	Tick(_float fTimeDelta)		override;
 
 	void	SetScale(Vec3& vScale);
 	void	SetScale(const Vec3& vScale)			{ SetScale(const_cast<Vec3&>(vScale)); }
@@ -29,7 +29,7 @@ public:
 	void	Rotate(const Vec3& vEulers)				{ Rotate(const_cast<Vec3&>(vEulers)); }
 	void	Rotate(Quaternion& vQuaternion);
 	void	Rotate(const Quaternion& vQuaternion)	{ Rotate(const_cast<Quaternion&>(vQuaternion)); }
-	void	Rotate(const _float& fXangle, const _float& fYangle, const _float& fZangle)
+	void	Rotate(_float fXangle, _float fYangle, _float fZangle)
 													{ Rotate(Vec3(fXangle, fYangle, fZangle)); }
 	void	RotateAround(const Vec3& vPoint, const Vec3& vAxis, const _float& fAngle);	// Revolution;
 	void	SetRotation(Vec3& vRotation);

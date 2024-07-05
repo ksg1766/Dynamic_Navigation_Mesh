@@ -178,27 +178,16 @@
       </EntryPointName>
     </FxCompile>
     <ClInclude Include="..\Public\AnimationView.h" />
-    <ClInclude Include="..\Public\Arena.h" />
     <ClInclude Include="..\public\BackGround.h" />
     <ClInclude Include="..\Public\BasicTerrain.h" />
-    <ClInclude Include="..\Public\BossController.h" />
     <ClInclude Include="..\Public\DebugDraw.h" />
     <ClInclude Include="..\Public\DissolveManager.h" />
-    <ClInclude Include="..\Public\Fire.h" />
-    <ClInclude Include="..\Public\LavaTerrain.h" />
-    <ClInclude Include="..\Public\Lava.h" />
     <ClInclude Include="..\Public\MainCamera.h" />
     <ClInclude Include="..\Public\MainCameraController.h" />
-    <ClInclude Include="..\Public\MonsterController.h" />
-    <ClInclude Include="..\Public\MonsterStats.h" />
     <ClInclude Include="..\Public\NavMeshView.h" />
-    <ClInclude Include="..\Public\Particle.h" />
-    <ClInclude Include="..\Public\ParticleController.h" />
     <ClInclude Include="..\Public\P_Strife.h" />
-    <ClInclude Include="..\Public\P_Strife_State_Aim.h" />
     <ClInclude Include="..\Public\P_Strife_State_Dash.h" />
     <ClInclude Include="..\Public\P_Strife_State_Idle.h" />
-    <ClInclude Include="..\Public\P_Strife_State_Impact.h" />
     <ClInclude Include="..\Public\P_Strife_State_Jump.h" />
     <ClInclude Include="..\Public\P_Strife_State_Run.h" />
     <ClInclude Include="..\Public\SaveLoadView.h" />
@@ -228,11 +217,6 @@
     <ClInclude Include="..\Public\StaticBase.h" />
     <ClInclude Include="..\Public\StaticScene.h" />
     <ClInclude Include="..\Public\StaticTest.h" />
-    <ClInclude Include="..\Public\Strife_Ammo.h" />
-    <ClInclude Include="..\Public\Strife_GunL.h" />
-    <ClInclude Include="..\Public\Strife_GunR.h" />
-    <ClInclude Include="..\Public\Strife_MotionTrail.h" />
-    <ClInclude Include="..\Public\Sun.h" />
     <ClInclude Include="..\Public\TempCube.h" />
     <ClInclude Include="..\Public\TestAIController.h" />
     <ClInclude Include="..\Public\ViewMediator.h" />
@@ -247,29 +231,18 @@
     <ClCompile Include="..\Private\AnimationView.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\Private\Arena.cpp" />
     <ClCompile Include="..\private\BackGround.cpp" />
     <ClCompile Include="..\Private\BasicTerrain.cpp" />
-    <ClCompile Include="..\Private\BossController.cpp" />
     <ClCompile Include="..\Private\DebugDraw.cpp" />
     <ClCompile Include="..\Private\DissolveManager.cpp" />
-    <ClCompile Include="..\Private\Fire.cpp" />
-    <ClCompile Include="..\Private\LavaTerrain.cpp" />
-    <ClCompile Include="..\Private\Lava.cpp" />
     <ClCompile Include="..\Private\MainCamera.cpp" />
     <ClCompile Include="..\Private\MainCameraController.cpp" />
-    <ClCompile Include="..\Private\MonsterController.cpp" />
-    <ClCompile Include="..\Private\MonsterStats.cpp" />
     <ClCompile Include="..\Private\NavMeshView.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\Private\Particle.cpp" />
-    <ClCompile Include="..\Private\ParticleController.cpp" />
     <ClCompile Include="..\Private\P_Strife.cpp" />
-    <ClCompile Include="..\Private\P_Strife_State_Aim.cpp" />
     <ClCompile Include="..\Private\P_Strife_State_Dash.cpp" />
     <ClCompile Include="..\Private\P_Strife_State_Idle.cpp" />
-    <ClCompile Include="..\Private\P_Strife_State_Impact.cpp" />
     <ClCompile Include="..\Private\P_Strife_State_Jump.cpp" />
     <ClCompile Include="..\Private\P_Strife_State_Run.cpp" />
     <ClCompile Include="..\Private\SaveLoadView.cpp">
@@ -299,11 +272,6 @@
     <ClCompile Include="..\Private\StaticBase.cpp" />
     <ClCompile Include="..\Private\StaticScene.cpp" />
     <ClCompile Include="..\Private\StaticTest.cpp" />
-    <ClCompile Include="..\Private\Strife_Ammo.cpp" />
-    <ClCompile Include="..\Private\Strife_GunL.cpp" />
-    <ClCompile Include="..\Private\Strife_GunR.cpp" />
-    <ClCompile Include="..\Private\Strife_MotionTrail.cpp" />
-    <ClCompile Include="..\Private\Sun.cpp" />
     <ClCompile Include="..\Private\TempCube.cpp" />
     <ClCompile Include="..\Private\TestAIController.cpp" />
     <ClCompile Include="..\Private\ViewMediator.cpp" />
@@ -376,11 +344,8 @@
   <ItemGroup>
     <FxCompile Include="..\Bin\ShaderFiles\Matrix.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_ComputeParticles.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Fire.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Lightning.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_ParticleSystem_Draw.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_ParticleSystem_Stream.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Shockwave.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_Lighting_Functions.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -390,10 +355,6 @@
       </EntryPointName>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_Point_Instance.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Sphere.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Sun.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_SwordTrail.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VTFSocket.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimInstancing.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeNom.hlsl" />

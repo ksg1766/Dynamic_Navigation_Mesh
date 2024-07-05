@@ -3,7 +3,6 @@
 #include "MonoBehaviour.h"
 #include "Transform.h"
 #include "RigidDynamic.h"
-#include "Strife_Ammo.h"
 #include "NavMeshAgent.h"
 
 BEGIN(Engine)
@@ -24,11 +23,11 @@ private:
 	virtual ~CPlayerController() = default;
 
 public:
-	virtual HRESULT Initialize_Prototype()				override;
-	virtual HRESULT Initialize(void* pArg)				override;
-	virtual void	Tick(const _float& fTimeDelta)		override;
-	virtual void	LateTick(const _float& fTimeDelta)	override;
-	virtual void	DebugRender()						override;
+	virtual HRESULT Initialize_Prototype()		override;
+	virtual HRESULT Initialize(void* pArg)		override;
+	virtual void	Tick(_float fTimeDelta)		override;
+	virtual void	LateTick(_float fTimeDelta)	override;
+	virtual void	DebugRender()				override;
 
 public:
 	_bool	IsIdle();
@@ -37,20 +36,19 @@ public:
 	_bool	IsJump();
 	_bool	IsDash();
 
-	void	GetMoveMessage(const Vec3& vDir)						{ m_vNetMove += vDir; }
-	void	GetTranslateMessage(const Vec3& vDir)					{ m_vNetTrans += vDir; }
-	void	GetJumpMessage(const _bool& IsJump)						{ IsJump ? Jump() : Land();}
-	void	GetDashMessage(const _bool& IsDash)						{ IsDash ? Dash(m_pTransform->GetForward()) : DashEnd(); }
-	void	GetFireMessage(const CStrife_Ammo::AmmoType eAmmoType)	{ Fire(eAmmoType); }
-	void	GetHitMessage()											{ Hit(); }
+	void	GetMoveMessage(const Vec3& vDir)		{ m_vNetMove += vDir; }
+	void	GetTranslateMessage(const Vec3& vDir)	{ m_vNetTrans += vDir; }
+	void	GetJumpMessage(_bool IsJump)			{ IsJump ? Jump() : Land();}
+	void	GetDashMessage(_bool IsDash)			{ IsDash ? Dash(m_pTransform->GetForward()) : DashEnd(); }
+	void	GetHitMessage()							{ Hit(); }
 
-	void	ForceHeight()											{ m_pNavMeshAgent->ForceHeight(); }
+	void	ForceHeight()				{ m_pNavMeshAgent->ForceHeight(); }
 	_float	GetHeightOffset()			{ return m_pNavMeshAgent->GetHeightOffset(); }
 	_bool	Walkable(_fvector vPoint)	{ return m_pNavMeshAgent->Walkable(vPoint); }
 
 
 	_bool	Pick(_uint screenX, _uint screenY, Vec3& pickPos, _float& distance);
-	void	Look(const Vec3& vPoint, const _float& fTimeDelta);
+	void	Look(const Vec3& vPoint, _float fTimeDelta);
 
 public:
 	void	OnCollisionEnter(CGameObject* pOther);
@@ -58,15 +56,14 @@ public:
 	void	OnCollisionExit(CGameObject* pOther);
 
 private:
-	void	Input(const _float& fTimeDelta);
-	void	Move(const _float& fTimeDelta);
-	void	Translate(const _float& fTimeDelta);
+	void	Input(_float fTimeDelta);
+	void	Move(_float fTimeDelta);
+	void	Translate(_float fTimeDelta);
 	//void	Look(const Vec3& vPoint);
 	void	Jump();
 	void	Land();
 	void	Dash(const Vec3& vDir);
 	void	DashEnd();
-	void	Fire(CStrife_Ammo::AmmoType eAmmoType);
 	void	Hit();
 
 	void	LimitAllAxisVelocity();

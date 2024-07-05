@@ -28,7 +28,7 @@ HRESULT CStateMachine::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CStateMachine::Tick(const _float& fTimeDelta)
+void CStateMachine::Tick(_float fTimeDelta)
 {
 	if (!m_pCurrState)
 		__debugbreak();
@@ -37,7 +37,7 @@ void CStateMachine::Tick(const _float& fTimeDelta)
 	m_pCurrState->Tick(fTimeDelta);
 }
 
-void CStateMachine::LateTick(const _float& fTimeDelta)
+void CStateMachine::LateTick(_float fTimeDelta)
 {
 	if (!m_pCurrState)
 		__debugbreak();

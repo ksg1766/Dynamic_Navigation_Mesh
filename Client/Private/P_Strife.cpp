@@ -6,10 +6,8 @@
 #include "StateMachine.h"
 #include "P_Strife_State_Idle.h"
 #include "P_Strife_State_Run.h"
-#include "P_Strife_State_Aim.h"
 #include "P_Strife_State_Jump.h"
 #include "P_Strife_State_Dash.h"
-#include "P_Strife_State_Impact.h"
 
 CP_Strife::CP_Strife(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: Super(pDevice, pContext)
@@ -47,12 +45,12 @@ HRESULT CP_Strife::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CP_Strife::Tick(const _float& fTimeDelta)
+void CP_Strife::Tick(_float fTimeDelta)
 {
 	Super::Tick(fTimeDelta);
 }
 
-void CP_Strife::LateTick(const _float& fTimeDelta)
+void CP_Strife::LateTick(_float fTimeDelta)
 {
 	Super::LateTick(fTimeDelta);
 }
@@ -175,13 +173,6 @@ HRESULT CP_Strife::Ready_Scripts()
 			if (FAILED(pStateMachine->AddState(pState))) return E_FAIL;
 
 			desc.vecAnimations.clear();
-			desc.vecAnimations.push_back(TEXT("Strife_Aim_Idle"));
-			desc.vecAnimations.push_back(TEXT("Strife_Aim_Walk"));
-			desc.vecAnimations.push_back(TEXT("Strife_Aim_Walk_Back"));
-			pState = CP_Strife_State_Aim::Create(this, desc, pController);
-			if (FAILED(pStateMachine->AddState(pState))) return E_FAIL;
-
-			desc.vecAnimations.clear();
 			desc.vecAnimations.push_back(TEXT("Strife_Jump"));
 			desc.vecAnimations.push_back(TEXT("Strife_Land"));
 			desc.vecAnimations.push_back(TEXT("Strife_Jump_Double"));
@@ -196,14 +187,6 @@ HRESULT CP_Strife::Ready_Scripts()
 			desc.vecAnimations.push_back(TEXT("Strife_Dash_Back"));
 			desc.vecAnimations.push_back(TEXT("Strife_Dash_Back_End"));
 			pState = CP_Strife_State_Dash::Create(this, desc, pController);
-			if (FAILED(pStateMachine->AddState(pState))) return E_FAIL;
-
-			desc.vecAnimations.clear();
-			desc.vecAnimations.push_back(TEXT("Strife_Impact_FromFront"));
-			desc.vecAnimations.push_back(TEXT("Strife_Impact_FromBack"));
-			desc.vecAnimations.push_back(TEXT("Strife_Impact_FromLeft"));
-			desc.vecAnimations.push_back(TEXT("Strife_Impact_FromRight"));
-			pState = CP_Strife_State_Impact::Create(this, desc, pController);
 			if (FAILED(pStateMachine->AddState(pState))) return E_FAIL;
 		}
 	}

@@ -38,7 +38,7 @@ HRESULT CSphereCollider::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CSphereCollider::Tick(const _float& fTimeDelta)
+void CSphereCollider::Tick(_float fTimeDelta)
 {
 	CTransform* pTransform = GetGameObject()->GetTransform();
 
@@ -49,7 +49,7 @@ void CSphereCollider::Tick(const _float& fTimeDelta)
 	//m_tBoundingSphere.Radius = m_fRadius * max(max(scale.x, scale.y), scale.z);
 }
 
-void CSphereCollider::LateTick(const _float& fTimeDelta)
+void CSphereCollider::LateTick(_float fTimeDelta)
 {
 }
 

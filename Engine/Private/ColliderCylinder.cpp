@@ -25,11 +25,11 @@ HRESULT CCylinderCollider::Initialize(void* pArg)
     return S_OK;
 }
 
-void CCylinderCollider::Tick(const _float& fTimeDelta)
+void CCylinderCollider::Tick(_float fTimeDelta)
 {
 }
 
-void CCylinderCollider::LateTick(const _float& fTimeDelta)
+void CCylinderCollider::LateTick(_float fTimeDelta)
 {
 }
 

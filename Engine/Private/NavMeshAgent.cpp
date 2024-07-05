@@ -99,7 +99,7 @@ HRESULT CNavMeshAgent::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CNavMeshAgent::Tick(const _float& fTimeDelta)
+void CNavMeshAgent::Tick(_float fTimeDelta)
 {
 #ifdef _DEBUG
 	//if (m_IsRendered)

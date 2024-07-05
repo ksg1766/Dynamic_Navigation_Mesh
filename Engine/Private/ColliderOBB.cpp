@@ -42,7 +42,7 @@ HRESULT COBBCollider::Initialize(void* pArg)
 	return S_OK;
 }
 
-void COBBCollider::Tick(const _float& fTimeDelta)
+void COBBCollider::Tick(_float fTimeDelta)
 {
 	CTransform* pTransform = GetGameObject()->GetTransform();
 
@@ -50,7 +50,7 @@ void COBBCollider::Tick(const _float& fTimeDelta)
 	m_tBoundingBox.Orientation = pTransform->GetRotationQuaternion();
 }
 
-void COBBCollider::LateTick(const _float& fTimeDelta)
+void COBBCollider::LateTick(_float fTimeDelta)
 {
 }
 

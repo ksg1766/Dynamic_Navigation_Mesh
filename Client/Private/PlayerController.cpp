@@ -2,8 +2,6 @@
 #include "PlayerController.h"
 #include "GameInstance.h"
 #include "GameObject.h"
-#include "Particle.h"
-#include "ParticleController.h"
 
 constexpr auto EPSILON = 0.001f;
 
@@ -50,7 +48,7 @@ HRESULT CPlayerController::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CPlayerController::Tick(const _float& fTimeDelta)
+void CPlayerController::Tick(_float fTimeDelta)
 {
 	if (m_vNetMove.Length() > EPSILON)
 		Move(fTimeDelta);
@@ -68,7 +66,7 @@ void CPlayerController::Tick(const _float& fTimeDelta)
 	}
 }
 
-void CPlayerController::LateTick(const _float& fTimeDelta)
+void CPlayerController::LateTick(_float fTimeDelta)
 {
 	m_vPrePos = m_pTransform->GetPosition();
 }
@@ -122,7 +120,7 @@ _bool CPlayerController::IsDash()
 	return false;
 }
 
-void CPlayerController::Move(const _float& fTimeDelta)
+void CPlayerController::Move(_float fTimeDelta)
 {
 	m_vNetMove.Normalize();
 	Vec3 vSpeed = fTimeDelta * m_vLinearSpeed * m_vNetMove;
@@ -145,7 +143,7 @@ void CPlayerController::Move(const _float& fTimeDelta)
 	m_vNetMove = Vec3::Zero;
 }
 
-void CPlayerController::Translate(const _float& fTimeDelta)
+void CPlayerController::Translate(_float fTimeDelta)
 {
 	m_vNetTrans.Normalize();
 	Vec3 vSpeed = fTimeDelta * m_vLinearSpeed * m_vNetTrans;
@@ -154,7 +152,7 @@ void CPlayerController::Translate(const _float& fTimeDelta)
 	m_vNetTrans = Vec3::Zero;
 }
 
-void CPlayerController::Look(const Vec3& vPoint, const _float& fTimeDelta)
+void CPlayerController::Look(const Vec3& vPoint, _float fTimeDelta)
 {
 	Vec3 vDir = vPoint - m_pTransform->GetPosition();
 	vDir.y = 0.f;
@@ -219,102 +217,9 @@ void CPlayerController::DashEnd()
 	m_pRigidBody->IsKinematic(true);
 }
 
-void CPlayerController::Fire(CStrife_Ammo::AmmoType eAmmoType)
-{
-	CGameObject* pAmmo = nullptr;
-	CStrife_Ammo::AMMOPROPS tProps;
-
-	Vec3 vFireOffset;
-	Quaternion qRot = m_pTransform->GetRotationQuaternion();
-
-	switch (eAmmoType)
-	{
-	case CStrife_Ammo::AmmoType::DEFAULT:
-	{
-		tProps = { eAmmoType, 7, 0, /*10*/20, 70.f * m_pTransform->GetForward(), false, 5.f };
-		pAmmo = m_pGameInstance->CreateObject(L"Prototype_GameObject_Strife_Ammo_Default", LAYERTAG::EQUIPMENT, &tProps);
-		vFireOffset = m_pTransform->GetPosition() + 2.2f * m_pTransform->GetForward() - (m_bFireLR * 0.35f - 0.175f) * m_pTransform->GetRight() + 1.7f * m_pTransform->GetUp();
-		m_bFireLR = !m_bFireLR;
-
-		pAmmo->GetTransform()->Rotate(qRot);
-		pAmmo->GetTransform()->SetPosition(vFireOffset);
-
-		m_bFireLR ? m_pGameInstance->PlaySoundFile(TEXT("char_strife_gunfire_01.ogg"), CHANNELID::CHANNEL_GUNFIRE0, 0.3f)
-			: m_pGameInstance->PlaySoundFile(TEXT("char_strife_gunfire_02.ogg"), CHANNELID::CHANNEL_GUNFIRE0, 0.3f);
-	}
-	break;
-	case CStrife_Ammo::AmmoType::BEAM:
-	{
-		tProps = { eAmmoType, 4, 0, 5, m_pTransform->GetForward(), false, 0.f };
-		pAmmo = m_pGameInstance->CreateObject(L"Prototype_GameObject_Strife_Ammo_Beam", LAYERTAG::EQUIPMENT, &tProps);
-		vFireOffset = m_pTransform->GetPosition() + 11.f * m_pTransform->GetForward() + 1.7f * m_pTransform->GetUp();
-
-		pAmmo->GetTransform()->Rotate(qRot);
-		pAmmo->GetTransform()->SetPosition(vFireOffset);
-	}
-	break;
-	case CStrife_Ammo::AmmoType::NATURE:
-	{
-		for (_int i = 0; i < 17; ++i)
-		{
-			Vec3 vVelocity = m_pTransform->GetForward() + tanf((8 - i) * XMConvertToRadians(3.75f)) * m_pTransform->GetRight();
-			vVelocity.y = 0.f;
-			vVelocity.Normalize();
-			CStrife_Ammo::AMMOPROPS tProps{ eAmmoType, 4, 0, 15, 20.f * vVelocity, false, 3.f };
-			Quaternion qRotResult = qRot * Quaternion::CreateFromAxisAngle(Vec3::UnitY, (8 - i) * XMConvertToRadians(3.75f));
-			pAmmo = m_pGameInstance->CreateObject(L"Prototype_GameObject_Strife_Ammo_Nature", LAYERTAG::EQUIPMENT, &tProps);
-			vFireOffset = m_pTransform->GetPosition() + 2.2f * m_pTransform->GetForward() + 1.7f * m_pTransform->GetUp();
-
-			pAmmo->GetTransform()->Rotate(qRotResult);
-			pAmmo->GetTransform()->SetPosition(vFireOffset + 0.35f * pAmmo->GetTransform()->GetUp()); //RUL 방향 회전 돼서 다름.
-
-			m_pGameInstance->PlaySoundFile(TEXT("char_strife_nature_shot_01.ogg"), CHANNELID::CHANNEL_GUNFIRE0, 0.3f);
-			m_pGameInstance->PlaySoundFile(TEXT("char_strife_nature_projectile_01.ogg"), CHANNELID::CHANNEL_GUNFIRE1, 0.3f);
-		}
-	}
-	break;
-
-	/*case CStrife_Ammo::AmmoType::STATIC:
-		tProps = { eAmmoType, 4, 0, 10, m_pTransform->GetForward(), false, 0.f };
-		pAmmo = m_pGameInstance->CreateObject(L"Prototype_GameObject_Strife_Ammo_Static", LAYERTAG::EQUIPMENT, &tProps);
-		vFireOffset = m_pTransform->GetPosition() + 2.f * m_pTransform->GetForward() + 1.7f * m_pTransform->GetUp();
-		break;
-
-	*case CStrife_Ammo::AmmoType::CHARGE:
-		CStrife_Ammo::AMMOPROPS tProps{ eAmmoType, 4, 0, 1, 10.f * m_pTransform->GetForward(), false, 5.f };
-		pAmmo = m_pGameInstance->CreateObject(L"Prototype_GameObject_Strife_Ammo_Charge", LAYERTAG::EQUIPMENT, &tProps);
-		break;
-
-	case CStrife_Ammo::AmmoType::GRAVITY:
-		CStrife_Ammo::AMMOPROPS tProps{ eAmmoType, 4, 0, 1, 10.f * m_pTransform->GetForward(), false, 5.f };
-		pAmmo = m_pGameInstance->CreateObject(L"Prototype_GameObject_Strife_Ammo_Gravity", LAYERTAG::EQUIPMENT, &tProps);
-		break;
-
-	case CStrife_Ammo::AmmoType::LAVA:
-		CStrife_Ammo::AMMOPROPS tProps{ eAmmoType, 4, 0, 1, 10.f * m_pTransform->GetForward(), false, 5.f };
-		pAmmo = m_pGameInstance->CreateObject(L"Prototype_GameObject_Strife_Ammo_Lava", LAYERTAG::EQUIPMENT, &tProps);
-		break;*/
-	}
-}
-
 void CPlayerController::Hit()
 {
-	CParticleController::PARTICLE_DESC tParticleDesc;
-	tParticleDesc.eType = CParticleController::ParticleType::EXPLODE;
-	tParticleDesc.fScaleMax = 0.15f;
-	tParticleDesc.fScaleMin = 0.1f;
-	tParticleDesc.vSpeedMax = Vec3(1.8f, 2.5f, 1.8f);
-	tParticleDesc.vSpeedMin = Vec3(-1.8f, 1.8f, -1.8f);
-	tParticleDesc.fLifeTimeMax = 1.2f;
-	tParticleDesc.fLifeTimeMin = 0.8f;
-	tParticleDesc.vCenter = m_pTransform->GetPosition();
-	tParticleDesc.iPass = 1;
-
-	for (_int i = 0; i < 5; ++i)
-		m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Particle"), LAYERTAG::IGNORECOLLISION, &tParticleDesc);
-
-	m_iHitEffectCount = 7;
-	m_pGameObject->GetShader()->SetPassIndex(7);
+	
 }
 
 _bool CPlayerController::Pick(_uint screenX, _uint screenY, Vec3& pickPos, _float& distance)
@@ -326,7 +231,7 @@ _bool CPlayerController::Pick(_uint screenX, _uint screenY, Vec3& pickPos, _floa
 	return static_cast<CTerrain*>(m_pGameObject->GetFixedComponent(ComponentType::Terrain))->Pick(screenX, screenY, pickPos, distance, matBoard);
 }
 
-void CPlayerController::Input(const _float& fTimeDelta)
+void CPlayerController::Input(_float fTimeDelta)
 {
 	if (KEY_PRESSING(KEY::SHIFT) && KEY_DOWN(KEY::K))
 		m_pRigidBody->IsKinematic(!m_pRigidBody->IsKinematic());

@@ -34,7 +34,7 @@ HRESULT CStaticBase::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CStaticBase::Tick(const _float& fTimeDelta)
+void CStaticBase::Tick(_float fTimeDelta)
 {
 	if (m_bRendered)
 		return;
@@ -42,7 +42,7 @@ void CStaticBase::Tick(const _float& fTimeDelta)
 	Super::Tick(fTimeDelta);
 }
 
-void CStaticBase::LateTick(const _float& fTimeDelta)
+void CStaticBase::LateTick(_float fTimeDelta)
 {
 	if (m_bRendered)
 		return;

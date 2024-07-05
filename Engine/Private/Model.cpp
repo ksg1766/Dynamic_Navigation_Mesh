@@ -61,7 +61,7 @@ CModel::CModel(const CModel& rhs)
 		Safe_AddRef(pAnimation);
 }
 
-HRESULT CModel::Initialize_Prototype(const wstring& strModelFilePath, const SOCKETDESC& desc, _fmatrix& matPivot)
+HRESULT CModel::Initialize_Prototype(const wstring& strModelFilePath, const SOCKETDESC& desc, _fmatrix matPivot)
 {
 	XMStoreFloat4x4(&m_matPivot, matPivot);
 	//XMStoreFloat4x4(&m_matPivot, XMMatrixScaling(0.2f, 0.2f, 0.2f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
@@ -202,7 +202,7 @@ HRESULT CModel::Initialize(void * pArg)
 	return S_OK;
 }
 
-void CModel::Tick(const _float& fTimeDelta)
+void CModel::Tick(_float fTimeDelta)
 {
 	if (TYPE_ANIM == m_eModelType)
 	{
