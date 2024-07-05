@@ -6,10 +6,10 @@
 
     * 리소스 데이터 바이너리 경량화
     * 렌더러 제작
-  * 네비게이션 작업 툴 구현 중
-    * Slope에 따라 메쉬 삼각형 추려내어 로드
+  * 네비게이션 작업 툴 구현 중입니다.
+    * Slope에 따라 메쉬 삼각형 추려내어 로드 (테스트 모델)
     * ![FPS_61-RELEASE2024-07-0511-13-04-ezgif com-speed](https://github.com/ksg1766/Navigation_System/assets/37239034/aeee1ca8-6602-424e-b051-9fd0aeda2c5b)
- 
+  * Slope로 지형 정점 추려낸 후에 Delaunay Triangulation 이용한 삼각형 집합 구성하도록 구현해 보려 합니다.
 ---
 # 📅 2024.07.03
 :clipboard: 진행 사항
