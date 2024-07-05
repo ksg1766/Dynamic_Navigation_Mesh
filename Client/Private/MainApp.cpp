@@ -197,30 +197,10 @@ HRESULT CMainApp::Ready_Prototype_Components()
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxDebug.hlsl"), VTXPOS::Elements, VTXPOS::iNumElements))))
 		return E_FAIL;
 
-	///* For.Prototype_Component_Shader_ComputeParticles*/
-	//if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_ComputeParticles"),
-	//	CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_ComputeParticles.hlsl"), nullptr, 0))))
-	//	return E_FAIL;
-	//
-	///* For.Prototype_Component_Shader_ParticleSystem_Stream*/
-	//if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_ParticleSystem_Stream"),
-	//	CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_ParticleSystem_Stream.hlsl"), VTXPARTICLE::Elements, VTXPARTICLE::iNumElements))))
-	//	return E_FAIL;
-
-	///* For.Prototype_Component_Shader_ParticleSystem_Draw*/
-	//if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_ParticleSystem_Draw"),
-	//	CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_ParticleSystem_Draw.hlsl"), VTXPARTICLE::Elements, VTXPARTICLE::iNumElements))))
-	//	return E_FAIL;
-
 	/* For.Prototype_Component_VIBuffer_Rect */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Rect"),
 		CVIBuffer_Rect::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
-
-	/* For.Prototype_Component_VIBuffer_ParticleSystem */
-	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_ParticleSystem"),
-		CVIBuffer_ParticleSystem::Create(m_pDevice, m_pContext))))
-		return E_FAIL;*/
 
 	/* For.Prototype_Component_VIBuffer_Cube */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Cube"),
@@ -282,6 +262,11 @@ HRESULT CMainApp::Ready_Prototype_Components()
 	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_SkyBox"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SkyBox/SkyBox1.dds")))))
 		return E_FAIL;*/
+	
+	/* For.Prototype_Component_Texture_Terrain_Alpha */
+	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Terrain_Alpha"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Terrain_Alpha_%d.png"), 8))))
+		return E_FAIL;*/
 
 	/* For.Prototype_Component_Model_Static */
 	{
@@ -298,7 +283,7 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			if (TEXT("EmeraldSquare_Day") == strFileName)
 			{
 				//
-				continue;
+				//continue;
 				//
 
 				XMStoreFloat4x4(&matPivot, XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));

@@ -15,13 +15,13 @@ private:
 public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg) override;
-	HRESULT			InitializeJustGrid(const _uint& iSizeX, const _uint& iSizeZ, const _uint iCX = 64, const _uint iCZ = 64);
-	HRESULT			InitializeNorTex(const _uint& iSizeX, const _uint& iSizeZ, const _uint iCX = 64, const _uint iCZ = 64);
+	HRESULT			InitializeJustGrid(_uint iSizeX, _uint iSizeZ, _uint iCX = 64, _uint iCZ = 64);
+	HRESULT			InitializeNorTex(_uint iSizeX, _uint iSizeZ, _uint iCX = 64, _uint iCZ = 64);
 	HRESULT			InitializeWithHeightMap(const wstring& strHeightMapPath);
 	void			DebugRender()	override;
 
 public:
-	_bool			Pick(_uint screenX, _uint screenY, Vec3& pickPos, _float& distance, const Matrix& matWorld);
+	_bool			Pick(_uint screenX, _uint screenY, Vec3& pickPos, OUT _float& distance, const Matrix& matWorld);
 
 private:
 	_ulong				m_iNumVerticesX = { 0 };

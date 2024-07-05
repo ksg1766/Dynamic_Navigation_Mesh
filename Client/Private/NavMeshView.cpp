@@ -154,9 +154,14 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 				if (0 > vResult.y)
 				{
-					Vec3 vTemp = v1;
-					v1 = v2;
-					v2 = vTemp;
+					continue;
+				}
+
+				_float fTriangleArea = 0.5f * sqrtf(v10.LengthSquared() * v21.LengthSquared() - powf(v10.Dot(v21), 2.0f));
+				
+				if (m_fMinimumArea > fTriangleArea)
+				{
+					continue;
 				}
 
 				vResult.Normalize();
@@ -449,7 +454,8 @@ void CNavMeshView::InfoView()
 	}
 	ImGui::NewLine();
 
-	ImGui::InputFloat("Slope(degree)", &m_fSlopeDegree);
+	ImGui::InputFloat("Maximum Slope(degree)", &m_fSlopeDegree);
+	ImGui::InputFloat("Minimum Area(degree)", &m_fMinimumArea);
 
 	if (ImGui::Button("BakeNav"))
 	{
