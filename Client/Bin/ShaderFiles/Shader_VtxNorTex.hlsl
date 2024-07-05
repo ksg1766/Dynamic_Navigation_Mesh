@@ -28,6 +28,7 @@ struct VS_OUT
     float4 vNormal : NORMAL;
     float2 vTexcoord : TEXCOORD0;
     float4 vWorldPos : TEXCOORD1;
+    float4 vProjPos : TEXCOORD2;
 };
 
 /* 버텍스에 대한 변환작업을 거친다.  */
@@ -47,6 +48,7 @@ VS_OUT VS_MAIN( /* 정점 */VS_IN In)
     Out.vTexcoord = In.vTexcoord;
     Out.vNormal = mul(float4(In.vNormal, 0.f), g_WorldMatrix);
     Out.vWorldPos = mul(float4(In.vPosition, 1.f), g_WorldMatrix);
+    Out.vProjPos = Out.vPosition;
 
     return Out;
 }
@@ -62,12 +64,16 @@ struct PS_IN
     float4 vNormal : NORMAL;
     float2 vTexcoord : TEXCOORD0;
     float4 vWorldPos : TEXCOORD1;
+    float4 vProjPos : TEXCOORD2;
 };
 
 /* 받아온 픽셀의 정보를 바탕으로 하여 화면에 그려질 픽셀의 최종적인 색을 결정하낟. */
 struct PS_OUT
 {
-    float4 vColor : SV_TARGET0;
+    float4 vDiffuse : SV_TARGET0;
+    float4 vNormal : SV_TARGET1;
+    float4 vDepth : SV_TARGET2;
+    float4 vEmissive : SV_TARGET3;
 };
 
 /* 전달받은 픽셀의 정보를 이용하여 픽셀의 최종적인 색을 결정하자. */
@@ -76,18 +82,20 @@ PS_OUT PS_MAIN(PS_IN In)
     PS_OUT Out = (PS_OUT) 0;
 
     //vector vMtrlDiffuse = g_DiffuseTexture.Sample(LinearSampler, In.vTexcoord/* * 30.f*/);
-    vector vMtrlDiffuse = vector(1.f, 0.5f, 0.5f, 1.f);
+    Out.vDiffuse = vector(0.7f, 0.3f, 0.5f, 1.f);
+    Out.vNormal = vector(In.vNormal.xyz * 0.5f + 0.5f, 0.f);
+    Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 2000.0f, 0.f, 0.f);
 
-    vector vShade = max(dot(normalize(g_vLightDir) * -1.f, normalize(In.vNormal)), 0.f) +
-		g_vLightAmbient * g_vMtrlAmbient;
+    //vector vShade = max(dot(normalize(g_vLightDir) * -1.f, normalize(In.vNormal)), 0.f) +
+	//	g_vLightAmbient * g_vMtrlAmbient;
 
-    vector vReflect = reflect(normalize(g_vLightDir), normalize(In.vNormal));
-    vector vLook = In.vWorldPos - g_vCamPosition;
+    //vector vReflect = reflect(normalize(g_vLightDir), normalize(In.vNormal));
+    //vector vLook = In.vWorldPos - g_vCamPosition;
 
-    float fSpecular = pow(max(dot(normalize(vLook) * -1.f, normalize(vReflect)), 0.f), 30.f);
+    //float fSpecular = pow(max(dot(normalize(vLook) * -1.f, normalize(vReflect)), 0.f), 30.f);
 
-    Out.vColor = (g_vLightDiffuse * vMtrlDiffuse) * saturate(vShade) +
-		(g_vLightSpecular * g_vMtrlSpecular) * fSpecular;
+    //Out.vColor = (g_vLightDiffuse * vMtrlDiffuse) * saturate(vShade) +
+	//	(g_vLightSpecular * g_vMtrlSpecular) * fSpecular;
    
     return Out;
 }

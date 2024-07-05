@@ -51,6 +51,7 @@ private:
 
 	_bool				m_isNavMeshOn = false;
 	_float				m_fSlopeDegree = 0.f;
+	_float				m_fMinimumArea = 0.f;
 	///////////////////////////////////////////////////
 
 	wstring				m_strPickedObject;

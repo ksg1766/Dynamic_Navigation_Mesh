@@ -175,7 +175,8 @@ HRESULT CConverter::Read_AssetFile(wstring srcPath, const MODEL_TYPE& modelType)
 		/* 모든 애니메이션 정보는 폐기된다. */
 
 		if (MODEL_TYPE::NONANIM == modelType)
-			iFlag |= aiProcess_PreTransformVertices | aiProcess_ConvertToLeftHanded | aiProcess_CalcTangentSpace;
+			//iFlag |= aiProcess_PreTransformVertices | aiProcess_ConvertToLeftHanded | aiProcess_CalcTangentSpace;
+			iFlag |= aiProcess_PreTransformVertices | aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_MaxQuality;
 		else
 			iFlag |= aiProcess_ConvertToLeftHanded | aiProcess_CalcTangentSpace;
 	}

@@ -53,7 +53,7 @@ HRESULT CTerrain::Initialize(void * pArg)
 	return S_OK;
 }
 
-HRESULT CTerrain::InitializeJustGrid(const _uint& iSizeX, const _uint& iSizeZ, const _uint iCX, const _uint iCZ)
+HRESULT CTerrain::InitializeJustGrid(_uint iSizeX, _uint iSizeZ, _uint iCX, _uint iCZ)
 {
 	m_iStride = sizeof(VTXPOS); /* 정점하나의 크기 .*/
 
@@ -162,7 +162,7 @@ HRESULT CTerrain::InitializeJustGrid(const _uint& iSizeX, const _uint& iSizeZ, c
 	return S_OK;
 }
 
-HRESULT CTerrain::InitializeNorTex(const _uint& iSizeX, const _uint& iSizeZ, const _uint iCX, const _uint iCZ)
+HRESULT CTerrain::InitializeNorTex(_uint iSizeX, _uint iSizeZ, _uint iCX, _uint iCZ)
 {
 	m_iStride = sizeof(VTXPOSTEX); /* 정점하나의 크기 .*/
 
@@ -284,10 +284,12 @@ HRESULT CTerrain::InitializeWithHeightMap(const wstring& strHeightMapPath)
 	fh = file->Read<BITMAPFILEHEADER>();
 	ih = file->Read<BITMAPINFOHEADER>();
 
-	_ulong* pPixel = { nullptr };
-	pPixel = new _ulong[ih.biWidth * ih.biHeight];
+	//_ulong* pPixel = { nullptr };
+	//pPixel = new _ulong[ih.biWidth * ih.biHeight];
 
-	file->Read((void**)&pPixel, sizeof(_ulong) * ih.biWidth * ih.biHeight);
+	void* pPixel = malloc(3 * ih.biWidth * ih.biHeight);
+
+	file->Read(/*(void**)*/&pPixel, /*sizeof(_ulong)*/3 * ih.biWidth * ih.biHeight);
 
 	Safe_Delete(file);
 
@@ -318,14 +320,21 @@ HRESULT CTerrain::InitializeWithHeightMap(const wstring& strHeightMapPath)
 		{
 			_uint		iIndex = i * m_iNumVerticesX + j;
 
-			pVertices[iIndex].vPosition = m_pVerticesPos[iIndex] = _float3(j - m_iNumVerticesX / 2.f, (pPixel[iIndex] & 0x000000ff) / 10.f, i - m_iNumVerticesZ / 2.f);
+			BYTE* startPtr = reinterpret_cast<BYTE*>(pPixel) + 3 * iIndex;
+			m_pVerticesPos[iIndex] = _float3(j - m_iNumVerticesX / 2.f, (*startPtr & 0x000000ff) / 5.f, i - m_iNumVerticesZ / 2.f);
+
+			/*m_pVerticesPos[iIndex].x *= 0.5f;
+			m_pVerticesPos[iIndex].z *= 0.5f;*/
+
+			pVertices[iIndex].vPosition = m_pVerticesPos[iIndex];
 			pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
 			pVertices[iIndex].vTexcoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 			//pVertices[iIndex].vTangent = _float3(0.f, 0.f, 0.f);
 		}
 	}
 
-	Safe_Delete_Array(pPixel);
+	//Safe_Delete_Array(pPixel);
+	free(pPixel);
 
 #pragma endregion
 
@@ -448,7 +457,7 @@ HRESULT CTerrain::InitializeWithHeightMap(const wstring& strHeightMapPath)
 void CTerrain::DebugRender()
 {
 #ifdef _DEBUG
-	m_pEffect->SetWorld(XMMatrixIdentity());
+	/*m_pEffect->SetWorld(XMMatrixIdentity());
 
 	CPipeLine* pPipeLine = GET_INSTANCE(CPipeLine);
 
@@ -465,11 +474,11 @@ void CTerrain::DebugRender()
 
 	DX::DrawGrid(m_pBatch, (m_iNumVerticesX - 1) / 2.f * Vec3::UnitX, (m_iNumVerticesZ - 1) / 2.f * Vec3::UnitZ, 10.f * Vec3::UnitY, (m_iNumVerticesX - 1) / 4.f, (m_iNumVerticesZ - 1) / 4.f, Colors::Aqua);
 
-	m_pBatch->End();
+	m_pBatch->End();*/
 #endif // DEBUG
 }
 
-_bool CTerrain::Pick(_uint screenX, _uint screenY, Vec3& pickPos, _float& distance, const Matrix& matWorld)
+_bool CTerrain::Pick(_uint screenX, _uint screenY, Vec3& pickPos, OUT _float& distance, const Matrix& matWorld)
 {
 	//Matrix W = m_pGameObject->GetTransform()->WorldMatrix();
 	CPipeLine* pPipeLine = GET_INSTANCE(CPipeLine);

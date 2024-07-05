@@ -230,7 +230,6 @@ struct PS_OUT
     float4 vNormal : SV_TARGET1;
     float4 vDepth : SV_TARGET2;
     float4 vEmissive : SV_TARGET3;
-    float4 vSunMask : SV_TARGET5;
 };
 
 PS_OUT PS_MAIN(PS_IN In)
@@ -247,8 +246,7 @@ PS_OUT PS_MAIN(PS_IN In)
     Out.vDiffuse = vMtrlDiffuse;
     Out.vNormal = vector(In.vNormal.xyz * 0.5f + 0.5f, 0.f);
     Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 2000.0f, 0.f, 0.f);
-    Out.vSunMask = vector(0.f, 0.f, 0.f, 0.f);
-
+    
     return Out;
 }
 
@@ -314,7 +312,6 @@ PS_OUT PS_RIM_MAIN(PS_IN In)
     fEmissive = pow(fEmissive, 2);
     
     Out.vEmissive = g_vMtrlEmissive * fEmissive;
-    Out.vSunMask = vector(0.f, 0.f, 0.f, 0.f);
     
     return Out;
 }
@@ -333,7 +330,6 @@ PS_OUT PS_DISSOLVE_MAIN(PS_IN In)
     Out.vDiffuse = vMtrlDiffuse;
     Out.vNormal = vector(In.vNormal.xyz * 0.5f + 0.5f, 0.f);
     Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 2000.0f, 0.f, 0.f);
-    Out.vSunMask = vector(0.f, 0.f, 0.f, 0.f);
 
     ComputeDissolveColor(Out.vDiffuse, In.vTexcoord);
     
@@ -365,7 +361,6 @@ PS_OUT PS_LAVA_MAIN(PS_IN In)
     Out.vNormal = vector(In.vNormal.xyz * 0.5f + 0.5f, 0.f);
     Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 2000.0f, 0.f, 0.f);    
     Out.vEmissive = vMtrlEmissive;
-    Out.vSunMask = vector(0.f, 0.f, 0.f, 0.f);
     
     return Out;
 }
@@ -404,7 +399,6 @@ PS_OUT PS_CRYSTAL_MAIN(PS_IN In)
     Out.vNormal = vector(In.vNormal.xyz * 0.5f + 0.5f, 0.f);
     Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 2000.0f, 0.f, 0.f);
     Out.vEmissive = vector(vMtrlDiffuse.r, 0.8f * vMtrlDiffuse.gb, vMtrlDiffuse.a);
-    Out.vSunMask = vector(0.f, 0.f, 0.f, 0.f);
 
     return Out;
 }

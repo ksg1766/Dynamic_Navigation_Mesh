@@ -180,7 +180,12 @@ HRESULT CLevel_GameTool::Ready_Layer_Ground()
 {
 	/* 원형객체를 복제하여 사본객체를 생성하고 레이어에 추가한다. */
 	CGameObject* pGameObject = nullptr;
+
 	LAYERTAG	eLayerTag = LAYERTAG::GROUND;
+
+	/*wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/Terrain_Alpha_6.bmp");
+	m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(LEVEL_GAMETOOL, eLayerTag, TEXT("Prototype_GameObject_BasicTerrain"), &strPath));
+	if (nullptr == m_pBasicTerrain) return E_FAIL;*/
 
 	return S_OK;
 }
