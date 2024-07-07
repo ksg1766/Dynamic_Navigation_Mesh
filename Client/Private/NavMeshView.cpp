@@ -276,12 +276,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 					Vec3 vAnotherLine = vecCellCache[k]->vPoints[(i + 2) % 3] - vecCellCache[k]->vPoints[i];
 
 					_float fSlopeLength = vAnotherLine.Cross(vSharedLine).Length() / vSharedLine.Length();
-					_float fSlopeHeight = 0.0f;
-					// temp : 버그 수정 필요
-					if (0 == vecCellCache[k]->iSlope)
-						fSlopeHeight = fSlopeLength;
-
-					fSlopeHeight = fabs(fSlopeLength * sinf(XMConvertToRadians(vecCellCache[k]->iSlope)));
+					_float fSlopeHeight = fabs(fSlopeLength * sinf(XMConvertToRadians(vecCellCache[k]->iSlope)));
 
 					if (fSlopeHeight + m_fEpsilon <= m_fMaxClimb)
 					{
