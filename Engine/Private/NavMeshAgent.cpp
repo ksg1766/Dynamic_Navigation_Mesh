@@ -240,12 +240,10 @@ HRESULT CNavMeshAgent::SetUp_Neighbors()
 			{
 				pSourCell->SetUp_Neighbor(CCell::LINE_AB, pDestCell);
 			}
-
 			else if (true == pDestCell->Compare_Points(pSourCell->Get_Point(CCell::POINT_B), pSourCell->Get_Point(CCell::POINT_C)))
 			{
 				pSourCell->SetUp_Neighbor(CCell::LINE_BC, pDestCell);
 			}
-
 			else if (true == pDestCell->Compare_Points(pSourCell->Get_Point(CCell::POINT_C), pSourCell->Get_Point(CCell::POINT_A)))
 			{
 				pSourCell->SetUp_Neighbor(CCell::LINE_CA, pDestCell);

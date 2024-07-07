@@ -167,11 +167,6 @@ HRESULT CMainApp::Ready_Prototype_Components()
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxAnimInstancing.hlsl"), VTXANIMMESH::Elements, VTXANIMMESH::iNumElements))))
 		return E_FAIL;
 
-	/* For.Prototype_Component_Shader_Point_Instance */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_Point_Instance"),
-		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_Point_Instance.hlsl"), VTXPOINT::Elements, VTXPOINT::iNumElements))))
-		return E_FAIL;
-
 	/* For.Prototype_Component_Shader_VtxPosTex */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxPosTex"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxPosTex.hlsl"), VTXPOSTEX::Elements, VTXPOSTEX::iNumElements))))
@@ -283,7 +278,7 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			if (TEXT("EmeraldSquare_Day") == strFileName)
 			{
 				//
-				//continue;
+				continue;
 				//
 
 				XMStoreFloat4x4(&matPivot, XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));

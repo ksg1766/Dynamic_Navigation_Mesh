@@ -75,6 +75,7 @@ _bool CCell::Compare_Points(const _float3* pSourPoint, const _float3* pDestPoint
 		if (XMVector3Equal(XMLoadFloat3(&m_vPoints[POINT_B]), XMLoadFloat3(pDestPoint)))
 			return true;
 	}
+
 	return false;
 }
 

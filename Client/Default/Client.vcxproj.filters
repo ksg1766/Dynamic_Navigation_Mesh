@@ -467,9 +467,6 @@
     <ClCompile Include="..\Private\P_Strife_State_Jump.cpp">
       <Filter>03.GameObjects\01.Playable\00.P_Strife\State\03.Jump</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Strife_Ammo.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Ammo\Base</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\NavMeshView.cpp">
       <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
     </ClCompile>
@@ -497,16 +494,25 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex.hlsl">
+    <FxCompile Include="..\Bin\ShaderFiles\Client_Shader_Defines.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl">
+    <FxCompile Include="..\Bin\ShaderFiles\Matrix.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeTex.hlsl">
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_Lighting_Functions.hlsl">
+      <Filter>97.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimInstancing.hlsl">
+      <Filter>97.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeNom.hlsl">
+      <Filter>97.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeTex.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxDebug.hlsl">
@@ -515,37 +521,16 @@
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMesh.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Lighting_Functions.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxTexFetchAnim.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Matrix.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimInstancing.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Client_Shader_Defines.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNonAnimInstancing.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Point_Instance.hlsl">
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_ComputeParticles.hlsl">
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_ParticleSystem_Draw.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_ParticleSystem_Stream.hlsl">
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxTexFetchAnim.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>

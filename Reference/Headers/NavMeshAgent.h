@@ -19,9 +19,9 @@ private:
 
 public:
 	virtual HRESULT		Initialize_Prototype(const wstring& strNavigationData);
-	virtual HRESULT		Initialize(void* pArg)				override;
+	virtual HRESULT		Initialize(void* pArg)		override;
 	virtual void		Tick(_float fTimeDelta)		override;
-	virtual void		DebugRender()						override;
+	virtual void		DebugRender()				override;
 	
 public:
 	_bool	Walkable(_fvector vPoint);

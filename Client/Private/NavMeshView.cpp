@@ -11,25 +11,47 @@
 
 struct CNavMeshView::CellData
 {
-	_float3 vPoints[3] = { _float3(0.f, 0.f, 0.f), _float3(0.f, 0.f, 0.f), _float3(0.f, 0.f, 0.f) };
+	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
+	array<CellData*, LINE_END> arrNeighbors = { nullptr, nullptr, nullptr };
 
-	//CellData() { ZeroMemory(vPoints, 3 * sizeof(_float3)); }
+	// cache
+	_bool	isOverSlope = false;
+	_int	iSlope = -1;
+
 	void CW()
 	{
-		Vec3 vA(vPoints[0].x, 0.f, vPoints[0].z);
-		Vec3 vB(vPoints[1].x, 0.f, vPoints[1].z);
-		Vec3 vC(vPoints[2].x, 0.f, vPoints[2].z);
+		Vec3 vA(vPoints[POINT_A].x, 0.f, vPoints[POINT_A].z);
+		Vec3 vB(vPoints[POINT_B].x, 0.f, vPoints[POINT_B].z);
+		Vec3 vC(vPoints[POINT_C].x, 0.f, vPoints[POINT_C].z);
 
-		Vec3 vAB = Vec3(vB - vA);
-		Vec3 vBC = Vec3(vC - vB);
+		Vec3 vFlatAB = Vec3(vB - vA);
+		Vec3 vFlatBC = Vec3(vC - vB);
 		Vec3 vResult;
-		vAB.Cross(vBC, vResult);
+		vFlatAB.Cross(vFlatBC, vResult);
+
 		if (vResult.y < 0.f)
 		{
-			_float3 vTemp = vPoints[1];
-			vPoints[1] = vPoints[2];
-			vPoints[2] = vTemp;
+			::swap(vPoints[1], vPoints[2]);
 		}
+	}
+
+	_bool ComparePoints(const Vec3& pSour, const Vec3& pDest)
+	{
+		for (_int i = POINT_A; i < POINT_END; ++i)
+		{
+			if (vPoints[i] == pSour)
+			{
+				for (_int j = POINT_A; j < POINT_END; ++j)
+				{
+					if (j != i && vPoints[j] == pDest)
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 };
 
@@ -97,17 +119,59 @@ HRESULT CNavMeshView::DebugRender()
 	{
 		for (_int i = 0; i < m_vecCells.size(); ++i)
 		{
-			_float3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.2f, 0.f);
-			_float3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.2f, 0.f);
-			_float3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.2f, 0.f);
+			Vec3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.2f, 0.f);
+			Vec3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.2f, 0.f);
+			Vec3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.2f, 0.f);
 
 			m_pBatch->Begin();
 			DX::DrawTriangle(m_pBatch, XMLoadFloat3(&vP0), XMLoadFloat3(&vP1), XMLoadFloat3(&vP2), Colors::Cyan);
 			m_pBatch->End();
 		}		
-	}	
+	}
+
+	m_pBatch->Begin();
+	DX::Draw(m_pBatch, m_tNavMeshBoundVolume, Colors::Green);
+	m_pBatch->End();
 
 	return S_OK;
+}
+
+void CNavMeshView::ClearNeighbors(vector<CellData*>& vecCells)
+{
+	for (auto cell : vecCells)
+	{
+		for (_int i = LINE_AB; i < LINE_END; ++i)
+		{
+			cell->arrNeighbors[i] = nullptr;
+		}
+	}
+}
+
+void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
+{
+	for (auto& pSour : vecCells)
+	{
+		for (auto& pDest : vecCells)
+		{
+			if (pSour == pDest)
+			{
+				continue;
+			}
+
+			if (true == pDest->ComparePoints(pSour->vPoints[POINT_A], pSour->vPoints[POINT_B]))
+			{
+				pSour->arrNeighbors[LINE_AB] = pDest;
+			}
+			else if (true == pDest->ComparePoints(pSour->vPoints[POINT_B], pSour->vPoints[POINT_C]))
+			{
+				pSour->arrNeighbors[LINE_BC] = pDest;
+			}
+			else if (true == pDest->ComparePoints(pSour->vPoints[POINT_C], pSour->vPoints[POINT_A]))
+			{
+				pSour->arrNeighbors[LINE_CA] = pDest;
+			}
+		}
+	}
 }
 
 HRESULT CNavMeshView::BakeNavMesh()
@@ -123,7 +187,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 	}
 
 	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
-		
+
 	map<LAYERTAG, class CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
 	if (iter == mapLayers.end())
 	{
@@ -132,58 +196,129 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
 
+	vector<CellData*> vecCellCache; // 일단 Cell 전부 저장한 뒤 Neighbor 지정
+
+	//vecCellCache
 	for (auto iter : vecObjects)
 	{
 		CModel* pModel = iter->GetModel();
 
-		if (nullptr != pModel)
+		if (nullptr == pModel)
 		{
-			vector<Vec3>& vecSurfaceVtx = pModel->GetSurfaceVtx();
-			vector<FACEINDICES32>& vecSurfaceIdx = pModel->GetSurfaceIdx();
-		
-			for (auto idx : vecSurfaceIdx)
+			continue;
+		}
+
+		vector<Vec3>& vecSurfaceVtx = pModel->GetSurfaceVtx();
+		vector<FACEINDICES32>& vecSurfaceIdx = pModel->GetSurfaceIdx();
+
+		for (auto idx : vecSurfaceIdx)
+		{
+			Vec3 vtx[POINT_END] =
 			{
-				Vec3 v0 = Vec3::Transform(vecSurfaceVtx[idx._0], iter->GetTransform()->WorldMatrix());
-				Vec3 v1 = Vec3::Transform(vecSurfaceVtx[idx._1], iter->GetTransform()->WorldMatrix());
-				Vec3 v2 = Vec3::Transform(vecSurfaceVtx[idx._2], iter->GetTransform()->WorldMatrix());
+				Vec3::Transform(vecSurfaceVtx[idx._0], iter->GetTransform()->WorldMatrix()),
+				Vec3::Transform(vecSurfaceVtx[idx._1], iter->GetTransform()->WorldMatrix()),
+				Vec3::Transform(vecSurfaceVtx[idx._2], iter->GetTransform()->WorldMatrix()),
+			};
 
-				Vec3 v10 = v1 - v0;
-				Vec3 v21 = v2 - v1;
-				Vec3 vResult;
-				v10.Cross(v21, vResult);
+			// Check Bounding Volume
+			if (ContainmentType::CONTAINS != m_tNavMeshBoundVolume.Contains(vtx[POINT_A], vtx[POINT_B], vtx[POINT_C]))
+			{
+				continue;
+			}
 
-				if (0 > vResult.y)
-				{
-					continue;
-				}
+			CellData* pCellData = new CellData;
+			pCellData->vPoints[POINT_A] = vtx[0];
+			pCellData->vPoints[POINT_B] = vtx[1];
+			pCellData->vPoints[POINT_C] = vtx[2];
 
-				_float fTriangleArea = 0.5f * sqrtf(v10.LengthSquared() * v21.LengthSquared() - powf(v10.Dot(v21), 2.0f));
-				
-				if (m_fMinimumArea > fTriangleArea)
-				{
-					continue;
-				}
+			Vec3 vtxAB = vtx[POINT_B] - vtx[POINT_A];
+			Vec3 vtxBC = vtx[POINT_C] - vtx[POINT_B];
+			Vec3 vResult = vtxAB.Cross(vtxBC);
 
-				vResult.Normalize();
+			vResult.Normalize();
 
-				Vec3 vFloor(vResult.x, 0.0f, vResult.z);
-				vFloor.Normalize();
+			Vec3 vFloor(vResult.x, 0.0f, vResult.z);
+			vFloor.Normalize();
 
-				if (cosf(XMConvertToRadians(90.f - m_fSlopeDegree)) >= vResult.Dot(vFloor))
-				{
-					CellData* tCellData = new CellData;
-					tCellData->vPoints[0] = v0;
-					tCellData->vPoints[1] = v1;
-					tCellData->vPoints[2] = v2;
+			_float fDegree = XMConvertToDegrees(acosf(vResult.Dot(vFloor)));
 
-					m_vecCells.push_back(tCellData);
+			if (0.0f > vResult.y)
+			{
+				fDegree *= -1.0f;
+
+				pCellData->iSlope = (_int)fDegree;
+				pCellData->isOverSlope = true;
+			}
+			else if (90.f - m_fSlopeDegree >= (_int)fDegree)
+			{	// Slope 이하인 Cell 기록.
+				pCellData->iSlope = (_int)fDegree;
+				pCellData->isOverSlope = true;
+			}			
+
+			vecCellCache.push_back(pCellData);
+		}
+	}
+
+	// 일단 Cache 전부 Neighbor 지정
+	SetUpNeighbors(vecCellCache);
+
+	// Max Climb 연산
+	//for (auto cell : vecCellCache)
+	for (_int k = 0; k < vecCellCache.size(); ++k)
+	{
+		if (true == vecCellCache[k]->isOverSlope)
+		{	// Slope 초과인 경우
+			for (_int i = LINE_AB; i < LINE_END; ++i)
+			{
+				if (nullptr != vecCellCache[k]->arrNeighbors[i] && false == vecCellCache[k]->arrNeighbors[i]->isOverSlope)
+				{	// Neighbor 중에 하나라도 Slope 이하인 Mesh 있다면 높이 계산해서 Max Climb이하면 vecCells에 저장.
+					Vec3 vSharedLine = vecCellCache[k]->vPoints[(i + 1) % 3] - vecCellCache[k]->vPoints[i];
+					Vec3 vAnotherLine = vecCellCache[k]->vPoints[(i + 2) % 3] - vecCellCache[k]->vPoints[i];
+
+					_float fSlopeLength = vAnotherLine.Cross(vSharedLine).Length() / vSharedLine.Length();
+					_float fSlopeHeight = 0.0f;
+					// temp : 버그 수정 필요
+					if (0 == vecCellCache[k]->iSlope)
+						fSlopeHeight = fSlopeLength;
+
+					fSlopeHeight = fabs(fSlopeLength * sinf(XMConvertToRadians(vecCellCache[k]->iSlope)));
+
+					if (fSlopeHeight + m_fEpsilon <= m_fMaxClimb)
+					{
+						m_vecCells.push_back(vecCellCache[k]);
+						break;
+					}
 				}
 			}
 		}
 		else
 		{
-			continue;
-		}		
+			m_vecCells.push_back(vecCellCache[k]);
+		}
+	}
+
+	ClearNeighbors(m_vecCells);
+	SetUpNeighbors(m_vecCells);
+	::swap(vecCellCache, m_vecCells);
+	m_vecCells.clear();
+
+	//for (auto cell : vecCellCache)
+	for (_int k = 0; k < vecCellCache.size(); ++k)
+	{
+		_int iNumNeighbor = 0;
+
+		for (_int i = LINE_AB; i < LINE_END; ++i)
+		{
+			if (nullptr != vecCellCache[k]->arrNeighbors[i])
+			{
+				++iNumNeighbor;
+			}
+		}
+
+		if (true != vecCellCache[k]->isOverSlope || 1 != iNumNeighbor)
+		{
+			m_vecCells.push_back(vecCellCache[k]);
+		}
 	}
 
 	return S_OK;
@@ -253,6 +388,11 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 	}
 
 	return S_OK;
+}
+
+_bool CNavMeshView::CanClimb()
+{
+	return _bool();
 }
 
 void CNavMeshView::Input()
@@ -454,8 +594,14 @@ void CNavMeshView::InfoView()
 	}
 	ImGui::NewLine();
 
-	ImGui::InputFloat("Maximum Slope(degree)", &m_fSlopeDegree);
-	ImGui::InputFloat("Minimum Area(degree)", &m_fMinimumArea);
+	ImGui::InputFloat("SlopeMax (degree)", &m_fSlopeDegree);
+	ImGui::InputFloat("ClimbMax (height)", &m_fMaxClimb);
+	ImGui::InputFloat("AreaMin (degree)", &m_fMinArea);
+	ImGui::InputFloat3("AABB Center", (_float*)&m_tNavMeshBoundVolume.Center);
+	ImGui::InputFloat3("AABB Extent", (_float*)&m_tNavMeshBoundVolume.Extents);
+
+	/*static Vec3 vOBBRotation = Vec3(0.0f, 0.0f, 0.0f);
+	ImGui::InputFloat3("OBB Rotation", (_float*)&vOBBRotation);*/
 
 	if (ImGui::Button("BakeNav"))
 	{

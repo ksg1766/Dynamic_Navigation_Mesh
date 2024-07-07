@@ -15,6 +15,8 @@ class CNavMeshView final : public CView
 {
     using Super = CView;
 public:
+	enum POINTS { POINT_A, POINT_B, POINT_C, POINT_END };
+	enum LINES { LINE_AB, LINE_BC, LINE_CA, LINE_END };
 
 private:
 	CNavMeshView(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -27,6 +29,9 @@ public:
 	virtual HRESULT	DebugRender()			override;
 
 private:
+	struct	CellData;
+	void	ClearNeighbors(vector<CellData*>& vecCells);
+	void	SetUpNeighbors(vector<CellData*>& vecCells);
 	void	ShowNavMesh(_bool bOnOff) {	m_isNavMeshOn = bOnOff; }
 
 	HRESULT	BakeNavMesh();
@@ -35,6 +40,8 @@ private:
 	HRESULT	DebugRenderLegacy();
 
 private:
+	_bool	CanClimb();
+
 	void	Input();
 	_bool	Pick(_uint screenX, _uint screenY);
 
@@ -47,11 +54,14 @@ private:
 	void	CellGroup();
 
 private:
-	struct CellData;
-
 	_bool				m_isNavMeshOn = false;
-	_float				m_fSlopeDegree = 0.f;
-	_float				m_fMinimumArea = 0.f;
+	_float				m_fSlopeDegree = 0.0f;
+	_float				m_fMaxClimb = 0.0f;
+	const _float		m_fEpsilon = 0.001f;
+	_float				m_fMinArea = 0.0f;
+
+	BoundingBox			m_tNavMeshBoundVolume;
+
 	///////////////////////////////////////////////////
 
 	wstring				m_strPickedObject;

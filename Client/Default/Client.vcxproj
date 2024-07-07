@@ -172,11 +172,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Bin\ShaderFiles\Client_Shader_Defines.hlsl">
-      <FileType>Document</FileType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </EntryPointName>
-    </FxCompile>
     <ClInclude Include="..\Public\AnimationView.h" />
     <ClInclude Include="..\public\BackGround.h" />
     <ClInclude Include="..\Public\BasicTerrain.h" />
@@ -342,32 +337,18 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\Bin\ShaderFiles\Client_Shader_Defines.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Matrix.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_ComputeParticles.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_ParticleSystem_Draw.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_ParticleSystem_Stream.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Lighting_Functions.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </EntryPointName>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Point_Instance.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_Lighting_Functions.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimInstancing.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeNom.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeTex.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxDebug.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMesh.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNonAnimInstancing.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl">
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxDebug.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex.hlsl">
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxTexFetchAnim.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -110,15 +110,15 @@ HRESULT CLevel_GameTool::DebugRender()
 {
 	if (m_IsImGUIReady)
 	{
-		ImGui::Render();
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
 		m_pPrefabsView->DebugRender();
 		m_pLayersView->DebugRender();
 		m_pTransformView->DebugRender();
 		m_pSaveLoadView->DebugRender();
 		//m_pAnimationView->DebugRender();
 		m_pNavMeshView->DebugRender();
+	
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	return S_OK;
