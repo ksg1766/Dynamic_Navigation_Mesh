@@ -8,6 +8,10 @@
 #include "Layer.h"
 #include "DissolveManager.h"
 #include "DebugDraw.h"
+#include "boost/polygon/voronoi.hpp"
+#include "boost/polygon/voronoi_builder.hpp"
+#include "boost/polygon/voronoi_diagram.hpp"
+#include "boost/polygon/voronoi_geometry_type.hpp"
 
 struct CNavMeshView::CellData
 {
@@ -35,7 +39,7 @@ struct CNavMeshView::CellData
 		}
 	}
 
-	_bool ComparePoints(const Vec3& pSour, const Vec3& pDest)
+	_bool ComparePoints(const Vec3& pSour, const Vec3& pDest, CellData* pNeighbor = nullptr)
 	{
 		for (_int i = POINT_A; i < POINT_END; ++i)
 		{
@@ -45,6 +49,43 @@ struct CNavMeshView::CellData
 				{
 					if (j != i && vPoints[j] == pDest)
 					{
+						if (nullptr != pNeighbor)
+						{
+							if (POINT_A == i)
+							{
+								if (nullptr == arrNeighbors[LINE_AB] && POINT_B == j)
+								{
+									arrNeighbors[LINE_AB] = pNeighbor;
+								}
+								else if (nullptr == arrNeighbors[LINE_CA] && POINT_C == j)
+								{
+									arrNeighbors[LINE_CA] = pNeighbor;
+								}
+							}
+							else if (POINT_B == i)
+							{
+								if (nullptr == arrNeighbors[LINE_AB] && POINT_A == j)
+								{
+									arrNeighbors[LINE_AB] = pNeighbor;
+								}
+								else if (nullptr == arrNeighbors[LINE_CA] && POINT_C == j)
+								{
+									arrNeighbors[LINE_CA] = pNeighbor;
+								}
+							}
+							else
+							{
+								if (nullptr == arrNeighbors[LINE_CA] && POINT_A == j)
+								{
+									arrNeighbors[LINE_CA] = pNeighbor;
+								}
+								else if (nullptr == arrNeighbors[LINE_BC] && POINT_B == j)
+								{
+									arrNeighbors[LINE_BC] = pNeighbor;
+								}
+							}
+						}
+
 						return true;
 					}
 				}
@@ -149,26 +190,28 @@ void CNavMeshView::ClearNeighbors(vector<CellData*>& vecCells)
 
 void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
 {
-	for (auto& pSour : vecCells)
+	//for (auto& pSour : vecCells)
+	for (_int sour = 0; sour < vecCells.size(); ++sour)
 	{
-		for (auto& pDest : vecCells)
+		//for (auto& pDest : vecCells)
+		for (_int dest = 0; dest < vecCells.size(); ++dest)
 		{
-			if (pSour == pDest)
+			if (vecCells[sour] == vecCells[dest])
 			{
 				continue;
 			}
 
-			if (true == pDest->ComparePoints(pSour->vPoints[POINT_A], pSour->vPoints[POINT_B]))
+			if (nullptr == vecCells[sour]->arrNeighbors[LINE_AB] && true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_A], vecCells[sour]->vPoints[POINT_B], vecCells[sour]))
 			{
-				pSour->arrNeighbors[LINE_AB] = pDest;
+				vecCells[sour]->arrNeighbors[LINE_AB] = vecCells[dest];
 			}
-			else if (true == pDest->ComparePoints(pSour->vPoints[POINT_B], pSour->vPoints[POINT_C]))
+			else if (nullptr == vecCells[sour]->arrNeighbors[LINE_BC] && true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_B], vecCells[sour]->vPoints[POINT_C], vecCells[sour]))
 			{
-				pSour->arrNeighbors[LINE_BC] = pDest;
+				vecCells[sour]->arrNeighbors[LINE_BC] = vecCells[dest];
 			}
-			else if (true == pDest->ComparePoints(pSour->vPoints[POINT_C], pSour->vPoints[POINT_A]))
+			else if (nullptr == vecCells[sour]->arrNeighbors[LINE_CA] && true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_C], vecCells[sour]->vPoints[POINT_A], vecCells[sour]))
 			{
-				pSour->arrNeighbors[LINE_CA] = pDest;
+				vecCells[sour]->arrNeighbors[LINE_CA] = vecCells[dest];
 			}
 		}
 	}
