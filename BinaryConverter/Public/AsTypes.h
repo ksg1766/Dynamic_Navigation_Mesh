@@ -37,7 +37,6 @@ struct asMaterial
 	string	diffuseFilePath;
 	string	normalFilePath;
 	//string emissiveFilePath;
-	Color	vDiffuseColor;
 };
 
 struct asKeyFrame

@@ -93,7 +93,6 @@ namespace Engine
 	typedef struct tagMeshMaterial
 	{
 		class CTexture* pTextures[AI_TEXTURE_TYPE_MAX];
-		Color			vDiffuseColor;
 	}MESH_MATERIAL;
 
 	typedef struct tagKeyFrame
