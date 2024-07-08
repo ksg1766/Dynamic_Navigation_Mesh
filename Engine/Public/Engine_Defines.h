@@ -20,6 +20,7 @@
 #include <DirectXTK/VertexTypes.h>
 #include <DirectXTK/DDSTextureLoader.h>
 #include <DirectXTK/WICTextureLoader.h>
+#include <Triangle/triangle.h>
 
 //#include <FMOD/fmod.h>
 //#include <FMOD/fmod.hpp>

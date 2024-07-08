@@ -34,9 +34,10 @@ struct asMesh
 
 struct asMaterial
 {
-	string diffuseFilePath;
-	string normalFilePath;
+	string	diffuseFilePath;
+	string	normalFilePath;
 	//string emissiveFilePath;
+	Color	vDiffuseColor;
 };
 
 struct asKeyFrame

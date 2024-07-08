@@ -40,6 +40,7 @@ private:
 	void	ShowNavMesh(_bool bOnOff) {	m_isNavMeshOn = bOnOff; }
 
 	HRESULT	BakeNavMesh();
+	HRESULT	ExecuteDelaunayVoronoi();
 	HRESULT	CreateVoronoi();
 
 private:
@@ -70,7 +71,9 @@ private:
 
 	CTerrain*			m_pTerrainBuffer = nullptr;
 
-	// VD
+	// DT, VD
+	triangulateio		m_tDT_in, m_tDT_out, m_tVD_out;
+
 	vector<VDPoint>		m_vecVDCaches;
 	vector<Vec3>		m_vecVDPoints;
 

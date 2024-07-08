@@ -187,7 +187,7 @@ HRESULT CNavMeshView::DebugRender()
 			Vec3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
 			m_pBatch->Begin();
-			DX::DrawTriangle(m_pBatch, XMLoadFloat3(&vP0), XMLoadFloat3(&vP1), XMLoadFloat3(&vP2), Colors::Cyan);
+			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Cyan);
 			m_pBatch->End();
 		}
 	}
@@ -394,6 +394,57 @@ HRESULT CNavMeshView::BakeNavMesh()
 	return S_OK;
 }
 
+HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
+{	
+	if (true == m_vecPoints.empty())
+	{
+		return E_FAIL;
+	}
+
+	if (nullptr != m_tDT_out.pointlist)		free(m_tDT_out.pointlist);
+	if (nullptr != m_tDT_out.trianglelist)	free(m_tDT_out.trianglelist);
+	if (nullptr != m_tVD_out.pointlist)		free(m_tVD_out.pointlist);
+	if (nullptr != m_tVD_out.edgelist)		free(m_tVD_out.edgelist);
+	if (nullptr != m_tVD_out.normlist)		free(m_tVD_out.normlist);
+	if (nullptr != m_tDT_in.pointlist)		free(m_tDT_in.pointlist);
+	if (nullptr != m_tDT_in.segmentlist)	free(m_tDT_in.segmentlist);
+
+	m_tDT_in.numberofpoints = m_vecPoints.size();
+	m_tDT_in.pointlist = (TRI_REAL*)malloc(m_tDT_in.numberofpoints * 2 * sizeof(TRI_REAL));
+
+	for (_int i = 0; i < m_vecPoints.size(); ++i)
+	{
+		m_tDT_in.pointlist[2 * i + 0] = m_vecPoints[i].x;
+		m_tDT_in.pointlist[2 * i + 1] = m_vecPoints[i].z;
+	}
+
+	m_tDT_in.numberofsegments = m_vecPoints.size();
+	m_tDT_in.segmentlist = (_int*)malloc(m_tDT_in.numberofsegments * 2 * sizeof(_int));
+
+	for (_int i = 0; i < m_vecPoints.size() - 1; ++i)
+	{
+		m_tDT_in.segmentlist[2 * i + 0] = i + 0;
+		m_tDT_in.segmentlist[2 * i + 1] = i + 1;
+	}
+	m_tDT_in.segmentlist[2 * (m_vecPoints.size() - 1) + 0] = m_vecPoints.size() - 1;
+	m_tDT_in.segmentlist[2 * (m_vecPoints.size() - 1) + 1] = 0;
+
+	m_tDT_in.numberofholes = 0;
+	m_tDT_in.numberofregions = 0;
+
+	m_tDT_out.pointlist = (TRI_REAL*)nullptr;
+	m_tDT_out.trianglelist = (_int*)nullptr;
+
+	m_tVD_out.pointlist = (TRI_REAL*)nullptr;
+	m_tVD_out.edgelist = (_int*)nullptr;
+	m_tVD_out.normlist = (TRI_REAL*)nullptr;
+
+	static _char triswitches[4] = "pzv";
+	triangulate(triswitches, &m_tDT_in, &m_tDT_out, &m_tVD_out);
+
+	return S_OK;
+}
+
 HRESULT CNavMeshView::CreateVoronoi()
 {
 	// VD
@@ -433,6 +484,63 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 	m_pEffect->Apply(m_pContext);
 	m_pContext->IASetInputLayout(m_pInputLayout);
 
+	if (false == m_vecSphere.empty())
+	{
+		m_pBatch->Begin();
+		for (auto& iter : m_vecSphere)
+		{
+			BoundingSphere tS(iter->Center + 0.05f * Vec3::UnitY, 0.5f);
+
+			DX::Draw(m_pBatch, tS, Colors::Lime);
+		}
+		m_pBatch->End();
+	}
+
+	// triangle::DT
+	if (0 < m_tDT_out.numberoftriangles)
+	{
+		m_pBatch->Begin();
+		for (_int i = 0; i < m_tDT_out.numberoftriangles; ++i)
+		{
+			_int iIdx1 = m_tDT_out.trianglelist[i * 3 + POINT_A];
+			_int iIdx2 = m_tDT_out.trianglelist[i * 3 + POINT_B];
+			_int iIdx3 = m_tDT_out.trianglelist[i * 3 + POINT_C];
+
+			Vec3 vTri[POINT_END] =
+			{
+				{ (_float)m_tDT_out.pointlist[iIdx1 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx1 * 2 + 1] },
+				{ (_float)m_tDT_out.pointlist[iIdx2 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx2 * 2 + 1] },
+				{ (_float)m_tDT_out.pointlist[iIdx3 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx3 * 2 + 1] }
+			};
+
+			DX::DrawTriangle(m_pBatch, vTri[POINT_A], vTri[POINT_B], vTri[POINT_C], Colors::Lime);
+		}
+		m_pBatch->End();
+	}
+
+	// triangle::VD
+	if (0 < m_tVD_out.numberofedges)
+	{
+		m_pBatch->Begin();
+		for (_int i = 0; i < m_tVD_out.numberofedges; ++i)
+		{
+			_int iIdx1 = m_tVD_out.edgelist[i * 2 + POINT_A];
+			_int iIdx2 = m_tVD_out.edgelist[i * 2 + POINT_B];
+			
+			if (0 <= iIdx1 && 0 <= iIdx2)
+			{
+				Vec3 vLine[2] =
+				{
+					{ (_float)m_tVD_out.pointlist[iIdx1 * 2], 0.f, (_float)m_tVD_out.pointlist[iIdx1 * 2 + 1] },
+					{ (_float)m_tVD_out.pointlist[iIdx2 * 2], 0.f, (_float)m_tVD_out.pointlist[iIdx2 * 2 + 1] }
+				};
+
+				m_pBatch->DrawLine(VertexPositionColor(vLine[0], Colors::Cyan), VertexPositionColor(vLine[1], Colors::Cyan));
+			}
+		}
+		m_pBatch->End();
+	}
+
 	/*if (2 == m_vecPoints.size())
 	{
 		VertexPositionColor verts[2];
@@ -455,42 +563,31 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 	{
 		for (_int i = 0; i < m_vecCells.size(); ++i)
 		{
-			_float3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
-			_float3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
-			_float3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
+			Vec3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
+			Vec3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
+			Vec3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
 			m_pBatch->Begin();
-			DX::DrawTriangle(m_pBatch, XMLoadFloat3(&vP0), XMLoadFloat3(&vP1), XMLoadFloat3(&vP2), Colors::Cyan);
+			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Cyan);
 			m_pBatch->End();
 		}
 
-		_float3 vP0 = m_vecCells[m_Item_Current]->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
-		_float3 vP1 = m_vecCells[m_Item_Current]->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
-		_float3 vP2 = m_vecCells[m_Item_Current]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
+		Vec3 vP0 = m_vecCells[m_Item_Current]->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
+		Vec3 vP1 = m_vecCells[m_Item_Current]->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
+		Vec3 vP2 = m_vecCells[m_Item_Current]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
 		m_pBatch->Begin();
-		DX::DrawTriangle(m_pBatch, XMLoadFloat3(&vP0), XMLoadFloat3(&vP1), XMLoadFloat3(&vP2), Colors::Coral);
+		DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Coral);
 		m_pBatch->End();
 	}*/
 
-	if (1 < m_vecPoints.size())
+	// boost::VD
+	/*if (1 < m_vecPoints.size())
 	{
 		for (_int i = 0; i < m_vecPoints.size() - 1; ++i)
 		{
 			m_pBatch->Begin();
 			m_pBatch->DrawLine(VertexPositionColor(m_vecPoints[i], Colors::Lime), VertexPositionColor(m_vecPoints[i + 1], Colors::Lime));
-			m_pBatch->End();
-		}
-	}
-
-	if (false == m_vecSphere.empty())
-	{
-		for (auto& iter : m_vecSphere)
-		{
-			BoundingSphere tS(iter->Center + 0.05f * Vec3::UnitY, 0.5f);
-
-			m_pBatch->Begin();
-			DX::Draw(m_pBatch, tS, Colors::Lime);
 			m_pBatch->End();
 		}
 	}
@@ -503,14 +600,9 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 			m_pBatch->DrawLine(VertexPositionColor(m_vecVDPoints[i], Colors::Cyan), VertexPositionColor(m_vecVDPoints[i + 1], Colors::Cyan));
 			m_pBatch->End();
 		}
-	}
+	}*/
 
 	return S_OK;
-}
-
-_bool CNavMeshView::CanClimb()
-{
-	return _bool();
 }
 
 void CNavMeshView::Input()
@@ -580,7 +672,7 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 			continue;
 
 		if (fDistance < fMinDistance)
-		{
+		{	// DT를 위해 이 아래는 진행하지 않아야함.
 			fMinDistance = fDistance;
 			pickPos = iter->Center;
 			bSpherePicked = true;
@@ -645,7 +737,12 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	m_vecPoints.push_back(pickPos);
 	// m_vecVDPoints 같이 갱신해야 실시간 갱신 됨.
 	// 우선은 아래와 같이...
-	CreateVoronoi();
+	//CreateVoronoi();
+
+	if (3 <= m_vecPoints.size())
+	{
+		ExecuteDelaunayVoronoi();
+	}
 
 	BoundingSphere* tSphere = new BoundingSphere;
 	tSphere->Center = pickPos;
@@ -816,4 +913,12 @@ void CNavMeshView::Free()
 	Safe_Delete(m_pEffect);
 
 	Safe_Release(m_pInputLayout);
+
+	free(m_tDT_out.pointlist);
+	free(m_tDT_out.trianglelist);
+	free(m_tVD_out.pointlist);
+	free(m_tVD_out.edgelist);
+	free(m_tVD_out.normlist);
+	free(m_tDT_in.pointlist);
+	free(m_tDT_in.segmentlist);
 }
