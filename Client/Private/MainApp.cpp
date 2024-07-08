@@ -278,7 +278,7 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			if (TEXT("EmeraldSquare_Day") == strFileName)
 			{
 				//
-				continue;
+				//continue;
 				//
 
 				XMStoreFloat4x4(&matPivot, XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));

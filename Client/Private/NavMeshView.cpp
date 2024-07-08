@@ -196,7 +196,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
 
-	vector<CellData*> vecCellCache; // 일단 Cell 전부 저장한 뒤 Neighbor 지정
+	vector<CellData*> vecCellCache;
 
 	//vecCellCache
 	for (auto iter : vecObjects)
@@ -221,7 +221,18 @@ HRESULT CNavMeshView::BakeNavMesh()
 			};
 
 			// Check Bounding Volume
-			if (ContainmentType::CONTAINS != m_tNavMeshBoundVolume.Contains(vtx[POINT_A], vtx[POINT_B], vtx[POINT_C]))
+			_bool isOut = false;
+
+			for (_int i = POINT_A; i < POINT_END; ++i)
+			{
+				if (ContainmentType::DISJOINT == m_tNavMeshBoundVolume.Contains(vtx[i]))
+				{
+					isOut = true;
+					break;
+				}
+			}
+
+			if (true == isOut)
 			{
 				continue;
 			}
@@ -259,11 +270,10 @@ HRESULT CNavMeshView::BakeNavMesh()
 		}
 	}
 
-	// 일단 Cache 전부 Neighbor 지정
 	SetUpNeighbors(vecCellCache);
 
-	// Max Climb 연산
-	//for (auto cell : vecCellCache)
+	// Max Climb
+	// for (auto cell : vecCellCache)
 	for (_int k = 0; k < vecCellCache.size(); ++k)
 	{
 		if (true == vecCellCache[k]->isOverSlope)
@@ -271,7 +281,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 			for (_int i = LINE_AB; i < LINE_END; ++i)
 			{
 				if (nullptr != vecCellCache[k]->arrNeighbors[i] && false == vecCellCache[k]->arrNeighbors[i]->isOverSlope)
-				{	// Neighbor 중에 하나라도 Slope 이하인 Mesh 있다면 높이 계산해서 Max Climb이하면 vecCells에 저장.
+				{	// Neighbor 중에 Slope 이하인 Mesh 있다면 높이 계산 후 Max Climb이하면 vecCells에 저장.
 					Vec3 vSharedLine = vecCellCache[k]->vPoints[(i + 1) % 3] - vecCellCache[k]->vPoints[i];
 					Vec3 vAnotherLine = vecCellCache[k]->vPoints[(i + 2) % 3] - vecCellCache[k]->vPoints[i];
 
