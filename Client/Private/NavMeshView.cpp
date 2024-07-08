@@ -643,6 +643,10 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	}
 
 	m_vecPoints.push_back(pickPos);
+	// m_vecVDPoints 같이 갱신해야 실시간 갱신 됨.
+	// 우선은 아래와 같이...
+	CreateVoronoi();
+
 	BoundingSphere* tSphere = new BoundingSphere;
 	tSphere->Center = pickPos;
 	tSphere->Radius = 1.f;
