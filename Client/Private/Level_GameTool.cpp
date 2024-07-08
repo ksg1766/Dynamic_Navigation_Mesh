@@ -229,7 +229,7 @@ HRESULT CLevel_GameTool::Ready_Tools()
 	m_pAnimationView = CAnimationView::Create(m_pDevice, m_pContext);
 	m_pMediator->SetAnimationView(m_pAnimationView);
 	
-	m_pNavMeshView = CNavMeshView::Create(m_pDevice, m_pContext);
+	m_pNavMeshView = CNavMeshView::Create(m_pDevice, m_pContext, dynamic_cast<CTerrain*>(m_pBasicTerrain->GetFixedComponent(ComponentType::Terrain)));
 	m_pMediator->SetNavMeshView(m_pNavMeshView);
 
 	return S_OK;

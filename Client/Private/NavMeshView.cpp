@@ -8,10 +8,29 @@
 #include "Layer.h"
 #include "DissolveManager.h"
 #include "DebugDraw.h"
-#include "boost/polygon/voronoi.hpp"
-#include "boost/polygon/voronoi_builder.hpp"
-#include "boost/polygon/voronoi_diagram.hpp"
-#include "boost/polygon/voronoi_geometry_type.hpp"
+#include <boost/polygon/voronoi.hpp>
+
+namespace boost
+{
+	namespace polygon
+	{
+		template <>
+		struct geometry_concept<VDPoint> { typedef point_concept type; };
+
+		template <>
+		struct point_traits<VDPoint>
+		{
+			typedef int coordinate_type;
+
+			static inline coordinate_type get(const VDPoint& point, orientation_2d orient)
+			{
+				return (orient == HORIZONTAL) ? point.x : point.y;
+			}
+		};
+	}
+}
+
+using namespace boost::polygon;
 
 struct CNavMeshView::CellData
 {
@@ -105,6 +124,8 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 {
 	Super::Initialize(pArg);
 
+	m_pTerrainBuffer = reinterpret_cast<CTerrain*>(pArg);
+
 	m_pBatch = new PrimitiveBatch<VertexPositionColor>(m_pContext);
 
 	m_pEffect = new BasicEffect(m_pDevice);
@@ -132,8 +153,8 @@ HRESULT CNavMeshView::Tick()
 	ImGui::Begin("NavMeshTool");
 
 	InfoView();
-	//PointGroup();
-	//CellGroup();
+	PointGroup();
+	CellGroup();
 
 	ImGui::End();
 
@@ -142,13 +163,14 @@ HRESULT CNavMeshView::Tick()
 
 HRESULT CNavMeshView::LateTick()
 {
-
 	return S_OK;
 }
 
 HRESULT CNavMeshView::DebugRender()
 {
-	m_pEffect->SetWorld(XMMatrixIdentity());
+	DebugRenderLegacy();
+
+	/*m_pEffect->SetWorld(XMMatrixIdentity());
 
 	m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
 	m_pEffect->SetProjection(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_PROJ));
@@ -160,19 +182,19 @@ HRESULT CNavMeshView::DebugRender()
 	{
 		for (_int i = 0; i < m_vecCells.size(); ++i)
 		{
-			Vec3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.2f, 0.f);
-			Vec3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.2f, 0.f);
-			Vec3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.2f, 0.f);
+			Vec3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
+			Vec3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
+			Vec3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
 			m_pBatch->Begin();
 			DX::DrawTriangle(m_pBatch, XMLoadFloat3(&vP0), XMLoadFloat3(&vP1), XMLoadFloat3(&vP2), Colors::Cyan);
 			m_pBatch->End();
-		}		
+		}
 	}
 
 	m_pBatch->Begin();
 	DX::Draw(m_pBatch, m_tNavMeshBoundVolume, Colors::Green);
-	m_pBatch->End();
+	m_pBatch->End();*/
 
 	return S_OK;
 }
@@ -372,6 +394,39 @@ HRESULT CNavMeshView::BakeNavMesh()
 	return S_OK;
 }
 
+HRESULT CNavMeshView::CreateVoronoi()
+{
+	// VD
+	m_vecVDCaches.clear();
+	m_vecVDPoints.clear();
+
+	for (auto& cell : m_vecCells)
+	{
+		for (_int i = POINT_A; i < POINT_END; ++i)
+		{// 정점 중복됨. 고쳐야함.
+			m_vecVDCaches.push_back(VDPoint(cell->vPoints[i].x, cell->vPoints[i].z));
+		}
+	}
+
+	voronoi_diagram<_double> VD;
+	construct_voronoi(m_vecVDCaches.begin(), m_vecVDCaches.end(), &VD);
+
+	for (auto iter = VD.edges().begin(); iter != VD.edges().end(); ++iter)
+	{
+		if (iter->is_finite())
+		{
+			auto v0 = iter->vertex0();
+			auto v1 = iter->vertex1();
+
+			m_vecVDPoints.push_back(Vec3((_float)v0->x(), 0.05f, (_float)v0->y()));
+			m_vecVDPoints.push_back(Vec3((_float)v1->x(), 0.05f, (_float)v1->y()));
+		}
+	}
+
+
+	return S_OK;
+}
+
 HRESULT CNavMeshView::DebugRenderLegacy()
 {
 	m_pEffect->SetWorld(XMMatrixIdentity());
@@ -382,13 +437,12 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 	m_pEffect->Apply(m_pContext);
 	m_pContext->IASetInputLayout(m_pInputLayout);
 
-
 	if (2 == m_vecPoints.size())
 	{
 		VertexPositionColor verts[2];
 
-		_float3 vP0 = m_vecPoints[0] + Vec3(0.f, 0.2f, 0.f);
-		_float3 vP1 = m_vecPoints[1] + Vec3(0.f, 0.2f, 0.f);
+		_float3 vP0 = m_vecPoints[0] + Vec3(0.f, 0.05f, 0.f);
+		_float3 vP1 = m_vecPoints[1] + Vec3(0.f, 0.05f, 0.f);
 
 		XMStoreFloat3(&verts[0].position, XMLoadFloat3(&vP0));
 		XMStoreFloat3(&verts[1].position, XMLoadFloat3(&vP1));
@@ -405,18 +459,18 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 	{
 		for (_int i = 0; i < m_vecCells.size(); ++i)
 		{
-			_float3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.2f, 0.f);
-			_float3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.2f, 0.f);
-			_float3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.2f, 0.f);
+			_float3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
+			_float3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
+			_float3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
 			m_pBatch->Begin();
 			DX::DrawTriangle(m_pBatch, XMLoadFloat3(&vP0), XMLoadFloat3(&vP1), XMLoadFloat3(&vP2), Colors::Cyan);
 			m_pBatch->End();
 		}
 
-		_float3 vP0 = m_vecCells[m_Item_Current]->vPoints[0] + Vec3(0.f, 0.2f, 0.f);
-		_float3 vP1 = m_vecCells[m_Item_Current]->vPoints[1] + Vec3(0.f, 0.2f, 0.f);
-		_float3 vP2 = m_vecCells[m_Item_Current]->vPoints[2] + Vec3(0.f, 0.2f, 0.f);
+		_float3 vP0 = m_vecCells[m_Item_Current]->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
+		_float3 vP1 = m_vecCells[m_Item_Current]->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
+		_float3 vP2 = m_vecCells[m_Item_Current]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
 		m_pBatch->Begin();
 		DX::DrawTriangle(m_pBatch, XMLoadFloat3(&vP0), XMLoadFloat3(&vP1), XMLoadFloat3(&vP2), Colors::Coral);
@@ -427,10 +481,20 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 	{
 		for (auto& iter : m_vecSphere)
 		{
-			BoundingSphere tS(iter->Center + 0.2f * Vec3::UnitY, 0.5f);
+			BoundingSphere tS(iter->Center + 0.05f * Vec3::UnitY, 0.5f);
 
 			m_pBatch->Begin();
 			DX::Draw(m_pBatch, tS, Colors::Cyan);
+			m_pBatch->End();
+		}
+	}
+
+	if (!m_vecVDPoints.empty())
+	{
+		for (_int i = 0; i < m_vecVDPoints.size() - 1; ++i)
+		{
+			m_pBatch->Begin();
+			m_pBatch->DrawLine(VertexPositionColor(m_vecVDPoints[i], Colors::Lime), VertexPositionColor(m_vecVDPoints[i + 1], Colors::Lime));
 			m_pBatch->End();
 		}
 	}
@@ -466,9 +530,17 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 {
 	map<LAYERTAG, CLayer*>& mapLayer = m_pGameInstance->GetCurrentLevelLayers();
 	auto iter = mapLayer.find(LAYERTAG::GROUND);
-	if (mapLayer.end() == iter) return false;
-	vector<CGameObject*>& vecGroundObjects = iter->second->GetGameObjects();
-	if (vecGroundObjects.empty()) return false;
+	vector<CGameObject*>* vecGroundObjects = nullptr;
+
+	if (mapLayer.end() != iter)
+	{
+		vecGroundObjects = &iter->second->GetGameObjects();
+	}
+
+	if (nullptr != vecGroundObjects && true == vecGroundObjects->empty())
+	{
+		//return false;
+	}
 
 	Viewport& vp = m_pGameInstance->GetViewPort();
 	const Matrix& P = m_pGameInstance->Get_Transform_float4x4(CPipeLine::D3DTS_PROJ);
@@ -512,7 +584,13 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	if (!bSpherePicked)
 	{
 		CGameObject* pObject = nullptr;
-		for (auto& iter : vecGroundObjects)
+
+		if (nullptr == vecGroundObjects)
+		{
+			goto TERRAIN_PICKED;
+		}
+
+		for (auto& iter : *vecGroundObjects)
 		{
 			vector<Vec3>& vecSurfaceVtx = iter->GetModel()->GetSurfaceVtx();
 			vector<FACEINDICES32>& vecSurfaceIdx = iter->GetModel()->GetSurfaceIdx();
@@ -545,13 +623,18 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 			}
 		}
 
-		if (pObject)
+		if (nullptr == pObject)
 		{
 			const Matrix& W = pObject->GetTransform()->WorldMatrix();
 			pickPos = XMVector3TransformCoord(pickPos, W);
 		}
 		else
-			return false;
+		{
+		TERRAIN_PICKED:
+
+			const POINT& p = m_pGameInstance->GetMousePos();
+			m_pTerrainBuffer->Pick(p.x, p.y, pickPos, fDistance, m_pTerrainBuffer->GetTransform()->WorldMatrix());
+		}
 	}
 
 	m_vecPoints.push_back(pickPos);
@@ -656,6 +739,11 @@ void CNavMeshView::InfoView()
 		BakeNavMesh();
 	}ImGui::SameLine();
 	
+	if (ImGui::Button("MakeVoronoi"))
+	{
+		CreateVoronoi();
+	}ImGui::NewLine();
+	
 	if (ImGui::Button("SaveNav"))
 	{
 		Save();
@@ -697,11 +785,11 @@ void CNavMeshView::CellGroup()
 	}
 }
 
-CNavMeshView* CNavMeshView::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CNavMeshView* CNavMeshView::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, void* pArg)
 {
 	CNavMeshView* pInstance = new CNavMeshView(pDevice, pContext);
 
-	if (FAILED(pInstance->Initialize(nullptr)))
+	if (FAILED(pInstance->Initialize(pArg)))
 	{
 		MSG_BOX("Failed to Created : CNavMeshView");
 		Safe_Release(pInstance);

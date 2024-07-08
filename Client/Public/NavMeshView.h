@@ -9,6 +9,11 @@ class CShader;
 
 END
 
+struct VDPoint
+{
+	_int x, y;
+};
+
 BEGIN(Client)
 
 class CNavMeshView final : public CView
@@ -35,6 +40,7 @@ private:
 	void	ShowNavMesh(_bool bOnOff) {	m_isNavMeshOn = bOnOff; }
 
 	HRESULT	BakeNavMesh();
+	HRESULT	CreateVoronoi();
 
 private:
 	HRESULT	DebugRenderLegacy();
@@ -62,6 +68,12 @@ private:
 
 	BoundingBox			m_tNavMeshBoundVolume;
 
+	CTerrain*			m_pTerrainBuffer = nullptr;
+
+	// VD
+	vector<VDPoint>		m_vecVDCaches;
+	vector<Vec3>		m_vecVDPoints;
+
 	///////////////////////////////////////////////////
 
 	wstring				m_strPickedObject;
@@ -85,7 +97,7 @@ private:
 	ID3D11InputLayout*	m_pInputLayout = nullptr;
 
 public:
-	static class CNavMeshView* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static class CNavMeshView* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, void* pArg = nullptr);
 	virtual void Free() override;
 };
 
