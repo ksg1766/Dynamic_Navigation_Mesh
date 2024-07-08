@@ -5,7 +5,7 @@
   * 낮은 높이 턱 삼각형은 포함하도록 구현.
 
 :soccer: 2주차 목표
-   * 목표와 우선 순위를 고려해 Delaunay Triangulation 우선 구현할 계획입니다.
+   * 삼각형 추려내는 작업의 효율이 낮아 목표와 우선 순위를 고려해 Delaunay Triangulation 우선 구현할 계획입니다.
    * Obstacle 정점 추가, 삭제 시 Cell 재구성 되도록 구현 예정입니다.
 
   * 주요 변경 사항
