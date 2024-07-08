@@ -400,12 +400,9 @@ HRESULT CNavMeshView::CreateVoronoi()
 	m_vecVDCaches.clear();
 	m_vecVDPoints.clear();
 
-	for (auto& cell : m_vecCells)
+	for (auto& point : m_vecPoints)
 	{
-		for (_int i = POINT_A; i < POINT_END; ++i)
-		{// 정점 중복됨. 고쳐야함.
-			m_vecVDCaches.push_back(VDPoint(cell->vPoints[i].x, cell->vPoints[i].z));
-		}
+		m_vecVDCaches.push_back(VDPoint(point.x, point.z));
 	}
 
 	voronoi_diagram<_double> VD;
@@ -423,7 +420,6 @@ HRESULT CNavMeshView::CreateVoronoi()
 		}
 	}
 
-
 	return S_OK;
 }
 
@@ -437,7 +433,7 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 	m_pEffect->Apply(m_pContext);
 	m_pContext->IASetInputLayout(m_pInputLayout);
 
-	if (2 == m_vecPoints.size())
+	/*if (2 == m_vecPoints.size())
 	{
 		VertexPositionColor verts[2];
 
@@ -475,26 +471,36 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 		m_pBatch->Begin();
 		DX::DrawTriangle(m_pBatch, XMLoadFloat3(&vP0), XMLoadFloat3(&vP1), XMLoadFloat3(&vP2), Colors::Coral);
 		m_pBatch->End();
+	}*/
+
+	if (1 < m_vecPoints.size())
+	{
+		for (_int i = 0; i < m_vecPoints.size() - 1; ++i)
+		{
+			m_pBatch->Begin();
+			m_pBatch->DrawLine(VertexPositionColor(m_vecPoints[i], Colors::Lime), VertexPositionColor(m_vecPoints[i + 1], Colors::Lime));
+			m_pBatch->End();
+		}
 	}
 
-	if (!m_vecSphere.empty())
+	if (false == m_vecSphere.empty())
 	{
 		for (auto& iter : m_vecSphere)
 		{
 			BoundingSphere tS(iter->Center + 0.05f * Vec3::UnitY, 0.5f);
 
 			m_pBatch->Begin();
-			DX::Draw(m_pBatch, tS, Colors::Cyan);
+			DX::Draw(m_pBatch, tS, Colors::Lime);
 			m_pBatch->End();
 		}
 	}
 
-	if (!m_vecVDPoints.empty())
+	if (1 < m_vecVDPoints.size())
 	{
 		for (_int i = 0; i < m_vecVDPoints.size() - 1; ++i)
 		{
 			m_pBatch->Begin();
-			m_pBatch->DrawLine(VertexPositionColor(m_vecVDPoints[i], Colors::Lime), VertexPositionColor(m_vecVDPoints[i + 1], Colors::Lime));
+			m_pBatch->DrawLine(VertexPositionColor(m_vecVDPoints[i], Colors::Cyan), VertexPositionColor(m_vecVDPoints[i + 1], Colors::Cyan));
 			m_pBatch->End();
 		}
 	}
@@ -631,7 +637,6 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		else
 		{
 		TERRAIN_PICKED:
-
 			const POINT& p = m_pGameInstance->GetMousePos();
 			m_pTerrainBuffer->Pick(p.x, p.y, pickPos, fDistance, m_pTerrainBuffer->GetTransform()->WorldMatrix());
 		}
@@ -643,8 +648,9 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	tSphere->Radius = 1.f;
 	m_vecSphere.push_back(tSphere);
 
-	if (3 == m_vecPoints.size())
-	{
+	// 삼각형 만드는게 아니라 점만 찍도록.
+	//if (3 == m_vecPoints.size())
+	/*{
 		CellData* tCellData = new CellData;
 		tCellData->vPoints[0] = m_vecPoints[0];
 		tCellData->vPoints[1] = m_vecPoints[1];
@@ -657,7 +663,7 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 
 		s2cPushBack(m_strCells, to_string(m_vecCells.size() - 1));
 	}
-	else
+	else*/
 		s2cPushBack(m_strPoints, to_string(pickPos.x) + " " + to_string(pickPos.y) + " " + to_string(pickPos.z));
 
 	return true;
