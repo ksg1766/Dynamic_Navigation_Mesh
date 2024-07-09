@@ -41,7 +41,6 @@ private:
 
 	HRESULT	BakeNavMesh();
 	HRESULT	ExecuteDelaunayVoronoi();
-	HRESULT	CreateVoronoi();
 	HRESULT	SafeReleaseTriangle(triangulateio& tTriangle);
 
 private:
@@ -74,9 +73,6 @@ private:
 
 	// DT, VD
 	triangulateio		m_tDT_in, m_tDT_out, m_tVD_out;
-
-	vector<VDPoint>		m_vecVDCaches;
-	vector<Vec3>		m_vecVDPoints;
 
 	///////////////////////////////////////////////////
 

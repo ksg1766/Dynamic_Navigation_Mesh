@@ -407,7 +407,15 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 	SafeReleaseTriangle(m_tVD_out);
 
 	m_tDT_in.numberofpoints = m_vecPoints.size();
-	m_tDT_in.pointlist = (TRI_REAL*)malloc(m_tDT_in.numberofpoints * 2 * sizeof(TRI_REAL));
+
+	if (nullptr == m_tDT_in.pointlist)
+	{
+		m_tDT_in.pointlist = (TRI_REAL*)malloc(m_tDT_in.numberofpoints * 2 * sizeof(TRI_REAL));
+	}
+	else
+	{
+		m_tDT_in.pointlist = (TRI_REAL*)realloc(m_tDT_in.pointlist, m_tDT_in.numberofpoints * 2 * sizeof(TRI_REAL));
+	}
 
 	for (_int i = 0; i < m_vecPoints.size(); ++i)
 	{
@@ -416,7 +424,15 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 	}
 
 	m_tDT_in.numberofsegments = m_vecPoints.size();
-	m_tDT_in.segmentlist = (_int*)malloc(m_tDT_in.numberofsegments * 2 * sizeof(_int));
+
+	if (nullptr == m_tDT_in.segmentlist)
+	{
+		m_tDT_in.segmentlist = (_int*)malloc(m_tDT_in.numberofpoints * 2 * sizeof(_int));
+	}
+	else
+	{
+		m_tDT_in.segmentlist = (_int*)realloc(m_tDT_in.segmentlist, m_tDT_in.numberofpoints * 2 * sizeof(_int));
+	}
 
 	for (_int i = 0; i < m_vecPoints.size() - 1; ++i)
 	{
@@ -431,56 +447,6 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 
 	static _char triswitches[4] = "pzv";
 	triangulate(triswitches, &m_tDT_in, &m_tDT_out, &m_tVD_out);
-	int i = m_tVD_out.numberofsegments;
-
-	return S_OK;
-}
-
-HRESULT CNavMeshView::CreateVoronoi()
-{
-	// VD
-	/*m_vecVDCaches.clear();
-	m_vecVDPoints.clear();
-
-	for (auto& point : m_vecPoints)
-	{
-		m_vecVDCaches.push_back(VDPoint(point.x, point.z));
-	}
-
-	voronoi_diagram<_double> VD;
-	construct_voronoi(m_vecVDCaches.begin(), m_vecVDCaches.end(), &VD);
-
-	for (auto iter = VD.edges().begin(); iter != VD.edges().end(); ++iter)
-	{
-		if (iter->is_finite())
-		{
-			auto v0 = iter->vertex0();
-			auto v1 = iter->vertex1();
-
-			m_vecVDPoints.push_back(Vec3((_float)v0->x(), 0.05f, (_float)v0->y()));
-			m_vecVDPoints.push_back(Vec3((_float)v1->x(), 0.05f, (_float)v1->y()));
-		}
-	}*/
-
-	return S_OK;
-}
-
-HRESULT CNavMeshView::SafeReleaseTriangle(triangulateio& tTriangle)
-{
-	if (tTriangle.pointlist)				{ free(tTriangle.pointlist);				tTriangle.pointlist				= nullptr;	}
-	if (tTriangle.pointattributelist)		{ free(tTriangle.pointattributelist);		tTriangle.pointattributelist	= nullptr;	}
-	if (tTriangle.pointmarkerlist)			{ free(tTriangle.pointmarkerlist);			tTriangle.pointmarkerlist		= nullptr;	}
-	if (tTriangle.triangleattributelist)	{ free(tTriangle.triangleattributelist);	tTriangle.triangleattributelist = nullptr;	}
-	if (tTriangle.trianglearealist)			{ free(tTriangle.trianglearealist);			tTriangle.trianglearealist		= nullptr;	}
-	if (tTriangle.trianglelist)				{ free(tTriangle.trianglelist);				tTriangle.trianglelist			= nullptr;	}
-	if (tTriangle.neighborlist)				{ free(tTriangle.neighborlist);				tTriangle.neighborlist			= nullptr;	}
-	if (tTriangle.segmentlist)				{ free(tTriangle.segmentlist);				tTriangle.segmentlist			= nullptr;	}
-	if (tTriangle.segmentmarkerlist)		{ free(tTriangle.segmentmarkerlist);		tTriangle.segmentmarkerlist		= nullptr;	}
-	if (tTriangle.holelist)					{ free(tTriangle.holelist);					tTriangle.holelist				= nullptr;	}
-	if (tTriangle.regionlist)				{ free(tTriangle.regionlist);				tTriangle.regionlist			= nullptr;	}
-	if (tTriangle.edgelist)					{ free(tTriangle.edgelist);					tTriangle.edgelist				= nullptr;	}
-	if (tTriangle.edgemarkerlist)			{ free(tTriangle.edgemarkerlist);			tTriangle.edgemarkerlist		= nullptr;	}
-	if (tTriangle.normlist)					{ free(tTriangle.normlist);					tTriangle.normlist				= nullptr;	}
 
 	return S_OK;
 }
@@ -555,23 +521,12 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 		m_pBatch->End();
 	}*/
 
-	// boost::VD
 	/*if (1 < m_vecPoints.size())
 	{
 		for (_int i = 0; i < m_vecPoints.size() - 1; ++i)
 		{
 			m_pBatch->Begin();
 			m_pBatch->DrawLine(VertexPositionColor(m_vecPoints[i], Colors::Lime), VertexPositionColor(m_vecPoints[i + 1], Colors::Lime));
-			m_pBatch->End();
-		}
-	}
-
-	if (1 < m_vecVDPoints.size())
-	{
-		for (_int i = 0; i < m_vecVDPoints.size() - 1; ++i)
-		{
-			m_pBatch->Begin();
-			m_pBatch->DrawLine(VertexPositionColor(m_vecVDPoints[i], Colors::Cyan), VertexPositionColor(m_vecVDPoints[i + 1], Colors::Cyan));
 			m_pBatch->End();
 		}
 	}*/
@@ -756,9 +711,6 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	}
 
 	m_vecPoints.push_back(pickPos);
-	// m_vecVDPoints 같이 갱신해야 실시간 갱신 됨.
-	// 우선은 아래와 같이...
-	//CreateVoronoi();
 
 	if (3 <= m_vecPoints.size())
 	{
@@ -866,12 +818,6 @@ void CNavMeshView::InfoView()
 	{
 		BakeNavMesh();
 	}ImGui::SameLine();
-	
-	if (ImGui::Button("MakeVoronoi"))
-	{
-		CreateVoronoi();
-	}ImGui::NewLine();
-	
 	if (ImGui::Button("SaveNav"))
 	{
 		Save();
@@ -911,6 +857,26 @@ void CNavMeshView::CellGroup()
 		for(_int i = 0; i < 3; ++i)
 			iter = m_vecSphere.erase(iter);
 	}
+}
+
+HRESULT CNavMeshView::SafeReleaseTriangle(triangulateio& tTriangle)
+{
+	if (tTriangle.pointlist) { free(tTriangle.pointlist);				tTriangle.pointlist = nullptr; }
+	if (tTriangle.pointattributelist) { free(tTriangle.pointattributelist);		tTriangle.pointattributelist = nullptr; }
+	if (tTriangle.pointmarkerlist) { free(tTriangle.pointmarkerlist);			tTriangle.pointmarkerlist = nullptr; }
+	if (tTriangle.triangleattributelist) { free(tTriangle.triangleattributelist);	tTriangle.triangleattributelist = nullptr; }
+	if (tTriangle.trianglearealist) { free(tTriangle.trianglearealist);			tTriangle.trianglearealist = nullptr; }
+	if (tTriangle.trianglelist) { free(tTriangle.trianglelist);				tTriangle.trianglelist = nullptr; }
+	if (tTriangle.neighborlist) { free(tTriangle.neighborlist);				tTriangle.neighborlist = nullptr; }
+	if (tTriangle.segmentlist) { free(tTriangle.segmentlist);				tTriangle.segmentlist = nullptr; }
+	if (tTriangle.segmentmarkerlist) { free(tTriangle.segmentmarkerlist);		tTriangle.segmentmarkerlist = nullptr; }
+	if (tTriangle.holelist) { free(tTriangle.holelist);					tTriangle.holelist = nullptr; }
+	if (tTriangle.regionlist) { free(tTriangle.regionlist);				tTriangle.regionlist = nullptr; }
+	if (tTriangle.edgelist) { free(tTriangle.edgelist);					tTriangle.edgelist = nullptr; }
+	if (tTriangle.edgemarkerlist) { free(tTriangle.edgemarkerlist);			tTriangle.edgemarkerlist = nullptr; }
+	if (tTriangle.normlist) { free(tTriangle.normlist);					tTriangle.normlist = nullptr; }
+
+	return S_OK;
 }
 
 CNavMeshView* CNavMeshView::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, void* pArg)
