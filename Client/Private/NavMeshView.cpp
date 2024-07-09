@@ -395,32 +395,28 @@ HRESULT CNavMeshView::BakeNavMesh()
 }
 
 HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
-{	
+{
 	if (true == m_vecPoints.empty())
 	{
 		return E_FAIL;
 	}
 
-	// 해제 할당 반복하지 말고 갱신하도록
-	Safe_Delete_Array(m_tDT_out.pointlist);
-	Safe_Delete_Array(m_tDT_out.trianglelist);
-	Safe_Delete_Array(m_tVD_out.pointlist);
-	Safe_Delete_Array(m_tVD_out.edgelist);
-	Safe_Delete_Array(m_tVD_out.normlist);
-	Safe_Delete_Array(m_tDT_in.pointlist);
-	Safe_Delete_Array(m_tDT_in.segmentlist);
+	// 해제 할당 반복하지 말고 갱신하도록 -> 결국 malloc realloc 써야할 듯.
+	SafeReleaseTriangle(m_tDT_in);
+	SafeReleaseTriangle(m_tDT_out);
+	SafeReleaseTriangle(m_tVD_out);
 
 	m_tDT_in.numberofpoints = m_vecPoints.size();
-	m_tDT_in.pointlist = new TRI_REAL[m_tDT_in.numberofpoints * 2];
+	m_tDT_in.pointlist = (TRI_REAL*)malloc(m_tDT_in.numberofpoints * 2 * sizeof(TRI_REAL));
 
 	for (_int i = 0; i < m_vecPoints.size(); ++i)
 	{
-		m_tDT_in.pointlist[2 * i + 0] = m_vecPoints[i].x;
-		m_tDT_in.pointlist[2 * i + 1] = m_vecPoints[i].z;
+		m_tDT_in.pointlist[2 * i + 0] = (TRI_REAL)m_vecPoints[i].x;
+		m_tDT_in.pointlist[2 * i + 1] = (TRI_REAL)m_vecPoints[i].z;
 	}
 
 	m_tDT_in.numberofsegments = m_vecPoints.size();
-	m_tDT_in.segmentlist = new _int[m_tDT_in.numberofsegments * 2];
+	m_tDT_in.segmentlist = (_int*)malloc(m_tDT_in.numberofsegments * 2 * sizeof(_int));
 
 	for (_int i = 0; i < m_vecPoints.size() - 1; ++i)
 	{
@@ -435,6 +431,7 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 
 	static _char triswitches[4] = "pzv";
 	triangulate(triswitches, &m_tDT_in, &m_tDT_out, &m_tVD_out);
+	int i = m_tVD_out.numberofsegments;
 
 	return S_OK;
 }
@@ -464,6 +461,26 @@ HRESULT CNavMeshView::CreateVoronoi()
 			m_vecVDPoints.push_back(Vec3((_float)v1->x(), 0.05f, (_float)v1->y()));
 		}
 	}*/
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::SafeReleaseTriangle(triangulateio& tTriangle)
+{
+	if (tTriangle.pointlist)				{ free(tTriangle.pointlist);				tTriangle.pointlist				= nullptr;	}
+	if (tTriangle.pointattributelist)		{ free(tTriangle.pointattributelist);		tTriangle.pointattributelist	= nullptr;	}
+	if (tTriangle.pointmarkerlist)			{ free(tTriangle.pointmarkerlist);			tTriangle.pointmarkerlist		= nullptr;	}
+	if (tTriangle.triangleattributelist)	{ free(tTriangle.triangleattributelist);	tTriangle.triangleattributelist = nullptr;	}
+	if (tTriangle.trianglearealist)			{ free(tTriangle.trianglearealist);			tTriangle.trianglearealist		= nullptr;	}
+	if (tTriangle.trianglelist)				{ free(tTriangle.trianglelist);				tTriangle.trianglelist			= nullptr;	}
+	if (tTriangle.neighborlist)				{ free(tTriangle.neighborlist);				tTriangle.neighborlist			= nullptr;	}
+	if (tTriangle.segmentlist)				{ free(tTriangle.segmentlist);				tTriangle.segmentlist			= nullptr;	}
+	if (tTriangle.segmentmarkerlist)		{ free(tTriangle.segmentmarkerlist);		tTriangle.segmentmarkerlist		= nullptr;	}
+	if (tTriangle.holelist)					{ free(tTriangle.holelist);					tTriangle.holelist				= nullptr;	}
+	if (tTriangle.regionlist)				{ free(tTriangle.regionlist);				tTriangle.regionlist			= nullptr;	}
+	if (tTriangle.edgelist)					{ free(tTriangle.edgelist);					tTriangle.edgelist				= nullptr;	}
+	if (tTriangle.edgemarkerlist)			{ free(tTriangle.edgemarkerlist);			tTriangle.edgemarkerlist		= nullptr;	}
+	if (tTriangle.normlist)					{ free(tTriangle.normlist);					tTriangle.normlist				= nullptr;	}
 
 	return S_OK;
 }
@@ -573,14 +590,11 @@ HRESULT CNavMeshView::RenderDT()
 			_int iIdx2 = m_tDT_out.trianglelist[i * 3 + POINT_B];
 			_int iIdx3 = m_tDT_out.trianglelist[i * 3 + POINT_C];
 
-			Vec3 vTri[POINT_END] =
-			{
-				{ (_float)m_tDT_out.pointlist[iIdx1 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx1 * 2 + 1] },
-				{ (_float)m_tDT_out.pointlist[iIdx2 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx2 * 2 + 1] },
-				{ (_float)m_tDT_out.pointlist[iIdx3 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx3 * 2 + 1] }
-			};
+			Vec3 vTri1 = { (_float)m_tDT_out.pointlist[iIdx1 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx1 * 2 + 1] };
+			Vec3 vTri2 = { (_float)m_tDT_out.pointlist[iIdx2 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx2 * 2 + 1] };
+			Vec3 vTri3 = { (_float)m_tDT_out.pointlist[iIdx3 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx3 * 2 + 1] };
 
-			DX::DrawTriangle(m_pBatch, vTri[POINT_A], vTri[POINT_B], vTri[POINT_C], Colors::Lime);
+			DX::DrawTriangle(m_pBatch, vTri1, vTri2, vTri3, Colors::Lime);
 		}
 		m_pBatch->End();
 	}
@@ -600,13 +614,10 @@ HRESULT CNavMeshView::RenderVD()
 
 			if (0 <= iIdx1 && 0 <= iIdx2)
 			{
-				Vec3 vLine[2] =
-				{
-					{ (_float)m_tVD_out.pointlist[iIdx1 * 2], 0.f, (_float)m_tVD_out.pointlist[iIdx1 * 2 + 1] },
-					{ (_float)m_tVD_out.pointlist[iIdx2 * 2], 0.f, (_float)m_tVD_out.pointlist[iIdx2 * 2 + 1] }
-				};
+				Vec4 vLine1 = { (_float)m_tVD_out.pointlist[iIdx1 * 2], 0.f, (_float)m_tVD_out.pointlist[iIdx1 * 2 + 1], 1.f };
+				Vec4 vLine2 = { (_float)m_tVD_out.pointlist[iIdx2 * 2], 0.f, (_float)m_tVD_out.pointlist[iIdx2 * 2 + 1], 1.f };
 
-				m_pBatch->DrawLine(VertexPositionColor(vLine[0], Colors::Cyan), VertexPositionColor(vLine[1], Colors::Cyan));
+				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Cyan), VertexPositionColor(vLine2, Colors::Cyan));
 			}
 		}
 		m_pBatch->End();
@@ -924,11 +935,7 @@ void CNavMeshView::Free()
 
 	Safe_Release(m_pInputLayout);
 
-	Safe_Delete_Array(m_tDT_out.pointlist);
-	Safe_Delete_Array(m_tDT_out.trianglelist);
-	Safe_Delete_Array(m_tVD_out.pointlist);
-	Safe_Delete_Array(m_tVD_out.edgelist);
-	Safe_Delete_Array(m_tVD_out.normlist);
-	Safe_Delete_Array(m_tDT_in.pointlist);
-	Safe_Delete_Array(m_tDT_in.segmentlist);
+	SafeReleaseTriangle(m_tDT_in);
+	SafeReleaseTriangle(m_tDT_out);
+	SafeReleaseTriangle(m_tVD_out);
 }

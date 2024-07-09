@@ -42,6 +42,7 @@ private:
 	HRESULT	BakeNavMesh();
 	HRESULT	ExecuteDelaunayVoronoi();
 	HRESULT	CreateVoronoi();
+	HRESULT	SafeReleaseTriangle(triangulateio& tTriangle);
 
 private:
 	HRESULT	DebugRenderLegacy();

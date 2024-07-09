@@ -116,7 +116,7 @@ HRESULT CLevel_GameTool::DebugRender()
 		m_pSaveLoadView->DebugRender();
 		//m_pAnimationView->DebugRender();
 		m_pNavMeshView->DebugRender();
-	
+
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
@@ -140,19 +140,6 @@ HRESULT CLevel_GameTool::Ready_Lights()
 	if (FAILED(m_pGameInstance->Add_Light(LightDesc)))
 		return E_FAIL;
 
-	/* 점 광원을 추가한다. */
-	/*ZeroMemory(&LightDesc, sizeof LightDesc);
-	LightDesc.eLightType = LIGHT_DESC::LIGHT_POINT;
-	LightDesc.vLightPos = _float4(35.f, 3.f, 35.f, 1.f);
-	LightDesc.fLightRange = 20.f;
-
-	LightDesc.vDiffuse = _float4(1.f, 1.f, 1.f, 1.f);
-	LightDesc.vAmbient = _float4(1.f, 1.f, 1.f, 1.f);
-	LightDesc.vSpecular = _float4(1.f, 1.f, 1.f, 1.f);
-
-	if (FAILED(m_pGameInstance->Add_Light(LightDesc)))
-		return E_FAIL;*/
-
 	return S_OK;
 }
 
@@ -169,7 +156,6 @@ HRESULT CLevel_GameTool::Ready_Layer_Default()
 
 HRESULT CLevel_GameTool::Ready_Layer_Terrain()
 {
-	/* 원형객체를 복제하여 사본객체를 생성하고 레이어에 추가한다. */
 	m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(LEVEL_GAMETOOL, LAYERTAG::TERRAIN, TEXT("Prototype_GameObject_BasicTerrain")));
 	if (nullptr == m_pBasicTerrain) return E_FAIL;
 
@@ -178,7 +164,6 @@ HRESULT CLevel_GameTool::Ready_Layer_Terrain()
 
 HRESULT CLevel_GameTool::Ready_Layer_Ground()
 {
-	/* 원형객체를 복제하여 사본객체를 생성하고 레이어에 추가한다. */
 	CGameObject* pGameObject = nullptr;
 
 	LAYERTAG	eLayerTag = LAYERTAG::GROUND;
