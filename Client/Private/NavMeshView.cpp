@@ -402,7 +402,6 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 	}
 
 	// 해제 할당 반복하지 말고 갱신하도록 -> 결국 malloc realloc 써야할 듯.
-	SafeReleaseTriangle(m_tDT_in);
 	SafeReleaseTriangle(m_tDT_out);
 	SafeReleaseTriangle(m_tVD_out);
 
