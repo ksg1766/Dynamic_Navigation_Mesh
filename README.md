@@ -18,6 +18,7 @@
   * Slope에 따라 메쉬 추리기.
   * AABB 바운딩 볼륨내에서만 삼각형 생성하도록 제한.
   * 낮은 높이 턱 삼각형은 포함하도록 구현.
+![climb](https://github.com/ksg1766/Navigation_System/assets/37239034/3904964d-7b49-4b0a-be59-0efbac5e71e4)
 
 :soccer: 2주차 목표
    * 삼각형 추려내는 작업의 효율이 낮아 목표와 우선 순위를 고려해 Delaunay Triangulation 우선 구현할 계획입니다.
