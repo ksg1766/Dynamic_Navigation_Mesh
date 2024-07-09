@@ -9,7 +9,7 @@
 #include "DissolveManager.h"
 #include "DebugDraw.h"
 #include <boost/polygon/voronoi.hpp>
-
+/*
 namespace boost
 {
 	namespace polygon
@@ -31,7 +31,7 @@ namespace boost
 }
 
 using namespace boost::polygon;
-
+*/
 struct CNavMeshView::CellData
 {
 	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
@@ -401,16 +401,17 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 		return E_FAIL;
 	}
 
-	if (nullptr != m_tDT_out.pointlist)		free(m_tDT_out.pointlist);
-	if (nullptr != m_tDT_out.trianglelist)	free(m_tDT_out.trianglelist);
-	if (nullptr != m_tVD_out.pointlist)		free(m_tVD_out.pointlist);
-	if (nullptr != m_tVD_out.edgelist)		free(m_tVD_out.edgelist);
-	if (nullptr != m_tVD_out.normlist)		free(m_tVD_out.normlist);
-	if (nullptr != m_tDT_in.pointlist)		free(m_tDT_in.pointlist);
-	if (nullptr != m_tDT_in.segmentlist)	free(m_tDT_in.segmentlist);
+	// 해제 할당 반복하지 말고 갱신하도록
+	Safe_Delete_Array(m_tDT_out.pointlist);
+	Safe_Delete_Array(m_tDT_out.trianglelist);
+	Safe_Delete_Array(m_tVD_out.pointlist);
+	Safe_Delete_Array(m_tVD_out.edgelist);
+	Safe_Delete_Array(m_tVD_out.normlist);
+	Safe_Delete_Array(m_tDT_in.pointlist);
+	Safe_Delete_Array(m_tDT_in.segmentlist);
 
 	m_tDT_in.numberofpoints = m_vecPoints.size();
-	m_tDT_in.pointlist = (TRI_REAL*)malloc(m_tDT_in.numberofpoints * 2 * sizeof(TRI_REAL));
+	m_tDT_in.pointlist = new TRI_REAL[m_tDT_in.numberofpoints * 2];
 
 	for (_int i = 0; i < m_vecPoints.size(); ++i)
 	{
@@ -419,7 +420,7 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 	}
 
 	m_tDT_in.numberofsegments = m_vecPoints.size();
-	m_tDT_in.segmentlist = (_int*)malloc(m_tDT_in.numberofsegments * 2 * sizeof(_int));
+	m_tDT_in.segmentlist = new _int[m_tDT_in.numberofsegments * 2];
 
 	for (_int i = 0; i < m_vecPoints.size() - 1; ++i)
 	{
@@ -432,13 +433,6 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 	m_tDT_in.numberofholes = 0;
 	m_tDT_in.numberofregions = 0;
 
-	m_tDT_out.pointlist = (TRI_REAL*)nullptr;
-	m_tDT_out.trianglelist = (_int*)nullptr;
-
-	m_tVD_out.pointlist = (TRI_REAL*)nullptr;
-	m_tVD_out.edgelist = (_int*)nullptr;
-	m_tVD_out.normlist = (TRI_REAL*)nullptr;
-
 	static _char triswitches[4] = "pzv";
 	triangulate(triswitches, &m_tDT_in, &m_tDT_out, &m_tVD_out);
 
@@ -448,7 +442,7 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 HRESULT CNavMeshView::CreateVoronoi()
 {
 	// VD
-	m_vecVDCaches.clear();
+	/*m_vecVDCaches.clear();
 	m_vecVDPoints.clear();
 
 	for (auto& point : m_vecPoints)
@@ -469,7 +463,7 @@ HRESULT CNavMeshView::CreateVoronoi()
 			m_vecVDPoints.push_back(Vec3((_float)v0->x(), 0.05f, (_float)v0->y()));
 			m_vecVDPoints.push_back(Vec3((_float)v1->x(), 0.05f, (_float)v1->y()));
 		}
-	}
+	}*/
 
 	return S_OK;
 }
@@ -497,49 +491,12 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 	}
 
 	// triangle::DT
-	if (0 < m_tDT_out.numberoftriangles)
-	{
-		m_pBatch->Begin();
-		for (_int i = 0; i < m_tDT_out.numberoftriangles; ++i)
-		{
-			_int iIdx1 = m_tDT_out.trianglelist[i * 3 + POINT_A];
-			_int iIdx2 = m_tDT_out.trianglelist[i * 3 + POINT_B];
-			_int iIdx3 = m_tDT_out.trianglelist[i * 3 + POINT_C];
-
-			Vec3 vTri[POINT_END] =
-			{
-				{ (_float)m_tDT_out.pointlist[iIdx1 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx1 * 2 + 1] },
-				{ (_float)m_tDT_out.pointlist[iIdx2 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx2 * 2 + 1] },
-				{ (_float)m_tDT_out.pointlist[iIdx3 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx3 * 2 + 1] }
-			};
-
-			DX::DrawTriangle(m_pBatch, vTri[POINT_A], vTri[POINT_B], vTri[POINT_C], Colors::Lime);
-		}
-		m_pBatch->End();
-	}
+	if (FAILED(RenderDT()))
+		return E_FAIL;
 
 	// triangle::VD
-	if (0 < m_tVD_out.numberofedges)
-	{
-		m_pBatch->Begin();
-		for (_int i = 0; i < m_tVD_out.numberofedges; ++i)
-		{
-			_int iIdx1 = m_tVD_out.edgelist[i * 2 + POINT_A];
-			_int iIdx2 = m_tVD_out.edgelist[i * 2 + POINT_B];
-			
-			if (0 <= iIdx1 && 0 <= iIdx2)
-			{
-				Vec3 vLine[2] =
-				{
-					{ (_float)m_tVD_out.pointlist[iIdx1 * 2], 0.f, (_float)m_tVD_out.pointlist[iIdx1 * 2 + 1] },
-					{ (_float)m_tVD_out.pointlist[iIdx2 * 2], 0.f, (_float)m_tVD_out.pointlist[iIdx2 * 2 + 1] }
-				};
-
-				m_pBatch->DrawLine(VertexPositionColor(vLine[0], Colors::Cyan), VertexPositionColor(vLine[1], Colors::Cyan));
-			}
-		}
-		m_pBatch->End();
-	}
+	if (FAILED(RenderVD()))
+		return E_FAIL;
 
 	/*if (2 == m_vecPoints.size())
 	{
@@ -601,6 +558,59 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 			m_pBatch->End();
 		}
 	}*/
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::RenderDT()
+{
+	if (0 < m_tDT_out.numberoftriangles)
+	{
+		m_pBatch->Begin();
+		for (_int i = 0; i < m_tDT_out.numberoftriangles; ++i)
+		{
+			_int iIdx1 = m_tDT_out.trianglelist[i * 3 + POINT_A];
+			_int iIdx2 = m_tDT_out.trianglelist[i * 3 + POINT_B];
+			_int iIdx3 = m_tDT_out.trianglelist[i * 3 + POINT_C];
+
+			Vec3 vTri[POINT_END] =
+			{
+				{ (_float)m_tDT_out.pointlist[iIdx1 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx1 * 2 + 1] },
+				{ (_float)m_tDT_out.pointlist[iIdx2 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx2 * 2 + 1] },
+				{ (_float)m_tDT_out.pointlist[iIdx3 * 2], 0.f, (_float)m_tDT_out.pointlist[iIdx3 * 2 + 1] }
+			};
+
+			DX::DrawTriangle(m_pBatch, vTri[POINT_A], vTri[POINT_B], vTri[POINT_C], Colors::Lime);
+		}
+		m_pBatch->End();
+	}
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::RenderVD()
+{
+	if (0 < m_tVD_out.numberofedges)
+	{
+		m_pBatch->Begin();
+		for (_int i = 0; i < m_tVD_out.numberofedges; ++i)
+		{
+			_int iIdx1 = m_tVD_out.edgelist[i * 2 + POINT_A];
+			_int iIdx2 = m_tVD_out.edgelist[i * 2 + POINT_B];
+
+			if (0 <= iIdx1 && 0 <= iIdx2)
+			{
+				Vec3 vLine[2] =
+				{
+					{ (_float)m_tVD_out.pointlist[iIdx1 * 2], 0.f, (_float)m_tVD_out.pointlist[iIdx1 * 2 + 1] },
+					{ (_float)m_tVD_out.pointlist[iIdx2 * 2], 0.f, (_float)m_tVD_out.pointlist[iIdx2 * 2 + 1] }
+				};
+
+				m_pBatch->DrawLine(VertexPositionColor(vLine[0], Colors::Cyan), VertexPositionColor(vLine[1], Colors::Cyan));
+			}
+		}
+		m_pBatch->End();
+	}
 
 	return S_OK;
 }
@@ -675,11 +685,11 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		{	// DT를 위해 이 아래는 진행하지 않아야함.
 			fMinDistance = fDistance;
 			pickPos = iter->Center;
-			bSpherePicked = true;
+			//bSpherePicked = true;
 		}
 	}
 
-	if (!bSpherePicked)
+	if (false == bSpherePicked)
 	{
 		CGameObject* pObject = nullptr;
 
@@ -914,11 +924,11 @@ void CNavMeshView::Free()
 
 	Safe_Release(m_pInputLayout);
 
-	free(m_tDT_out.pointlist);
-	free(m_tDT_out.trianglelist);
-	free(m_tVD_out.pointlist);
-	free(m_tVD_out.edgelist);
-	free(m_tVD_out.normlist);
-	free(m_tDT_in.pointlist);
-	free(m_tDT_in.segmentlist);
+	Safe_Delete_Array(m_tDT_out.pointlist);
+	Safe_Delete_Array(m_tDT_out.trianglelist);
+	Safe_Delete_Array(m_tVD_out.pointlist);
+	Safe_Delete_Array(m_tVD_out.edgelist);
+	Safe_Delete_Array(m_tVD_out.normlist);
+	Safe_Delete_Array(m_tDT_in.pointlist);
+	Safe_Delete_Array(m_tDT_in.segmentlist);
 }

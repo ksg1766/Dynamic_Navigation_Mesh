@@ -1,23 +1,8 @@
-# 📅 2024.07.08
-:clipboard: 진행 사항
-  * Picking을 통한 Delaunay Triangulation, Voronoi Diagram.([Triangle Library](https://github.com/libigl/triangle.git) 사용 )
-![FPS_61-DEBUG2024-07-0910-59-38-ezgif com-speed](https://github.com/ksg1766/Navigation_System/assets/37239034/5ca33f72-e29d-4732-b722-535929e7df46)
-  * ~~Boost Library 추가 (polygon/voronoi.hpp 사용 위해)~~ -> Triangle Lib로 대체 후 사용하지 않기로 했습니다.
-
-:soccer: 이후 계획
-  * Triangle Data Save/Load 및 출력
-  * Mesh 통해 얻은 Triangle Data Save/Load 및 출력
-
-:warning: 발견된 문제
-    * 특정 시점 정점 추가시 터짐. 원인 찾는 중입니다.
-
----
 # 📅 2024.07.05
 :clipboard: 진행 사항
   * Slope에 따라 메쉬 추리기.
   * AABB 바운딩 볼륨내에서만 삼각형 생성하도록 제한.
   * 낮은 높이 턱 삼각형은 포함하도록 구현.
-  * cell neighbor 지정
 
 :soccer: 2주차 목표
    * 삼각형 추려내는 작업의 효율이 낮아 목표와 우선 순위를 고려해 Delaunay Triangulation 우선 구현할 계획입니다.
@@ -30,9 +15,7 @@
     * CNavMeshView::SetUpNeighbor()
       * 삼각형 Neighbor 연결함수 추가.
 
-![climb](https://github.com/ksg1766/Navigation_System/assets/37239034/4c3307fd-c3f2-4eac-84ac-b408d84454c6)
-
-:warning: 발견된 문제
+  * 발견된 문제
     * Climb 가능한 삼각형 설정 과정에서 불필요한 삼각형 추가.
     * 최적화가 전혀 안돼 속도가 너무 느림.
     * 2주차 목표 진행에 치명적인 지장은 없으므로 병행해서 해결할 계획입니다.

@@ -45,10 +45,10 @@ private:
 
 private:
 	HRESULT	DebugRenderLegacy();
+	HRESULT	RenderDT();
+	HRESULT	RenderVD();
 
 private:
-	_bool	CanClimb();
-
 	void	Input();
 	_bool	Pick(_uint screenX, _uint screenY);
 
