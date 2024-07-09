@@ -1,3 +1,18 @@
+# 📅 2024.07.08
+📋 진행 사항
+
+  * Picking을 통한 Delaunay Triangulation, Voronoi Diagram.([Triangle Library](https://github.com/libigl/triangle.git) 사용 )
+![FPS_61-DEBUG2024-07-0910-59-38-ezgif com-speed](https://github.com/ksg1766/Navigation_System/assets/37239034/5ca33f72-e29d-4732-b722-535929e7df46)
+ * ~~Boost Library 추가 (polygon/voronoi.hpp 사용 위해)~~ -> Triangle Lib로 대체 후 사용하지 않기로 했습니다.
+
+⚽ 이후 계획
+ * Triangle Data Save/Load 및 출력
+ * Mesh 통해 얻은 Triangle Data Save/Load 및 출력
+
+⚠️ 발견된 문제
+ * 특정 시점 정점 추가시 터짐. 원인 찾는 중입니다.
+
+---
 # 📅 2024.07.05
 :clipboard: 진행 사항
   * Slope에 따라 메쉬 추리기.
