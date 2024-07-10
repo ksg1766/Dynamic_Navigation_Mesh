@@ -8,30 +8,7 @@
 #include "Layer.h"
 #include "DissolveManager.h"
 #include "DebugDraw.h"
-#include <boost/polygon/voronoi.hpp>
-/*
-namespace boost
-{
-	namespace polygon
-	{
-		template <>
-		struct geometry_concept<VDPoint> { typedef point_concept type; };
 
-		template <>
-		struct point_traits<VDPoint>
-		{
-			typedef int coordinate_type;
-
-			static inline coordinate_type get(const VDPoint& point, orientation_2d orient)
-			{
-				return (orient == HORIZONTAL) ? point.x : point.y;
-			}
-		};
-	}
-}
-
-using namespace boost::polygon;
-*/
 struct CNavMeshView::CellData
 {
 	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
@@ -58,57 +35,33 @@ struct CNavMeshView::CellData
 		}
 	}
 
-	_bool ComparePoints(const Vec3& pSour, const Vec3& pDest, CellData* pNeighbor = nullptr)
+	_bool ComparePoints(const Vec3& pSour, const Vec3& pDest)
 	{
-		for (_int i = POINT_A; i < POINT_END; ++i)
+		if (pSour == vPoints[POINT_A])
 		{
-			if (vPoints[i] == pSour)
-			{
-				for (_int j = POINT_A; j < POINT_END; ++j)
-				{
-					if (j != i && vPoints[j] == pDest)
-					{
-						if (nullptr != pNeighbor)
-						{
-							if (POINT_A == i)
-							{
-								if (nullptr == arrNeighbors[LINE_AB] && POINT_B == j)
-								{
-									arrNeighbors[LINE_AB] = pNeighbor;
-								}
-								else if (nullptr == arrNeighbors[LINE_CA] && POINT_C == j)
-								{
-									arrNeighbors[LINE_CA] = pNeighbor;
-								}
-							}
-							else if (POINT_B == i)
-							{
-								if (nullptr == arrNeighbors[LINE_AB] && POINT_A == j)
-								{
-									arrNeighbors[LINE_AB] = pNeighbor;
-								}
-								else if (nullptr == arrNeighbors[LINE_CA] && POINT_C == j)
-								{
-									arrNeighbors[LINE_CA] = pNeighbor;
-								}
-							}
-							else
-							{
-								if (nullptr == arrNeighbors[LINE_CA] && POINT_A == j)
-								{
-									arrNeighbors[LINE_CA] = pNeighbor;
-								}
-								else if (nullptr == arrNeighbors[LINE_BC] && POINT_B == j)
-								{
-									arrNeighbors[LINE_BC] = pNeighbor;
-								}
-							}
-						}
+			if (pDest == vPoints[POINT_B])
+				return true;
 
-						return true;
-					}
-				}
-			}
+			if (pDest == vPoints[POINT_C])
+				return true;
+		}
+
+		if (pSour == vPoints[POINT_B])
+		{
+			if (pDest == vPoints[POINT_A])
+				return true;
+
+			if (pDest == vPoints[POINT_C])
+				return true;
+		}
+
+		if (pSour == vPoints[POINT_C])
+		{
+			if (pDest == vPoints[POINT_A])
+				return true;
+
+			if (pDest == vPoints[POINT_B])
+				return true;
 		}
 
 		return false;
@@ -212,10 +165,8 @@ void CNavMeshView::ClearNeighbors(vector<CellData*>& vecCells)
 
 void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
 {
-	//for (auto& pSour : vecCells)
 	for (_int sour = 0; sour < vecCells.size(); ++sour)
 	{
-		//for (auto& pDest : vecCells)
 		for (_int dest = 0; dest < vecCells.size(); ++dest)
 		{
 			if (vecCells[sour] == vecCells[dest])
@@ -223,15 +174,15 @@ void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
 				continue;
 			}
 
-			if (nullptr == vecCells[sour]->arrNeighbors[LINE_AB] && true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_A], vecCells[sour]->vPoints[POINT_B], vecCells[sour]))
+			if (true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_A], vecCells[sour]->vPoints[POINT_B]))
 			{
 				vecCells[sour]->arrNeighbors[LINE_AB] = vecCells[dest];
 			}
-			else if (nullptr == vecCells[sour]->arrNeighbors[LINE_BC] && true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_B], vecCells[sour]->vPoints[POINT_C], vecCells[sour]))
+			else if (true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_B], vecCells[sour]->vPoints[POINT_C]))
 			{
 				vecCells[sour]->arrNeighbors[LINE_BC] = vecCells[dest];
 			}
-			else if (nullptr == vecCells[sour]->arrNeighbors[LINE_CA] && true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_C], vecCells[sour]->vPoints[POINT_A], vecCells[sour]))
+			else if (true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_C], vecCells[sour]->vPoints[POINT_A]))
 			{
 				vecCells[sour]->arrNeighbors[LINE_CA] = vecCells[dest];
 			}
@@ -404,45 +355,92 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 	// 해제 할당 반복하지 말고 갱신하도록 -> 결국 malloc realloc 써야할 듯.
 	SafeReleaseTriangle(m_tDT_out);
 	SafeReleaseTriangle(m_tVD_out);
+	if (m_tDT_in.pointlist) { free(m_tDT_in.pointlist);				m_tDT_in.pointlist = nullptr; }
 
+	// points
 	m_tDT_in.numberofpoints = m_vecPoints.size();
-
-	if (nullptr == m_tDT_in.pointlist)
+	if (0 < m_tDT_in.numberofpoints)
 	{
-		m_tDT_in.pointlist = (TRI_REAL*)malloc(m_tDT_in.numberofpoints * 2 * sizeof(TRI_REAL));
-	}
-	else
-	{
-		m_tDT_in.pointlist = (TRI_REAL*)realloc(m_tDT_in.pointlist, m_tDT_in.numberofpoints * 2 * sizeof(TRI_REAL));
+		if (nullptr == m_tDT_in.pointlist)
+		{
+			m_tDT_in.pointlist = (TRI_REAL*)malloc(m_tDT_in.numberofpoints * 2 * sizeof(TRI_REAL));
+		}
+		else
+		{
+			m_tDT_in.pointlist = (TRI_REAL*)realloc(m_tDT_in.pointlist, m_tDT_in.numberofpoints * 2 * sizeof(TRI_REAL));
+		}
+
+		for (_int i = 0; i < m_vecPoints.size(); ++i)
+		{
+			m_tDT_in.pointlist[2 * i + 0] = (TRI_REAL)m_vecPoints[i].x;
+			m_tDT_in.pointlist[2 * i + 1] = (TRI_REAL)m_vecPoints[i].z;
+		}
 	}
 
-	for (_int i = 0; i < m_vecPoints.size(); ++i)
-	{
-		m_tDT_in.pointlist[2 * i + 0] = (TRI_REAL)m_vecPoints[i].x;
-		m_tDT_in.pointlist[2 * i + 1] = (TRI_REAL)m_vecPoints[i].z;
-	}
-
+	// segments
 	m_tDT_in.numberofsegments = m_vecPoints.size();
-
-	if (nullptr == m_tDT_in.segmentlist)
+	if (0 < m_tDT_in.numberofsegments)
 	{
-		m_tDT_in.segmentlist = (_int*)malloc(m_tDT_in.numberofpoints * 2 * sizeof(_int));
-	}
-	else
-	{
-		m_tDT_in.segmentlist = (_int*)realloc(m_tDT_in.segmentlist, m_tDT_in.numberofpoints * 2 * sizeof(_int));
+		if (nullptr == m_tDT_in.segmentlist)
+		{
+			m_tDT_in.segmentlist = (_int*)malloc(m_tDT_in.numberofpoints * 2 * sizeof(_int));
+		}
+		else
+		{
+			m_tDT_in.segmentlist = (_int*)realloc(m_tDT_in.segmentlist, m_tDT_in.numberofpoints * 2 * sizeof(_int));
+		}
+
+		for (_int i = 0; i < m_vecPoints.size(); ++i)
+		{
+			m_tDT_in.segmentlist[2 * i + 0] = i + 0;
+			m_tDT_in.segmentlist[2 * i + 1] = i + 1;
+		}
+		m_tDT_in.segmentlist[2 * (m_vecPoints.size() - 1) + 0] = m_vecPoints.size() - 1;
+		m_tDT_in.segmentlist[2 * (m_vecPoints.size() - 1) + 1] = 0;
 	}
 
-	for (_int i = 0; i < m_vecPoints.size() - 1; ++i)
+	// holes
+	m_tDT_in.numberofholes = m_vecHoles.size();
+	if (0 < m_tDT_in.numberofholes)
 	{
-		m_tDT_in.segmentlist[2 * i + 0] = i + 0;
-		m_tDT_in.segmentlist[2 * i + 1] = i + 1;
-	}
-	m_tDT_in.segmentlist[2 * (m_vecPoints.size() - 1) + 0] = m_vecPoints.size() - 1;
-	m_tDT_in.segmentlist[2 * (m_vecPoints.size() - 1) + 1] = 0;
+		// 매번 해제, 할당 하지 않고 유지하도록해보자. SafeReleaseTriangle에서 해제하지 말고 필요할 때 명시적으로 해제하도록 해야할 듯.
+		//if (nullptr == m_tDT_in.holelist)
+		{
+			m_tDT_in.holelist = (TRI_REAL*)malloc(m_tDT_in.numberofholes * 2 * sizeof(TRI_REAL));
+		}
+		/*else
+		{
+			m_tDT_in.holelist = (TRI_REAL*)realloc(m_tDT_in.holelist, m_tDT_in.numberofholes * 2 * sizeof(TRI_REAL));
+		}*/
 
-	m_tDT_in.numberofholes = 0;
-	m_tDT_in.numberofregions = 0;
+		for (_int i = 0; i < m_vecHoles.size(); ++i)
+		{
+			m_tDT_in.holelist[2 * i + 0] = (TRI_REAL)m_vecHoles[i].x;
+			m_tDT_in.holelist[2 * i + 1] = (TRI_REAL)m_vecHoles[i].z;
+		}
+	}
+
+	// regions
+	m_tDT_in.numberofregions = m_vecRegions.size();
+	if (0 < m_tDT_in.numberofregions)
+	{
+		if (nullptr == m_tDT_in.regionlist)
+		{
+			m_tDT_in.regionlist = (TRI_REAL*)malloc(m_tDT_in.numberofregions * 4 * sizeof(TRI_REAL));
+		}
+		else
+		{
+			m_tDT_in.regionlist = (TRI_REAL*)realloc(m_tDT_in.regionlist, m_tDT_in.numberofregions * 4 * sizeof(TRI_REAL));
+		}
+
+		for (_int i = 0; i < m_vecRegions.size(); ++i)
+		{
+			m_tDT_in.regionlist[4 * i + 0] = (TRI_REAL)m_vecRegions[i].x;
+			m_tDT_in.regionlist[4 * i + 1] = (TRI_REAL)m_vecRegions[i].z;
+			m_tDT_in.regionlist[4 * i + 1] = 0.f;
+			m_tDT_in.regionlist[4 * i + 1] = 0.f;
+		}
+	}
 
 	static _char triswitches[4] = "pzv";
 	triangulate(triswitches, &m_tDT_in, &m_tDT_out, &m_tVD_out);
@@ -452,7 +450,7 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 
 HRESULT CNavMeshView::DebugRenderLegacy()
 {
-	m_pEffect->SetWorld(XMMatrixIdentity());
+	m_pEffect->SetWorld(Matrix::Identity);
 
 	m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
 	m_pEffect->SetProjection(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_PROJ));
@@ -460,17 +458,36 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 	m_pEffect->Apply(m_pContext);
 	m_pContext->IASetInputLayout(m_pInputLayout);
 
-	if (false == m_vecSphere.empty())
+	m_pBatch->Begin();
+
+	if (false == m_vecPointSpheres.empty())
 	{
-		m_pBatch->Begin();
-		for (auto& iter : m_vecSphere)
+		for (auto& iter : m_vecPointSpheres)
 		{
 			BoundingSphere tS(iter->Center + 0.05f * Vec3::UnitY, 0.5f);
-
 			DX::Draw(m_pBatch, tS, Colors::Lime);
 		}
-		m_pBatch->End();
 	}
+
+	if (false == m_vecHoleSpheres.empty())
+	{
+		for (auto& iter : m_vecHoleSpheres)
+		{
+			BoundingSphere tS(iter->Center + 0.05f * Vec3::UnitY, 0.5f);
+			DX::Draw(m_pBatch, tS, Colors::Red);
+		}
+	}
+
+	if (false == m_vecRegionSpheres.empty())
+	{
+		for (auto& iter : m_vecRegionSpheres)
+		{
+			BoundingSphere tS(iter->Center + 0.05f * Vec3::UnitY, 0.5f);
+			DX::Draw(m_pBatch, tS, Colors::Blue);
+		}
+	}
+
+	m_pBatch->End();
 
 	// triangle::DT
 	if (FAILED(RenderDT()))
@@ -638,8 +655,9 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	Vec3 vWorldRayDir = XMVector3TransformNormal(vRayDir, VI);
 	vWorldRayDir.Normalize();
 
+	// 아래는 코드 분할이 필요함. 무조건 개선 필요.
 	_bool bSpherePicked = false;
-	for (auto& iter : m_vecSphere)
+	for (auto& iter : m_vecPointSpheres)
 	{
 		Ray cRay = Ray(vWorldRayOrigin, vWorldRayDir);
 
@@ -709,17 +727,30 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		}
 	}
 
-	m_vecPoints.push_back(pickPos);
+	BoundingSphere* tSphere = new BoundingSphere;
+	tSphere->Center = pickPos;
+	tSphere->Radius = 1.f;
+
+	if (TRIMODE::DEFAULT == m_eCurrentTriangleMode)
+	{
+		m_vecPoints.push_back(pickPos);
+		m_vecPointSpheres.push_back(tSphere);
+	}
+	else if (TRIMODE::HOLE == m_eCurrentTriangleMode)
+	{
+		m_vecHoles.push_back(pickPos);
+		m_vecHoleSpheres.push_back(tSphere);
+	}
+	else if (TRIMODE::REGION == m_eCurrentTriangleMode)
+	{
+		m_vecRegions.push_back(pickPos);
+		m_vecRegionSpheres.push_back(tSphere);
+	}
 
 	if (3 <= m_vecPoints.size())
 	{
 		ExecuteDelaunayVoronoi();
 	}
-
-	BoundingSphere* tSphere = new BoundingSphere;
-	tSphere->Center = pickPos;
-	tSphere->Radius = 1.f;
-	m_vecSphere.push_back(tSphere);
 
 	// 삼각형 만드는게 아니라 점만 찍도록.
 	//if (3 == m_vecPoints.size())
@@ -772,7 +803,7 @@ HRESULT CNavMeshView::Load()
 			BoundingSphere* tSphere = new BoundingSphere;
 			tSphere->Center = tCellData->vPoints[i];
 			tSphere->Radius = 1.f;
-			m_vecSphere.push_back(tSphere);
+			m_vecPointSpheres.push_back(tSphere);
 		}
 		m_vecCells.push_back(tCellData);
 		s2cPushBack(m_strCells, to_string(m_vecCells.size() - 1));
@@ -804,6 +835,30 @@ void CNavMeshView::InfoView()
 	}
 	ImGui::NewLine();
 
+	if (ImGui::BeginCombo(" ", m_strCurrentTriangleMode.c_str()))
+	{
+		static const _char* szMode[3] = { "Default", "Hole", "Region" };
+
+		for (uint8 i = 0; i < (uint8)TRIMODE::MODE_END; ++i)
+		{
+			_bool isSelected = (0 == strcmp(m_strCurrentTriangleMode.c_str(), szMode[i]));
+			
+			if (ImGui::Selectable(szMode[i], isSelected))
+			{
+				m_strCurrentTriangleMode = szMode[i];
+				m_eCurrentTriangleMode = (TRIMODE)i;
+			}
+
+			if (true == isSelected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	ImGui::NewLine();
+
 	ImGui::InputFloat("SlopeMax (degree)", &m_fSlopeDegree);
 	ImGui::InputFloat("ClimbMax (height)", &m_fMaxClimb);
 	ImGui::InputFloat("AreaMin (degree)", &m_fMinArea);
@@ -817,10 +872,12 @@ void CNavMeshView::InfoView()
 	{
 		BakeNavMesh();
 	}ImGui::SameLine();
+
 	if (ImGui::Button("SaveNav"))
 	{
 		Save();
 	}ImGui::SameLine();
+
 	if (ImGui::Button("LoadNav"))
 	{
 		Load();
@@ -837,7 +894,7 @@ void CNavMeshView::PointGroup()
 
 		m_strPoints.pop_back();
 		m_vecPoints.pop_back();
-		m_vecSphere.pop_back();
+		m_vecPointSpheres.pop_back();
 	}
 }
 
@@ -852,9 +909,9 @@ void CNavMeshView::CellGroup()
 		m_strCells.pop_back();
 		m_vecCells.pop_back();
 
-		auto iter = m_vecSphere.end() - 3 - m_vecPoints.size();
+		auto iter = m_vecPointSpheres.end() - 3 - m_vecPoints.size();
 		for(_int i = 0; i < 3; ++i)
-			iter = m_vecSphere.erase(iter);
+			iter = m_vecPointSpheres.erase(iter);
 	}
 }
 
