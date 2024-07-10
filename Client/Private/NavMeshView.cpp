@@ -860,20 +860,20 @@ void CNavMeshView::CellGroup()
 
 HRESULT CNavMeshView::SafeReleaseTriangle(triangulateio& tTriangle)
 {
-	if (tTriangle.pointlist) { free(tTriangle.pointlist);				tTriangle.pointlist = nullptr; }
-	if (tTriangle.pointattributelist) { free(tTriangle.pointattributelist);		tTriangle.pointattributelist = nullptr; }
-	if (tTriangle.pointmarkerlist) { free(tTriangle.pointmarkerlist);			tTriangle.pointmarkerlist = nullptr; }
-	if (tTriangle.triangleattributelist) { free(tTriangle.triangleattributelist);	tTriangle.triangleattributelist = nullptr; }
-	if (tTriangle.trianglearealist) { free(tTriangle.trianglearealist);			tTriangle.trianglearealist = nullptr; }
-	if (tTriangle.trianglelist) { free(tTriangle.trianglelist);				tTriangle.trianglelist = nullptr; }
-	if (tTriangle.neighborlist) { free(tTriangle.neighborlist);				tTriangle.neighborlist = nullptr; }
-	if (tTriangle.segmentlist) { free(tTriangle.segmentlist);				tTriangle.segmentlist = nullptr; }
-	if (tTriangle.segmentmarkerlist) { free(tTriangle.segmentmarkerlist);		tTriangle.segmentmarkerlist = nullptr; }
-	if (tTriangle.holelist) { free(tTriangle.holelist);					tTriangle.holelist = nullptr; }
-	if (tTriangle.regionlist) { free(tTriangle.regionlist);				tTriangle.regionlist = nullptr; }
-	if (tTriangle.edgelist) { free(tTriangle.edgelist);					tTriangle.edgelist = nullptr; }
-	if (tTriangle.edgemarkerlist) { free(tTriangle.edgemarkerlist);			tTriangle.edgemarkerlist = nullptr; }
-	if (tTriangle.normlist) { free(tTriangle.normlist);					tTriangle.normlist = nullptr; }
+	if (tTriangle.pointlist)				{ free(tTriangle.pointlist);				tTriangle.pointlist = nullptr; }
+	if (tTriangle.pointattributelist)		{ free(tTriangle.pointattributelist);		tTriangle.pointattributelist = nullptr; }
+	if (tTriangle.pointmarkerlist)			{ free(tTriangle.pointmarkerlist);			tTriangle.pointmarkerlist = nullptr; }
+	if (tTriangle.triangleattributelist)	{ free(tTriangle.triangleattributelist);	tTriangle.triangleattributelist = nullptr; }
+	if (tTriangle.trianglearealist)			{ free(tTriangle.trianglearealist);			tTriangle.trianglearealist = nullptr; }
+	if (tTriangle.trianglelist)				{ free(tTriangle.trianglelist);				tTriangle.trianglelist = nullptr; }
+	if (tTriangle.neighborlist)				{ free(tTriangle.neighborlist);				tTriangle.neighborlist = nullptr; }
+	if (tTriangle.segmentlist)				{ free(tTriangle.segmentlist);				tTriangle.segmentlist = nullptr; }
+	if (tTriangle.segmentmarkerlist)		{ free(tTriangle.segmentmarkerlist);		tTriangle.segmentmarkerlist = nullptr; }
+	if (tTriangle.holelist)					{ free(tTriangle.holelist);					tTriangle.holelist = nullptr; }
+	if (tTriangle.regionlist)				{ free(tTriangle.regionlist);				tTriangle.regionlist = nullptr; }
+	if (tTriangle.edgelist)					{ free(tTriangle.edgelist);					tTriangle.edgelist = nullptr; }
+	if (tTriangle.edgemarkerlist)			{ free(tTriangle.edgemarkerlist);			tTriangle.edgemarkerlist = nullptr; }
+	if (tTriangle.normlist)					{ free(tTriangle.normlist);					tTriangle.normlist = nullptr; }
 
 	return S_OK;
 }
