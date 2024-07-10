@@ -342,6 +342,9 @@
     <ClInclude Include="..\Public\StaticScene.h">
       <Filter>03.GameObjects\00.Static\StaticScene</Filter>
     </ClInclude>
+    <ClInclude Include="Client_Macro.h">
+      <Filter>99.Defines</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">

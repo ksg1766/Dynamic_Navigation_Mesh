@@ -9,10 +9,14 @@ class CShader;
 
 END
 
-struct VDPoint
+struct tagObstacle
 {
-	_int x, y;
+	_int start = -1;					// index of start point
+	_int numberof = 0;					// number of points of this obstakle
+	Vec3 center = Vec3(0.f, 0.f, 0.f);	// center of gravity
 };
+
+using Obst = tagObstacle;
 
 BEGIN(Client)
 
@@ -23,7 +27,7 @@ private:
 	enum POINTS	: uint8	{ POINT_A, POINT_B, POINT_C, POINT_END };
 	enum LINES	: uint8	{ LINE_AB, LINE_BC, LINE_CA, LINE_END };
 
-	enum class TRIMODE	: uint8	{ DEFAULT, HOLE, REGION, MODE_END };
+	enum class TRIMODE	: uint8	{ DEFAULT, OBSTACLE, REGION, MODE_END };
 
 private:
 	CNavMeshView(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -59,7 +63,8 @@ private:
 
 private:
 	void	InfoView();
-	void	PointGroup();
+	void	PointsGroup();
+	void	ObstaclePointsGroup();
 	void	CellGroup();
 
 private:
@@ -78,8 +83,13 @@ private:
 
 	string				m_strCurrentTriangleMode = "Default";
 	TRIMODE				m_eCurrentTriangleMode = TRIMODE::DEFAULT;
+
+	_int				m_iPointCount = 0;
+	vector<Obst>		m_vecObstacles;
+	vector<Vec3>		m_vecObstaclePoints;
+	vector<const _char*>m_strObstaclePoints;
+
 	vector<Vec3>		m_vecRegions;
-	vector<Vec3>		m_vecHoles;
 
 	///////////////////////////////////////////////////
 
@@ -97,9 +107,9 @@ private:
 	vector<const _char*>m_strPoints;
 	_int				m_Point_Current;
 
-	vector<BoundingSphere*> m_vecPointSpheres;
-	vector<BoundingSphere*> m_vecHoleSpheres;
-	vector<BoundingSphere*> m_vecRegionSpheres;
+	vector<BoundingSphere> m_vecPointSpheres;
+	vector<BoundingSphere> m_vecObstaclePointSpheres;
+	vector<BoundingSphere> m_vecRegionSpheres;
 
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;
 	BasicEffect*		m_pEffect = nullptr;
