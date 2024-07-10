@@ -2,9 +2,9 @@
 📋 진행 사항
   * 삼각형으로 형성된 Mesh에 Obstacle 영역을 추가했을 때, 해당 영역에 hole을 형성하도록 구현했습니다.
   * triangle library는 Constrainted Delaunay Triangle을 생성하는 라이브러리입니다.
-  * segment list는 geometry의 가장자리를 결정하는 정점의 index를 저장합니다. 참고할만한 레퍼런스나 예제가 많지 않아 직접 도형을 그려보며 작동 방식을 숙지했습니다.
-  * 따라서 전체 맵(지형)의 가장자리를 구성하는 정점의 index를 segment list에 추가한 후, hole이 될 영역의 index를 segment list에 추가해야합니다.
-  * 우선 정점 추가 시 malloc이 아닌 realloc을 통해 매번 모든 정점데이터를 다시 할당하지 않고 갱신 데이터만 추가하도록 변경했습니다.
+  * segment list는 geometry의 가장자리를 결정하는 정점의 index를 저장합니다. 참고할만한 레퍼런스나 예제가 많지 않아 직접 도형을 그려보며 동작 방식을 학습했습니다.
+  * 따라서 전체 맵(지형)의 가장자리를 구성하는 정점의 index를 segment list에 추가한 후, hole이 될 영역의 index를 segment list에 추가하도록 구현중입니다.
+  * 우선 새로운 정점 및 segment 데이터 등을 추가 할 때, malloc이 아닌 realloc을 통해 매번 모든 정점데이터를 다시 할당하지 않고 갱신 데이터만 추가하도록 변경했습니다.
     * 그러나 realloc 함수도 할당에 실패할 경우 주소와 데이터가 이동할 가능성이 있으므로 이후 추가로 변경할 예정입니다.
   * 작성 중...
 
@@ -60,7 +60,7 @@
     * CNavMeshView::SetUpNeighbor()
       * 삼각형 Neighbor 연결함수 추가.
 
-  * 발견된 문제
+  ⚠️ 발견된 문제
     * Climb 가능한 삼각형 설정 과정에서 불필요한 삼각형 추가.
     * 최적화가 전혀 안돼 속도가 너무 느림.
     * 2주차 목표 진행에 치명적인 지장은 없으므로 병행해서 해결할 계획입니다.
