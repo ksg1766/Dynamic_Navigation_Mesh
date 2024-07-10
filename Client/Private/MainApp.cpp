@@ -268,6 +268,8 @@ HRESULT CMainApp::Ready_Prototype_Components()
 		wstring strStaticFilePath = TEXT("../Bin/Resources/Models/Static/");
 		for (const auto& entry : filesystem::directory_iterator(strStaticFilePath))
 		{
+			continue;
+
 			//Matrix matPivot = Matrix::Identity;
 			const wstring& strFileName = entry.path().stem();
 			//SOCKETDESC desc = SOCKETDESC();

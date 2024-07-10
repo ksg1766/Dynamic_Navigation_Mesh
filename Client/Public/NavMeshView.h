@@ -19,9 +19,11 @@ BEGIN(Client)
 class CNavMeshView final : public CView
 {
     using Super = CView;
-public:
-	enum POINTS { POINT_A, POINT_B, POINT_C, POINT_END };
-	enum LINES { LINE_AB, LINE_BC, LINE_CA, LINE_END };
+private:
+	enum POINTS	: uint8	{ POINT_A, POINT_B, POINT_C, POINT_END };
+	enum LINES	: uint8	{ LINE_AB, LINE_BC, LINE_CA, LINE_END };
+
+	enum class TRIMODE	: uint8	{ DEFAULT, HOLE, REGION, MODE_END };
 
 private:
 	CNavMeshView(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -74,6 +76,11 @@ private:
 	// DT, VD
 	triangulateio		m_tDT_in, m_tDT_out, m_tVD_out;
 
+	string				m_strCurrentTriangleMode = "Default";
+	TRIMODE				m_eCurrentTriangleMode = TRIMODE::DEFAULT;
+	vector<Vec3>		m_vecRegions;
+	vector<Vec3>		m_vecHoles;
+
 	///////////////////////////////////////////////////
 
 	wstring				m_strPickedObject;
@@ -85,12 +92,14 @@ private:
 
 	vector<CellData*>	m_vecCells;
 	vector<_char*>		m_strCells;
-	// cache
+
 	vector<Vec3>		m_vecPoints;
 	vector<const _char*>m_strPoints;
 	_int				m_Point_Current;
 
-	vector<BoundingSphere*> m_vecSphere;
+	vector<BoundingSphere*> m_vecPointSpheres;
+	vector<BoundingSphere*> m_vecHoleSpheres;
+	vector<BoundingSphere*> m_vecRegionSpheres;
 
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;
 	BasicEffect*		m_pEffect = nullptr;

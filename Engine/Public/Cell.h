@@ -8,7 +8,7 @@ class ENGINE_DLL CCell : public CBase
 	using Super = CBase;
 public:
 	enum POINTS { POINT_A, POINT_B, POINT_C, POINT_END };
-	enum LINE { LINE_AB, LINE_BC, LINE_CA, LINE_END };
+	enum LINES { LINE_AB, LINE_BC, LINE_CA, LINE_END };
 private:
 	CCell(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CCell(const CCell& rhs);
@@ -18,7 +18,7 @@ public:
 	const _float3*	Get_Point(POINTS ePoint) const				{ return &m_vPoints[ePoint]; }
 	const _float3*	Get_Points() const							{ return m_vPoints; }
 
-	void			SetUp_Neighbor(LINE eLine, CCell* pCell)	{ m_iNeighborIndices[eLine] = pCell->m_iIndex; }
+	void			SetUp_Neighbor(LINES eLine, CCell* pCell)	{ m_iNeighborIndices[eLine] = pCell->m_iIndex; }
 
 	HRESULT			Initialize(const _float3* pPoints, _uint iIndex);
 	void			DebugRender(PrimitiveBatch<VertexPositionColor>*& pBatch, XMVECTORF32 vColor);
