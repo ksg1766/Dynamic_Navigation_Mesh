@@ -368,6 +368,7 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 	SafeReleaseTriangle(m_tDT_out);
 	SafeReleaseTriangle(m_tVD_out);
 	//if (m_tDT_in.pointlist) { free(m_tDT_in.pointlist);	m_tDT_in.pointlist = nullptr; }
+	//if (m_tDT_in.holelist) { free(m_tDT_in.holelist);	m_tDT_in.holelist = nullptr; }
 
 	// points
 	m_tDT_in.numberofpoints = m_vecPoints.size() + m_vecObstacles.size();
@@ -633,6 +634,56 @@ HRESULT CNavMeshView::RenderVD()
 	}
 
 	return S_OK;
+}
+
+void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
+{
+	// tObst.start = 시작 point index;
+	// tObst.numberof = 사용되는 정점 갯수;
+
+	for (_int i = 0; i < tObst.numberof; ++i)
+	{
+		Vec3 vCenter = Vec3::Zero;
+
+		for(_int j = 0; j < 3; ++j)
+		{
+			vCenter.x += m_tDT_in.pointlist[tObst.start + (2 * (i + j)) % (2 * tObst.numberof)];
+			vCenter.z += m_tDT_in.pointlist[tObst.start + (2 * (i + j) + 1) % (2 * tObst.numberof)];
+		}
+
+		vCenter /= 3.f;
+
+		// RayCast
+		_int iCrosses = 0;
+
+		for (_int m = 0; m < tObst.numberof; ++m)
+		{
+			_float fSourX = m_tDT_in.pointlist[tObst.start + (2 * m) % (2 * tObst.numberof)];
+			_float fSourZ = m_tDT_in.pointlist[tObst.start + (2 * m + 1) % (2 * tObst.numberof)];
+
+			_int iNextX = tObst.start + (2 * m + 2) % (2 * tObst.numberof);
+			_int iNextZ = tObst.start + (2 * m + 3) % (2 * tObst.numberof);
+
+			_float fNextX = m_tDT_in.pointlist[iNextX];
+			_float fNextZ = m_tDT_in.pointlist[iNextZ];
+
+			if ((fSourX > vCenter.x) != (fNextX > vCenter.x))
+			{
+				_float fAtZ = (fNextZ - fSourZ) * (vCenter.x - fSourX) / (fNextX - fSourX) + fSourZ;
+
+				if (vCenter.z < fAtZ)
+				{
+					++iCrosses;
+				}
+			}
+		}
+
+		if (0 < iCrosses % 2)
+		{
+			tObst.center = vCenter;
+			break;
+		}
+	}
 }
 
 void CNavMeshView::Input()
@@ -948,12 +999,9 @@ void CNavMeshView::ObstaclePointsGroup()
 	{
 		ImGui::SameLine();
 		if (ImGui::Button("CreateObstacle"))
-		{
-			Vec3 vCenter = Vec3::Zero;
-			for_each(m_vecObstaclePoints.begin(), m_vecObstaclePoints.end(), [&](Vec3& vPoint) { vCenter += vPoint; });
-			vCenter /= m_vecObstaclePoints.size();
-
-			Obst tObst = { 2 * (m_vecPoints.size() - m_vecObstaclePoints.size()), m_vecObstaclePoints.size(), vCenter };
+		{			
+			Obst tObst = { 2 * (m_vecPoints.size() - m_vecObstaclePoints.size()), m_vecObstaclePoints.size(), };
+			SetPolygonHoleCenter(tObst); 
 			m_vecObstacles.push_back(tObst);
 
 			for_each(m_strObstaclePoints.begin(), m_strObstaclePoints.end(), [](const _char* szPoint) { delete szPoint; });
