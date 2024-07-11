@@ -4,31 +4,45 @@
   * triangle library는 Constrainted Delaunay Triangle을 생성하는 라이브러리입니다. 제한된 영역 내에서 triangulation을 수행하기 때문에 영역의 edge를 지정해야 합니다.
   * segment list는 영역의 edge를 결정하는 정점의 index를 저장합니다. 참고할만한 레퍼런스나 예제가 많지 않아 직접 도형을 그려보며 동작 방식을 이해했습니다.
   * 따라서 전체 맵(지형)의 edge를 구성하는 정점의 index를 segment list에 추가한 후, obstacle 영역 edge의 정점 index를 segment list에 추가해 영역을 구분했습니다.
-    * ```
-      // Points
-		for (_int i = 0; i < LastIndex_Terrain; ++i)
-		{
-			m_tDT_in.segmentlist[2 * i]     = i;
-			m_tDT_in.segmentlist[2 * i + 1] = i + 1;
-		}
-		m_tDT_in.segmentlist[2 * LastIndex_Terrain]     = LastIndex_Terrain;
-		m_tDT_in.segmentlist[2 * LastIndex_Terrain + 1] = 0;
+    ```
+    // Points
+	for (_int i = 0; i < LastIndex_Terrain; ++i)
+	{
+		m_tDT_in.segmentlist[2 * i]     = i;
+		m_tDT_in.segmentlist[2 * i + 1] = i + 1;
+	}
+	m_tDT_in.segmentlist[2 * LastIndex_Terrain]     = LastIndex_Terrain;
+	m_tDT_in.segmentlist[2 * LastIndex_Terrain + 1] = 0;
 		
-		// Obstacles
-		for (_int j = 0; j < m_vecObstacles.size(); ++j)
-		{			
-			for (_int i = 0; i < m_vecObstacles[j].numberof - 1; ++i)
-			{
-				m_tDT_in.segmentlist[FirstIndex + 2 * i]     = FirstIndex / 2 + i;
-				m_tDT_in.segmentlist[FirstIndex + 2 * i + 1] = FirstIndex / 2 + i + 1;
-			}
-			m_tDT_in.segmentlist[LastIndex - 1] = LastIndex / 2;
-			m_tDT_in.segmentlist[LastIndex]     = FirstIndex / 2;
+	// Obstacles
+	for (_int j = 0; j < m_vecObstacles.size(); ++j)
+	{			
+		for (_int i = 0; i < m_vecObstacles[j].numberof - 1; ++i)
+		{
+			m_tDT_in.segmentlist[FirstIndex + 2 * i]     = FirstIndex / 2 + i;
+			m_tDT_in.segmentlist[FirstIndex + 2 * i + 1] = FirstIndex / 2 + i + 1;
 		}
-      ```
+		m_tDT_in.segmentlist[LastIndex - 1] = LastIndex / 2;
+		m_tDT_in.segmentlist[LastIndex]     = FirstIndex / 2;
+	}
+    ```
   * 위에서 지정한 obstacle영역을 형성하는 segment들의 내부에 hole list의 정점을 위치시키면 해당 영역 내부에서는 triangulation이 이루어지지 않습니다.
-    * 결과는 아래와 같습니다.
-      ![FPS_61-DEBUG2024-07-1110-29-56-ezgif com-video-to-gif-converter](https://github.com/ksg1766/Navigation_System/assets/37239034/9eea5ec5-55fd-4378-9f63-1d2a3ead0fbe)
+    ```
+    m_tDT_in.numberofholes = m_vecObstacles.size();
+    if (0 < m_tDT_in.numberofholes)
+    {
+		SAFE_REALLOC(TRI_REAL, m_tDT_in.holelist, m_tDT_in.numberofholes * 2)
+
+		for (_int i = 0; i < m_tDT_in.numberofholes; ++i)
+		{
+			m_tDT_in.holelist[2 * i + 0] = m_vecObstacles[i].center.x;
+			m_tDT_in.holelist[2 * i + 1] = m_vecObstacles[i].center.z;
+		}
+    }
+    ```      
+  * 결과는 아래와 같습니다.
+    
+    ![FPS_61-DEBUG2024-07-1110-29-56-ezgif com-video-to-gif-converter](https://github.com/ksg1766/Navigation_System/assets/37239034/9eea5ec5-55fd-4378-9f63-1d2a3ead0fbe)
       
   * 새로운 정점 및 segment 데이터 등을 추가 할 때, malloc이 아닌 realloc을 통해 매번 모든 정점 데이터를 다시 할당하지 않고 갱신 데이터만 추가하도록 변경했습니다.
     * realloc 할당 실패 시 주소와 데이터가 이동할 가능성이 있으므로 이후 추가로 생각해보려합니다.
@@ -40,6 +54,7 @@
 ⚠️ 발견된 문제
   * obstacle의 edge가 convex하지 않은 경우 영역의 내부가 잘못 계산 되는 경우가 있습니다.
     * 영역 내부의 중심 좌표로 무게중심 좌표를 사용하고 있는데, 의도하지 않은 결과가 계산될 수 있는지 등을 고려해 수정할 예정입니다.
+      
       ![FPS_61-DEBUG2024-07-1110-35-13-ezgif com-speed](https://github.com/ksg1766/Navigation_System/assets/37239034/77b2232b-b291-4410-9ce5-c2c02c037e93)
 
 ⚽ 이후 계획
