@@ -1,3 +1,65 @@
+# 📅 2024.07.11
+📋 진행 사항
+  * obstacle의 edge가 convex하지 않은 경우 영역의 내부와 외부가 뒤바뀌는 현상을 수정했습니다.
+  	* triangle library에서는 obstacle 영역을 지정하기 위해 내부의 한 점이 필요한데, 기존에는 이를 간단히 무게 중심으로 설정했습니다.
+   	* 볼록 다각형이 아닌 경우 형태에 따라 무게 중심의 위치가 다각형의 외부에 있을 수도 있음을 고려하지 못했습니다.(ex. 도넛)
+    * 처음에는 obstacle 영역에 대해 triangulation을 한 번 더 진행하는 방식을 고려했으나, 시간 및 공간 효율이 낮아 다른 방법을 고려하기로 했습니다.
+    * 모든 다각형은 삼각형으로 분할 될 수 있기 때문에 반드시 존재할 convex 지점을 찾아 무게 중심을 구하면 해당 점은 다각형의 내부에 위치할 것이라 생각했습니다.
+    *	한 점에서 출발한 반직선이 다각형과 짝수 번 교차한다면 점은 외부에, 홀수 번 교차한다면 내부에 존재한다는 사실을 이용했습니다.
+
+	 ![image](https://github.com/ksg1766/Navigation_System/assets/37239034/7168ef78-09e5-49c0-be51-f49695824aec)
+
+	  *	모든 영역에 대한 triangulation은 수행하지 않을 수 있었습니다.
+		```
+		for (_int i = 0; i < tObst.numberof; ++i)
+		{
+			Vec3 vCenter = Vec3::Zero;
+
+			for(_int j = 0; j < 3; ++j)
+			{
+				vCenter.x += m_tDT_in.pointlist[tObst.start + (2 * (i + j)) % (2 * tObst.numberof)];
+				vCenter.z += m_tDT_in.pointlist[tObst.start + (2 * (i + j) + 1) % (2 * tObst.numberof)];
+			}
+
+			vCenter /= 3.f;
+
+			// RayCast
+			_int iCrosses = 0;
+
+			for (_int m = 0; m < tObst.numberof; ++m)
+			{
+				_int idxX = tObst.start + (2 * m) % (2 * tObst.numberof);
+				_int idxZ = tObst.start + (2 * m + 1) % (2 * tObst.numberof);
+
+				_float fSourX = m_tDT_in.pointlist[idxX];
+				_float fSourZ = m_tDT_in.pointlist[idxZ];
+
+				idxX = tObst.start + (2 * m + 2) % (2 * tObst.numberof);
+				idxZ = tObst.start + (2 * m + 3) % (2 * tObst.numberof);
+
+				_float fDestX = m_tDT_in.pointlist[idxX];
+				_float fDestZ = m_tDT_in.pointlist[idxZ];
+
+				if ((fSourX > vCenter.x) != (fDestX > vCenter.x))	// x 좌표 검사
+				{
+					_float fAtZ = (fDestZ - fSourZ) * (vCenter.x - fSourX) / (fDestX - fSourX) + fSourZ; 
+
+					if (vCenter.z < fAtZ)	// z 좌표 검사
+					{
+						++iCrosses;
+					}
+				}
+			}
+
+			if (0 < iCrosses % 2)
+			{
+				tObst.center = vCenter;
+				break;
+			}
+		}
+		```
+
+---
 # 📅 2024.07.10
 📋 진행 사항
   * 삼각형으로 형성된 지형에 obstacle 영역을 추가했을 때, 해당 영역에 비어있는 hole을 형성하도록(triangulation을 수행하지 않도록) 구현했습니다.
