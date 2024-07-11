@@ -1,12 +1,41 @@
 # 📅 2024.07.10
 📋 진행 사항
-  * 삼각형으로 형성된 Mesh에 Obstacle 영역을 추가했을 때, 해당 영역에 hole을 형성하도록 구현했습니다.
-  * triangle library는 Constrainted Delaunay Triangle을 생성하는 라이브러리입니다.
-  * segment list는 geometry의 가장자리를 결정하는 정점의 index를 저장합니다. 참고할만한 레퍼런스나 예제가 많지 않아 직접 도형을 그려보며 동작 방식을 학습했습니다.
-  * 따라서 전체 맵(지형)의 가장자리를 구성하는 정점의 index를 segment list에 추가한 후, hole이 될 영역의 index를 segment list에 추가하도록 구현중입니다.
-  * 우선 새로운 정점 및 segment 데이터 등을 추가 할 때, malloc이 아닌 realloc을 통해 매번 모든 정점데이터를 다시 할당하지 않고 갱신 데이터만 추가하도록 변경했습니다.
-    * 그러나 realloc 함수도 할당에 실패할 경우 주소와 데이터가 이동할 가능성이 있으므로 이후 추가로 변경할 예정입니다.
-  * 작성 중...
+  * 삼각형으로 형성된 지형에 obstacle 영역을 추가했을 때, 해당 영역에 비어있는 hole을 형성하도록(triangulation을 수행하지 않도록) 구현했습니다.
+  * triangle library는 Constrainted Delaunay Triangle을 생성하는 라이브러리입니다. 제한된 영역 내에서 triangulation을 수행하기 때문에 영역의 edge를 지정해야 합니다.
+  * segment list는 영역의 edge를 결정하는 정점의 index를 저장합니다. 참고할만한 레퍼런스나 예제가 많지 않아 직접 도형을 그려보며 동작 방식을 이해했습니다.
+  * 따라서 전체 맵(지형)의 edge를 구성하는 정점의 index를 segment list에 추가한 후, obstacle 영역 edge의 정점 index를 segment list에 추가해 영역을 구분했습니다.
+    * ```
+      // Points
+		for (_int i = 0; i < LastIndex_Terrain; ++i)
+		{
+			m_tDT_in.segmentlist[2 * i]     = i;
+			m_tDT_in.segmentlist[2 * i + 1] = i + 1;
+		}
+		m_tDT_in.segmentlist[2 * LastIndex_Terrain]     = LastIndex_Terrain;
+		m_tDT_in.segmentlist[2 * LastIndex_Terrain + 1] = 0;
+		
+		// Obstacles
+		for (_int j = 0; j < m_vecObstacles.size(); ++j)
+		{			
+			for (_int i = 0; i < m_vecObstacles[j].numberof - 1; ++i)
+			{
+				m_tDT_in.segmentlist[FirstIndex + 2 * i]     = FirstIndex / 2 + i;
+				m_tDT_in.segmentlist[FirstIndex + 2 * i + 1] = FirstIndex / 2 + i + 1;
+			}
+			m_tDT_in.segmentlist[LastIndex - 1] = LastIndex / 2;
+			m_tDT_in.segmentlist[LastIndex]     = FirstIndex / 2;
+		}
+      ```
+  * 위에서 지정한 obstacle영역을 형성하는 segment들의 내부에 hole list의 정점을 위치시키면 해당 영역 내부에서는 triangulation이 이루어지지 않습니다.
+  * 새로운 정점 및 segment 데이터 등을 추가 할 때, malloc이 아닌 realloc을 통해 매번 모든 정점 데이터를 다시 할당하지 않고 갱신 데이터만 추가하도록 변경했습니다.
+    * realloc 할당 실패 시 주소와 데이터가 이동할 가능성이 있으므로 이후 추가로 생각해보려합니다.
+  * 모든 지형과 obstacle의 edge 정점 데이터는 단일 point list에 함께 저장되기 때문에, 지형의 edge points를 전부 저장한 뒤에 obstacle의 edge points를 저장하도록 구현했습니다.
+    * 이후 과정의 편의성에 영향을 미칠지 꽤 오래 고민해봤는데, 지형데이터를 입력하는 도중에 갑작스러운 변덕으로 obstacle 데이터를 입력하고 다시 지형 데이터를 입력할 일은 없을 것이라 생각했습니다.
+    * 지형 데이터가 obstacle 데이터에 의해 분산되면 obstacle 수에 따라 캐시 효율 문제가 발생할 수 있을 것이라 생각했습니다.
+    * 물론 입력받은 메모리 주소를 메모리를 정렬할 수도 있지만 어떻게 봐도 효율이 좋지 않은것 같아 데이터 입력 순서는 고정하기로 결정했습니다.
+
+⚠️ 발견된 문제
+ * 
 
 ---
 # 📅 2024.07.09
