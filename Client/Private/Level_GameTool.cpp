@@ -78,14 +78,14 @@ HRESULT CLevel_GameTool::Tick(const _float& fTimeDelta)
 	
 
 	//
-	if (m_pPrefabsView)
+	/*if (m_pPrefabsView)
 		m_pPrefabsView->Tick();
 	if (m_pLayersView)
 		m_pLayersView->Tick();
 	if (m_pTransformView)
 		m_pTransformView->Tick();
 	if (m_pSaveLoadView)
-		m_pSaveLoadView->Tick();
+		m_pSaveLoadView->Tick();*/
 	/*if (m_pAnimationView)
 		m_pAnimationView->Tick();*/
 	if (m_pNavMeshView)
@@ -110,10 +110,10 @@ HRESULT CLevel_GameTool::DebugRender()
 {
 	if (m_IsImGUIReady)
 	{
-		m_pPrefabsView->DebugRender();
-		m_pLayersView->DebugRender();
-		m_pTransformView->DebugRender();
-		m_pSaveLoadView->DebugRender();
+		//m_pPrefabsView->DebugRender();
+		//m_pLayersView->DebugRender();
+		//m_pTransformView->DebugRender();
+		//m_pSaveLoadView->DebugRender();
 		//m_pAnimationView->DebugRender();
 		m_pNavMeshView->DebugRender();
 
