@@ -638,9 +638,6 @@ HRESULT CNavMeshView::RenderVD()
 
 void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 {
-	// tObst.start = 시작 point index;
-	// tObst.numberof = 사용되는 정점 갯수;
-
 	for (_int i = 0; i < tObst.numberof; ++i)
 	{
 		Vec3 vCenter = Vec3::Zero;
@@ -658,20 +655,23 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 
 		for (_int m = 0; m < tObst.numberof; ++m)
 		{
-			_float fSourX = m_tDT_in.pointlist[tObst.start + (2 * m) % (2 * tObst.numberof)];
-			_float fSourZ = m_tDT_in.pointlist[tObst.start + (2 * m + 1) % (2 * tObst.numberof)];
+			_int idxX = tObst.start + (2 * m) % (2 * tObst.numberof);
+			_int idxZ = tObst.start + (2 * m + 1) % (2 * tObst.numberof);
 
-			_int iNextX = tObst.start + (2 * m + 2) % (2 * tObst.numberof);
-			_int iNextZ = tObst.start + (2 * m + 3) % (2 * tObst.numberof);
+			_float fSourX = m_tDT_in.pointlist[idxX];
+			_float fSourZ = m_tDT_in.pointlist[idxZ];
 
-			_float fNextX = m_tDT_in.pointlist[iNextX];
-			_float fNextZ = m_tDT_in.pointlist[iNextZ];
+			idxX = tObst.start + (2 * m + 2) % (2 * tObst.numberof);
+			idxZ = tObst.start + (2 * m + 3) % (2 * tObst.numberof);
 
-			if ((fSourX > vCenter.x) != (fNextX > vCenter.x))
+			_float fDestX = m_tDT_in.pointlist[idxX];
+			_float fDestZ = m_tDT_in.pointlist[idxZ];
+
+			if ((fSourX > vCenter.x) != (fDestX > vCenter.x))	// x 좌표 검사
 			{
-				_float fAtZ = (fNextZ - fSourZ) * (vCenter.x - fSourX) / (fNextX - fSourX) + fSourZ;
+				_float fAtZ = (fDestZ - fSourZ) * (vCenter.x - fSourX) / (fDestX - fSourX) + fSourZ; 
 
-				if (vCenter.z < fAtZ)
+				if (vCenter.z < fAtZ)	// z 좌표 검사
 				{
 					++iCrosses;
 				}
