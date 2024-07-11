@@ -1,18 +1,18 @@
 # 📅 2024.07.11
 📋 진행 사항
   * obstacle의 edge가 convex하지 않은 경우 영역의 내부와 외부가 뒤바뀌는 현상을 수정했습니다.
-  	* triangle library에서는 obstacle 영역을 지정하기 위해 내부의 한 점이 필요한데, 기존에는 이를 간단히 무게 중심으로 설정했습니다.
-   	* 볼록 다각형이 아닌 경우 형태에 따라 무게 중심의 위치가 다각형의 외부에 있을 수도 있음을 고려하지 못했습니다.(ex. 도넛)
+    * triangle library에서는 obstacle 영역을 지정하기 위해 내부의 한 점이 필요한데, 기존에는 이를 간단히 무게 중심으로 설정했습니다.
+    * 볼록 다각형이 아닌 경우 형태에 따라 무게 중심의 위치가 다각형의 외부에 있을 수도 있음을 고려하지 못했습니다.(ex. 도넛)
       
-		![FPS_61-DEBUG2024-07-1118-46-08-ezgif com-video-to-gif-converter](https://github.com/ksg1766/Navigation_System/assets/37239034/797257b8-98dc-4644-be74-e6bcd914b5f0)
+      ![FPS_61-DEBUG2024-07-1118-46-08-ezgif com-video-to-gif-converter](https://github.com/ksg1766/Navigation_System/assets/37239034/797257b8-98dc-4644-be74-e6bcd914b5f0)
 
-	* 처음에는 obstacle 영역에 대해 triangulation을 한 번 더 진행하는 방식을 고려했으나, 시간 및 공간 효율이 낮아 다른 방법을 고려하기로 했습니다.
-	* 모든 다각형은 삼각형으로 분할 될 수 있기 때문에 반드시 존재할 convex 지점을 찾아 무게 중심을 구하면 해당 점은 다각형의 내부에 위치할 것이라 생각했습니다.
-	* 한 점에서 출발한 반직선이 다각형과 짝수 번 교차한다면 점은 외부에, 홀수 번 교차한다면 내부에 존재한다는 사실을 이용했습니다.
+    * 처음에는 obstacle 영역에 대해 triangulation을 한 번 더 진행하는 방식을 고려했으나, 시간 및 공간 효율이 낮아 다른 방법을 고려하기로 했습니다.
+    * 모든 다각형은 삼각형으로 분할 될 수 있기 때문에 반드시 존재할 convex 지점을 찾아 무게 중심을 구하면 해당 점은 다각형의 내부에 위치할 것이라 생각했습니다.
+    * 한 점에서 출발한 반직선이 다각형과 짝수 번 교차한다면 점은 외부에, 홀수 번 교차한다면 내부에 존재한다는 사실을 이용했습니다.
 
-		![image](https://github.com/ksg1766/Navigation_System/assets/37239034/7168ef78-09e5-49c0-be51-f49695824aec)
+      ![image](https://github.com/ksg1766/Navigation_System/assets/37239034/7168ef78-09e5-49c0-be51-f49695824aec)
 
-	* 모든 영역에 대한 triangulation은 수행하지 않을 수 있었습니다.
+    * 모든 영역에 대한 triangulation은 수행하지 않을 수 있었습니다.
 		```
 		for (_int i = 0; i < tObst.numberof; ++i)
 		{
@@ -61,6 +61,8 @@
 			}
 		}
 		```
+⚽ 이후 계획
+  * 작성 중...
 
 ---
 # 📅 2024.07.10
