@@ -27,6 +27,9 @@
 		}
       ```
   * 위에서 지정한 obstacle영역을 형성하는 segment들의 내부에 hole list의 정점을 위치시키면 해당 영역 내부에서는 triangulation이 이루어지지 않습니다.
+    * 결과는 아래와 같습니다.
+      ![FPS_61-DEBUG2024-07-1110-29-56-ezgif com-video-to-gif-converter](https://github.com/ksg1766/Navigation_System/assets/37239034/9eea5ec5-55fd-4378-9f63-1d2a3ead0fbe)
+      
   * 새로운 정점 및 segment 데이터 등을 추가 할 때, malloc이 아닌 realloc을 통해 매번 모든 정점 데이터를 다시 할당하지 않고 갱신 데이터만 추가하도록 변경했습니다.
     * realloc 할당 실패 시 주소와 데이터가 이동할 가능성이 있으므로 이후 추가로 생각해보려합니다.
   * 모든 지형과 obstacle의 edge 정점 데이터는 단일 point list에 함께 저장되기 때문에, 지형의 edge points를 전부 저장한 뒤에 obstacle의 edge points를 저장하도록 구현했습니다.
@@ -35,7 +38,14 @@
     * 물론 입력받은 메모리 주소를 메모리를 정렬할 수도 있지만 어떻게 봐도 효율이 좋지 않은것 같아 데이터 입력 순서는 고정하기로 결정했습니다.
 
 ⚠️ 발견된 문제
- * 
+  * obstacle의 edge가 convex하지 않은 경우 영역의 내부가 잘못 계산 되는 경우가 있습니다.
+    * 영역 내부의 중심 좌표로 무게중심 좌표를 사용하고 있는데, 의도하지 않은 결과가 계산될 수 있는지 등을 고려해 수정할 예정입니다.
+      ![FPS_61-DEBUG2024-07-1110-35-13-ezgif com-speed](https://github.com/ksg1766/Navigation_System/assets/37239034/77b2232b-b291-4410-9ce5-c2c02c037e93)
+
+⚽ 이후 계획
+  * 오늘은 우선 발견된 문제부터 해결하는 것에 집중할 계획입니다.
+  * obstacle 영역을 정상적으로 지정할 수 있다면 동적으로 갱신되는 경우에 모든 데이터를 다시 계산하지 않고 obstacle 주변의 영역만 갱신하도록 최적화할 계획입니다.
+  * 혹은 A navigation mesh for dynamic environments. (Wouter G. van Toll et Al.) 에서 제안된 방식을 고려해 Voronoi Diagram만을 갱신하는 방법에 대해 고려해볼 계획입니다.
 
 ---
 # 📅 2024.07.09
