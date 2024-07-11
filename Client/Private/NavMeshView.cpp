@@ -462,7 +462,7 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 		for (auto& iter : m_vecPointSpheres)
 		{
 			BoundingSphere tS(iter.Center + 0.05f * Vec3::UnitY, 0.5f);
-			DX::Draw(m_pBatch, tS, Colors::Lime);
+			DX::Draw(m_pBatch, tS, Colors::LimeGreen);
 		}
 	}
 
@@ -562,7 +562,7 @@ HRESULT CNavMeshView::RenderDT()
 			Vec3 vTri2 = { m_tDT_out.pointlist[iIdx2 * 2], 0.f, m_tDT_out.pointlist[iIdx2 * 2 + 1] };
 			Vec3 vTri3 = { m_tDT_out.pointlist[iIdx3 * 2], 0.f, m_tDT_out.pointlist[iIdx3 * 2 + 1] };
 
-			DX::DrawTriangle(m_pBatch, vTri1, vTri2, vTri3, Colors::Lime);
+			DX::DrawTriangle(m_pBatch, vTri1, vTri2, vTri3, Colors::LimeGreen);
 		}
 		m_pBatch->End();
 	}
@@ -577,13 +577,13 @@ HRESULT CNavMeshView::RenderDT()
 				Vec3 vLine1 =
 				{
 					m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * j + 0],
-					0.5f,
+					0.0f,
 					m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * j + 1]
 				};
 				Vec3 vLine2 =
 				{
 					m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * j + 2],
-					0.5f,
+					0.0f,
 					m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * j + 3]
 				};
 
@@ -593,13 +593,13 @@ HRESULT CNavMeshView::RenderDT()
 			Vec3 vLine1 =
 			{
 				m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 2],
-				0.5f,
+				0.0f,
 				m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 1]
 			};
 			Vec3 vLine2 =
 			{
 				m_tDT_in.pointlist[m_vecObstacles[i].start],
-				0.5f,
+				0.0f,
 				m_tDT_in.pointlist[m_vecObstacles[i].start + 1]
 			};
 
