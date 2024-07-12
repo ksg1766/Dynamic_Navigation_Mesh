@@ -12,9 +12,9 @@
 
       ![image](https://github.com/ksg1766/Navigation_System/assets/37239034/7168ef78-09e5-49c0-be51-f49695824aec)
 
-    * 모든 영역에 대한 triangulation은 수행하지 않을 수 있었습니다.
+    * 모든 영역에 대한 triangulation은 수행하지 않을 수 있었습니다. 구현부는 대략 아래와 같습니다.
 		```
-		for (_int i = 0; i < tObst.numberof; ++i)
+		for (_int i = 0; i < tObst.numberof; ++i) // numberof : 정점의 갯수
 		{
 			Vec3 vCenter = Vec3::Zero;
 
@@ -22,7 +22,8 @@
 			{
 				vCenter.x += m_tDT_in.pointlist[tObst.start + (2 * (i + j)) % (2 * tObst.numberof)];
 				vCenter.z += m_tDT_in.pointlist[tObst.start + (2 * (i + j) + 1) % (2 * tObst.numberof)];
-			}
+			}	// 삼각형과 같은 단순한 형태의 다각형은 한 번에 내부 점을 발견할 수 있기 때문에
+    				// 한바퀴 돌며 중복으로 정점을 선택할 수 있는 경우에 대한 예외처리는 하지 않았습니다.
 
 			vCenter /= 3.f;
 
