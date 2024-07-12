@@ -357,21 +357,9 @@ HRESULT CNavMeshView::BakeNavMesh()
 	return S_OK;
 }
 
-HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
+HRESULT CNavMeshView::UpdatePointList()
 {
-	if (true == m_vecPoints.empty())
-	{
-		return E_FAIL;
-	}
-
-	// 해제 할당 반복하지 말고 갱신하도록 -> 결국 malloc realloc 써야할 듯.
-	SafeReleaseTriangle(m_tDT_out);
-	SafeReleaseTriangle(m_tVD_out);
-	//if (m_tDT_in.pointlist) { free(m_tDT_in.pointlist);	m_tDT_in.pointlist = nullptr; }
-	//if (m_tDT_in.holelist) { free(m_tDT_in.holelist);	m_tDT_in.holelist = nullptr; }
-
-	// points
-	m_tDT_in.numberofpoints = m_vecPoints.size() + m_vecObstacles.size();
+	m_tDT_in.numberofpoints = m_vecPoints.size();
 	if (0 < m_tDT_in.numberofpoints)
 	{
 		SAFE_REALLOC(TRI_REAL, m_tDT_in.pointlist, m_tDT_in.numberofpoints * 2)
@@ -383,7 +371,11 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 		}
 	}
 
-	// segments
+	return S_OK;
+}
+
+HRESULT CNavMeshView::UpdateSegmentList()
+{
 	m_tDT_in.numberofsegments = m_vecPoints.size();
 	if (0 < m_tDT_in.numberofsegments)
 	{
@@ -397,10 +389,10 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 		}
 		m_tDT_in.segmentlist[2 * (m_iPointCount - 1) + 0] = m_iPointCount - 1;
 		m_tDT_in.segmentlist[2 * (m_iPointCount - 1) + 1] = 0;
-		
+
 		// Obstacles
 		for (_int j = 0; j < m_vecObstacles.size(); ++j)
-		{			
+		{
 			for (_int i = 0; i < m_vecObstacles[j].numberof - 1; ++i)
 			{
 				m_tDT_in.segmentlist[m_vecObstacles[j].start + 2 * i + 0] = m_vecObstacles[j].start / 2 + i + 0;
@@ -411,7 +403,11 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 		}
 	}
 
-	// holes
+	return S_OK;
+}
+
+HRESULT CNavMeshView::UpdateHoleList()
+{
 	m_tDT_in.numberofholes = m_vecObstacles.size();
 	if (0 < m_tDT_in.numberofholes)
 	{
@@ -424,24 +420,24 @@ HRESULT CNavMeshView::ExecuteDelaunayVoronoi()
 		}
 	}
 
-	// regions
+	return S_OK;
+}
+
+HRESULT CNavMeshView::UpdateRegionList()
+{
 	m_tDT_in.numberofregions = m_vecRegions.size();
 	if (0 < m_tDT_in.numberofregions)
 	{
 		SAFE_REALLOC(TRI_REAL, m_tDT_in.regionlist, m_tDT_in.numberofregions * 4)
 
-		for (_int i = 0; i < m_vecRegions.size(); ++i)
-		{
-			m_tDT_in.regionlist[4 * i + 0] = m_vecRegions[i].x;
-			m_tDT_in.regionlist[4 * i + 1] = m_vecRegions[i].z;
-			m_tDT_in.regionlist[4 * i + 1] = 0.f;
-			m_tDT_in.regionlist[4 * i + 1] = 0.f;
-		}
+			for (_int i = 0; i < m_vecRegions.size(); ++i)
+			{
+				m_tDT_in.regionlist[4 * i + 0] = m_vecRegions[i].x;
+				m_tDT_in.regionlist[4 * i + 1] = m_vecRegions[i].z;
+				m_tDT_in.regionlist[4 * i + 1] = 0.f;
+				m_tDT_in.regionlist[4 * i + 1] = 0.f;
+			}
 	}
-
-	//static _char triswitches[5] = "pqzv";
-	static _char triswitches[4] = "pzv";
-	triangulate(triswitches, &m_tDT_in, &m_tDT_out, &m_tVD_out);
 
 	return S_OK;
 }
@@ -813,6 +809,21 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		m_vecPointSpheres.push_back(tSphere);
 		s2cPushBack(m_strPoints, to_string(pickPos.x) + " " + to_string(pickPos.y) + " " + to_string(pickPos.z));
 		++m_iPointCount;
+
+		if (3 <= m_vecPoints.size())
+		{
+			SafeReleaseTriangle(m_tDT_out);
+			SafeReleaseTriangle(m_tVD_out);
+
+			UpdatePointList();
+			UpdateSegmentList();
+			UpdateHoleList();
+			UpdateRegionList();
+
+			//static _char triswitches[5] = "pqzv";
+			static _char triswitches[4] = "pzv";
+			triangulate(triswitches, &m_tDT_in, &m_tDT_out, &m_tVD_out);
+		}
 	}
 	else if (TRIMODE::OBSTACLE == m_eCurrentTriangleMode)
 	{
@@ -828,10 +839,7 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		//s2cPushBack(m_strRegions, to_string(pickPos.x) + " " + to_string(pickPos.y) + " " + to_string(pickPos.z));
 	}
 
-	if (3 <= m_vecPoints.size())
-	{
-		ExecuteDelaunayVoronoi();
-	}
+
 
 	// 삼각형 만드는게 아니라 점만 찍도록.
 	//if (3 == m_vecPoints.size())
@@ -999,7 +1007,12 @@ void CNavMeshView::ObstaclePointsGroup()
 	{
 		ImGui::SameLine();
 		if (ImGui::Button("CreateObstacle"))
-		{			
+		{	
+			SafeReleaseTriangle(m_tDT_out);
+			SafeReleaseTriangle(m_tVD_out);
+
+			UpdatePointList();
+
 			Obst tObst = { 2 * (m_vecPoints.size() - m_vecObstaclePoints.size()), m_vecObstaclePoints.size(), };
 			SetPolygonHoleCenter(tObst); 
 			m_vecObstacles.push_back(tObst);
@@ -1008,7 +1021,12 @@ void CNavMeshView::ObstaclePointsGroup()
 			m_strObstaclePoints.clear();
 			m_vecObstaclePoints.clear();
 
-			ExecuteDelaunayVoronoi();
+			UpdateSegmentList();
+			UpdateHoleList();
+
+			//static _char triswitches[5] = "pqzv";
+			static _char triswitches[4] = "pzv";
+			triangulate(triswitches, &m_tDT_in, &m_tDT_out, &m_tVD_out);
 		}
 	}
 }

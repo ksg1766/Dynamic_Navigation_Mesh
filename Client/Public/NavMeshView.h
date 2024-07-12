@@ -46,7 +46,11 @@ private:
 	void	ShowNavMesh(_bool bOnOff) {	m_isNavMeshOn = bOnOff; }
 
 	HRESULT	BakeNavMesh();
-	HRESULT	ExecuteDelaunayVoronoi();
+	HRESULT	UpdatePointList();
+	HRESULT	UpdateSegmentList();
+	HRESULT	UpdateHoleList();
+	HRESULT	UpdateRegionList();
+
 	HRESULT	SafeReleaseTriangle(triangulateio& tTriangle);
 
 private:
