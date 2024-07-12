@@ -488,8 +488,8 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 		return E_FAIL;
 
 	// triangle::VD
-	if (FAILED(RenderVD()))
-		return E_FAIL;
+	//if (FAILED(RenderVD()))
+	//	return E_FAIL;
 
 	/*if (2 == m_vecPoints.size())
 	{
@@ -1030,7 +1030,7 @@ void CNavMeshView::ObstaclePointsGroup()
 		}
 	}
 }
-
+// https://gdcvault.com/play/1014514/AI-Navigation-It-s-Not
 void CNavMeshView::CellGroup()
 {
 	ImGui::ListBox("Cells", &m_Item_Current, m_strCells.data(), m_strCells.size(), 3);
