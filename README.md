@@ -17,8 +17,13 @@
       * 
     * 맵에 grid를 적용.
       * 각 cell은 어떤 삼각형을 포함하는지 보유하도록 -> obstacle이 위치한 그리드의 삼각형만을 가지고 와서 triangulation.
-      * 혹은, 최대, 최소 가로 세로 위치의 AABB를 가지고 좀 더 넓은 영역의 삼각형을 triangulation.
+      	* 혹은, 최대, 최소 가로 세로 위치의 AABB를 가지고 좀 더 넓은 영역의 삼각형을 triangulation. -> max x, z / mix x, z
       * ...
+    * ~~in에는 전체 맵에 대한 초기 point list는 어차피 (사각형이라 가정하면) 8개 고정. 이후부터 obstacle의 point. 이 중 특정 obstacle의 point를 찾아내는건 가능함.~~
+    * 우선 neighbor들까지 전부 설정된 네비게이션 메쉬를 만들어야함.
+    * obstacle과 겹치는 삼각형의 좌표를 가지고 와서 triangulation 수행. 결과를 원래 영역에 붙여넣어야함.
+    * 원래 영역의 neighbor와 새로 분할된 영역의 edge를 연결하는 것은 어렵지 않음. edge와 닿아 있는 삼각형들은 neighbor를 다시 돌려주면 되고 나머지는 그냥 자기들끼리 이어주면 된다.
+    * 일단 해보자!
 
 ---
 # 📅 2024.07.11
