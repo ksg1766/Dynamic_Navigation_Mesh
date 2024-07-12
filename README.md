@@ -1,3 +1,13 @@
+# 📅 2024.07.12
+📋 진행 사항
+  * obstacle의 edge를 하나씩 추가할 경우 이상이 없지만 한번에 edge를 추가한 뒤 triangulation을 하도록 구현하면 hole이 생성되지 않았던 현상을 수정했습니다.
+    * hole을 설정하기 위한 내부의 점을 찾는 과정에서 obstacle의 edge를 구성하는 point가 point list에 저장되지 않았습니다.
+    * 내부 점을 찾기 이전에 obstacle의 edge를 미리 point list에 추가함으로서 해결할 수 있었습니다.
+      ![FPS_60-DEBUG2024-07-1212-12-53-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/3bf92443-ff6a-4a06-8463-2aadf66b9483)
+    * 작성 중...
+    * 
+      
+---
 # 📅 2024.07.11
 📋 진행 사항
   * obstacle의 edge가 convex하지 않은 경우 영역의 내부와 외부가 뒤바뀌는 현상을 수정했습니다.
@@ -65,7 +75,7 @@
     * 모든 삼각형을 다시 계산하지 않도록 하기 위해, 배치될 obstacle을 포함하는 삼각형만을 계산할 수 있는 방법을 계획 중입니다.
 
 ⚠️ 발견된 문제
-  * obstacle의 edge를 하나씩 추가할 경우 이상이 없지만 한번에 dege를 추가한 뒤 triangulation을 하면 hole이 생성되지 않습니다.
+  * obstacle의 edge를 하나씩 추가할 경우 이상이 없지만 한번에 edge를 추가한 뒤 triangulation을 하면 hole이 생성되지 않습니다.
   * 누락한 부분이 있는지 탐색 중입니다.
 
 ⚽ 이후 계획
