@@ -97,6 +97,28 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 		return E_FAIL;
 	}
 
+	m_vecPoints.push_back(Vec3(-512.f, 0.f, -512.f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.f, 0.f, -512.f), 2.f));
+
+	m_vecPoints.push_back(Vec3(+512.f, 0.f, -512.f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.f, 0.f, -512.f), 2.f));
+	
+	m_vecPoints.push_back(Vec3(+512.f, 0.f, +512.f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.f, 0.f, +512.f), 2.f));
+
+	m_vecPoints.push_back(Vec3(-512.f, 0.f, +512.f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.f, 0.f, +512.f), 2.f));
+
+	m_iPointCount = m_vecPoints.size();
+
+	UpdatePointList();
+	UpdateSegmentList();
+	UpdateHoleList();
+	UpdateRegionList();
+
+	_char szTriswitches[3] = "pz";
+	triangulate(szTriswitches, &m_tIn, &m_tOut, nullptr);
+
 	return S_OK;
 }
 
@@ -359,15 +381,15 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 HRESULT CNavMeshView::UpdatePointList()
 {
-	m_tDT_in.numberofpoints = m_vecPoints.size();
-	if (0 < m_tDT_in.numberofpoints)
+	m_tIn.numberofpoints = m_vecPoints.size();
+	if (0 < m_tIn.numberofpoints)
 	{
-		SAFE_REALLOC(TRI_REAL, m_tDT_in.pointlist, m_tDT_in.numberofpoints * 2)
+		SAFE_REALLOC(TRI_REAL, m_tIn.pointlist, m_tIn.numberofpoints * 2)
 
 		for (_int i = 0; i < m_vecPoints.size(); ++i)
 		{
-			m_tDT_in.pointlist[2 * i + 0] = m_vecPoints[i].x;
-			m_tDT_in.pointlist[2 * i + 1] = m_vecPoints[i].z;
+			m_tIn.pointlist[2 * i + 0] = m_vecPoints[i].x;
+			m_tIn.pointlist[2 * i + 1] = m_vecPoints[i].z;
 		}
 	}
 
@@ -376,30 +398,30 @@ HRESULT CNavMeshView::UpdatePointList()
 
 HRESULT CNavMeshView::UpdateSegmentList()
 {
-	m_tDT_in.numberofsegments = m_vecPoints.size();
-	if (0 < m_tDT_in.numberofsegments)
+	m_tIn.numberofsegments = m_vecPoints.size();
+	if (0 < m_tIn.numberofsegments)
 	{
-		SAFE_REALLOC(_int, m_tDT_in.segmentlist, m_tDT_in.numberofpoints * 2)
+		SAFE_REALLOC(_int, m_tIn.segmentlist, m_tIn.numberofsegments * 2)
 
 		// Points
 		for (_int i = 0; i < m_iPointCount - 1; ++i)
 		{
-			m_tDT_in.segmentlist[2 * i + 0] = i + 0;
-			m_tDT_in.segmentlist[2 * i + 1] = i + 1;
+			m_tIn.segmentlist[2 * i + 0] = i + 0;
+			m_tIn.segmentlist[2 * i + 1] = i + 1;
 		}
-		m_tDT_in.segmentlist[2 * (m_iPointCount - 1) + 0] = m_iPointCount - 1;
-		m_tDT_in.segmentlist[2 * (m_iPointCount - 1) + 1] = 0;
+		m_tIn.segmentlist[2 * (m_iPointCount - 1) + 0] = m_iPointCount - 1;
+		m_tIn.segmentlist[2 * (m_iPointCount - 1) + 1] = 0;
 
 		// Obstacles
 		for (_int j = 0; j < m_vecObstacles.size(); ++j)
 		{
 			for (_int i = 0; i < m_vecObstacles[j].numberof - 1; ++i)
 			{
-				m_tDT_in.segmentlist[m_vecObstacles[j].start + 2 * i + 0] = m_vecObstacles[j].start / 2 + i + 0;
-				m_tDT_in.segmentlist[m_vecObstacles[j].start + 2 * i + 1] = m_vecObstacles[j].start / 2 + i + 1;
+				m_tIn.segmentlist[m_vecObstacles[j].start + 2 * i + 0] = m_vecObstacles[j].start / 2 + i + 0;
+				m_tIn.segmentlist[m_vecObstacles[j].start + 2 * i + 1] = m_vecObstacles[j].start / 2 + i + 1;
 			}
-			m_tDT_in.segmentlist[m_vecObstacles[j].start + 2 * (m_vecObstacles[j].numberof - 1) + 0] = m_vecObstacles[j].start / 2 + m_vecObstacles[j].numberof - 1;
-			m_tDT_in.segmentlist[m_vecObstacles[j].start + 2 * (m_vecObstacles[j].numberof - 1) + 1] = m_vecObstacles[j].start / 2;
+			m_tIn.segmentlist[m_vecObstacles[j].start + 2 * (m_vecObstacles[j].numberof - 1) + 0] = m_vecObstacles[j].start / 2 + m_vecObstacles[j].numberof - 1;
+			m_tIn.segmentlist[m_vecObstacles[j].start + 2 * (m_vecObstacles[j].numberof - 1) + 1] = m_vecObstacles[j].start / 2;
 		}
 	}
 
@@ -408,15 +430,15 @@ HRESULT CNavMeshView::UpdateSegmentList()
 
 HRESULT CNavMeshView::UpdateHoleList()
 {
-	m_tDT_in.numberofholes = m_vecObstacles.size();
-	if (0 < m_tDT_in.numberofholes)
+	m_tIn.numberofholes = m_vecObstacles.size();
+	if (0 < m_tIn.numberofholes)
 	{
-		SAFE_REALLOC(TRI_REAL, m_tDT_in.holelist, m_tDT_in.numberofholes * 2)
+		SAFE_REALLOC(TRI_REAL, m_tIn.holelist, m_tIn.numberofholes * 2)
 
-		for (_int i = 0; i < m_tDT_in.numberofholes; ++i)
+		for (_int i = 0; i < m_tIn.numberofholes; ++i)
 		{
-			m_tDT_in.holelist[2 * i + 0] = m_vecObstacles[i].center.x;
-			m_tDT_in.holelist[2 * i + 1] = m_vecObstacles[i].center.z;
+			m_tIn.holelist[2 * i + 0] = m_vecObstacles[i].center.x;
+			m_tIn.holelist[2 * i + 1] = m_vecObstacles[i].center.z;
 		}
 	}
 
@@ -425,17 +447,17 @@ HRESULT CNavMeshView::UpdateHoleList()
 
 HRESULT CNavMeshView::UpdateRegionList()
 {
-	m_tDT_in.numberofregions = m_vecRegions.size();
-	if (0 < m_tDT_in.numberofregions)
+	m_tIn.numberofregions = m_vecRegions.size();
+	if (0 < m_tIn.numberofregions)
 	{
-		SAFE_REALLOC(TRI_REAL, m_tDT_in.regionlist, m_tDT_in.numberofregions * 4)
+		SAFE_REALLOC(TRI_REAL, m_tIn.regionlist, m_tIn.numberofregions * 4)
 
 			for (_int i = 0; i < m_vecRegions.size(); ++i)
 			{
-				m_tDT_in.regionlist[4 * i + 0] = m_vecRegions[i].x;
-				m_tDT_in.regionlist[4 * i + 1] = m_vecRegions[i].z;
-				m_tDT_in.regionlist[4 * i + 1] = 0.f;
-				m_tDT_in.regionlist[4 * i + 1] = 0.f;
+				m_tIn.regionlist[4 * i + 0] = m_vecRegions[i].x;
+				m_tIn.regionlist[4 * i + 1] = m_vecRegions[i].z;
+				m_tIn.regionlist[4 * i + 1] = 0.f;
+				m_tIn.regionlist[4 * i + 1] = 0.f;
 			}
 	}
 
@@ -546,18 +568,18 @@ HRESULT CNavMeshView::DebugRenderLegacy()
 
 HRESULT CNavMeshView::RenderDT()
 {
-	if (0 < m_tDT_out.numberoftriangles)
+	if (0 < m_tOut.numberoftriangles)
 	{
 		m_pBatch->Begin();
-		for (_int i = 0; i < m_tDT_out.numberoftriangles; ++i)
+		for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 		{
-			_int iIdx1 = m_tDT_out.trianglelist[i * 3 + POINT_A];
-			_int iIdx2 = m_tDT_out.trianglelist[i * 3 + POINT_B];
-			_int iIdx3 = m_tDT_out.trianglelist[i * 3 + POINT_C];
+			_int iIdx1 = m_tOut.trianglelist[i * 3 + POINT_A];
+			_int iIdx2 = m_tOut.trianglelist[i * 3 + POINT_B];
+			_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
 
-			Vec3 vTri1 = { m_tDT_out.pointlist[iIdx1 * 2], 0.f, m_tDT_out.pointlist[iIdx1 * 2 + 1] };
-			Vec3 vTri2 = { m_tDT_out.pointlist[iIdx2 * 2], 0.f, m_tDT_out.pointlist[iIdx2 * 2 + 1] };
-			Vec3 vTri3 = { m_tDT_out.pointlist[iIdx3 * 2], 0.f, m_tDT_out.pointlist[iIdx3 * 2 + 1] };
+			Vec3 vTri1 = { m_tOut.pointlist[iIdx1 * 2], 0.f, m_tOut.pointlist[iIdx1 * 2 + 1] };
+			Vec3 vTri2 = { m_tOut.pointlist[iIdx2 * 2], 0.f, m_tOut.pointlist[iIdx2 * 2 + 1] };
+			Vec3 vTri3 = { m_tOut.pointlist[iIdx3 * 2], 0.f, m_tOut.pointlist[iIdx3 * 2 + 1] };
 
 			DX::DrawTriangle(m_pBatch, vTri1, vTri2, vTri3, Colors::LimeGreen);
 		}
@@ -573,15 +595,15 @@ HRESULT CNavMeshView::RenderDT()
 			{
 				Vec3 vLine1 =
 				{
-					m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * j + 0],
+					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 0],
 					0.0f,
-					m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * j + 1]
+					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 1]
 				};
 				Vec3 vLine2 =
 				{
-					m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * j + 2],
+					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 2],
 					0.0f,
-					m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * j + 3]
+					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 3]
 				};
 
 				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
@@ -589,15 +611,15 @@ HRESULT CNavMeshView::RenderDT()
 
 			Vec3 vLine1 =
 			{
-				m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 2],
+				m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 2],
 				0.0f,
-				m_tDT_in.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 1]
+				m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 1]
 			};
 			Vec3 vLine2 =
 			{
-				m_tDT_in.pointlist[m_vecObstacles[i].start],
+				m_tIn.pointlist[m_vecObstacles[i].start],
 				0.0f,
-				m_tDT_in.pointlist[m_vecObstacles[i].start + 1]
+				m_tIn.pointlist[m_vecObstacles[i].start + 1]
 			};
 
 			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
@@ -640,8 +662,8 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 
 		for(_int j = 0; j < 3; ++j)
 		{
-			vCenter.x += m_tDT_in.pointlist[tObst.start + (2 * (i + j)) % (2 * tObst.numberof)];
-			vCenter.z += m_tDT_in.pointlist[tObst.start + (2 * (i + j) + 1) % (2 * tObst.numberof)];
+			vCenter.x += m_tIn.pointlist[tObst.start + (2 * (i + j)) % (2 * tObst.numberof)];
+			vCenter.z += m_tIn.pointlist[tObst.start + (2 * (i + j) + 1) % (2 * tObst.numberof)];
 		}
 
 		vCenter /= 3.f;
@@ -654,14 +676,14 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 			_int idxX = tObst.start + (2 * m) % (2 * tObst.numberof);
 			_int idxZ = tObst.start + (2 * m + 1) % (2 * tObst.numberof);
 
-			_float fSourX = m_tDT_in.pointlist[idxX];
-			_float fSourZ = m_tDT_in.pointlist[idxZ];
+			_float fSourX = m_tIn.pointlist[idxX];
+			_float fSourZ = m_tIn.pointlist[idxZ];
 
 			idxX = tObst.start + (2 * m + 2) % (2 * tObst.numberof);
 			idxZ = tObst.start + (2 * m + 3) % (2 * tObst.numberof);
 
-			_float fDestX = m_tDT_in.pointlist[idxX];
-			_float fDestZ = m_tDT_in.pointlist[idxZ];
+			_float fDestX = m_tIn.pointlist[idxX];
+			_float fDestZ = m_tIn.pointlist[idxZ];
 
 			if ((fSourX > vCenter.x) != (fDestX > vCenter.x))	// x ÁÂÇ¥ °Ë»ç
 			{
@@ -812,17 +834,17 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 
 		if (3 <= m_vecPoints.size())
 		{
-			SafeReleaseTriangle(m_tDT_out);
-			SafeReleaseTriangle(m_tVD_out);
+			SafeReleaseTriangle(m_tOut);
+			//SafeReleaseTriangle(m_tVD_out);
 
 			UpdatePointList();
 			UpdateSegmentList();
 			UpdateHoleList();
 			UpdateRegionList();
 
-			//static _char triswitches[5] = "pqzv";
-			static _char triswitches[4] = "pzv";
-			triangulate(triswitches, &m_tDT_in, &m_tDT_out, &m_tVD_out);
+			//static _char triswitches[4] = "pqz";
+			static _char triswitches[3] = "pz";
+			triangulate(triswitches, &m_tIn, &m_tOut, nullptr);
 		}
 	}
 	else if (TRIMODE::OBSTACLE == m_eCurrentTriangleMode)
@@ -1008,7 +1030,7 @@ void CNavMeshView::ObstaclePointsGroup()
 		ImGui::SameLine();
 		if (ImGui::Button("CreateObstacle"))
 		{	
-			SafeReleaseTriangle(m_tDT_out);
+			SafeReleaseTriangle(m_tOut);
 			SafeReleaseTriangle(m_tVD_out);
 
 			UpdatePointList();
@@ -1024,9 +1046,9 @@ void CNavMeshView::ObstaclePointsGroup()
 			UpdateSegmentList();
 			UpdateHoleList();
 
-			//static _char triswitches[5] = "pqzv";
-			static _char triswitches[4] = "pzv";
-			triangulate(triswitches, &m_tDT_in, &m_tDT_out, &m_tVD_out);
+			//static _char triswitches[4] = "pqz";
+			static _char triswitches[3] = "pz";
+			triangulate(triswitches, &m_tIn, &m_tOut, nullptr);
 		}
 	}
 }
@@ -1090,7 +1112,7 @@ void CNavMeshView::Free()
 
 	Safe_Release(m_pInputLayout);
 
-	SafeReleaseTriangle(m_tDT_in);
-	SafeReleaseTriangle(m_tDT_out);
-	SafeReleaseTriangle(m_tVD_out);
+	SafeReleaseTriangle(m_tIn);
+	SafeReleaseTriangle(m_tOut);
+	//SafeReleaseTriangle(m_tVD_out);
 }

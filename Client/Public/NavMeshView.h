@@ -86,10 +86,10 @@ private:
 	CTerrain*			m_pTerrainBuffer = nullptr;
 
 	// DT, VD
-	triangulateio		m_tDT_in, m_tDT_out, m_tVD_out;
+	triangulateio		m_tIn, m_tOut, m_tVD_out;
 
-	string				m_strCurrentTriangleMode = "Default";
-	TRIMODE				m_eCurrentTriangleMode = TRIMODE::DEFAULT;
+	string				m_strCurrentTriangleMode = "Obstacle";
+	TRIMODE				m_eCurrentTriangleMode = TRIMODE::OBSTACLE;
 
 	_int				m_iPointCount = 0;
 	vector<Obst>		m_vecObstacles;
