@@ -118,6 +118,9 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 
 	_char szTriswitches[3] = "pz";
 	triangulate(szTriswitches, &m_tIn, &m_tOut, nullptr);
+	
+
+	BakeNavMesh();
 
 	return S_OK;
 }
@@ -155,9 +158,9 @@ HRESULT CNavMeshView::LateTick()
 
 HRESULT CNavMeshView::DebugRender()
 {
-	DebugRenderLegacy();
+	//DebugRenderLegacy();
 
-	/*m_pEffect->SetWorld(XMMatrixIdentity());
+	m_pEffect->SetWorld(XMMatrixIdentity());
 
 	m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
 	m_pEffect->SetProjection(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_PROJ));
@@ -174,12 +177,54 @@ HRESULT CNavMeshView::DebugRender()
 			Vec3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
 			m_pBatch->Begin();
-			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Cyan);
+			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
 			m_pBatch->End();
 		}
 	}
 
-	m_pBatch->Begin();
+	// 임시로 빨갛게 표시해보자...
+	if (false == m_vecObstacles.empty())
+	{
+		m_pBatch->Begin();
+		for (_int i = 0; i < m_vecObstacles.size(); ++i)
+		{
+			for (_int j = 0; j < m_vecObstacles[i].numberof - 1; ++j)
+			{
+				Vec3 vLine1 =
+				{
+					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 0],
+					0.0f,
+					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 1]
+				};
+				Vec3 vLine2 =
+				{
+					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 2],
+					0.0f,
+					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 3]
+				};
+
+				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
+			}
+
+			Vec3 vLine1 =
+			{
+				m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 2],
+				0.0f,
+				m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 1]
+			};
+			Vec3 vLine2 =
+			{
+				m_tIn.pointlist[m_vecObstacles[i].start],
+				0.0f,
+				m_tIn.pointlist[m_vecObstacles[i].start + 1]
+			};
+
+			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
+		}
+		m_pBatch->End();
+	}
+
+	/*m_pBatch->Begin();
 	DX::Draw(m_pBatch, m_tNavMeshBoundVolume, Colors::Green);
 	m_pBatch->End();*/
 
@@ -225,6 +270,43 @@ void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
 }
 
 HRESULT CNavMeshView::BakeNavMesh()
+{
+	if (false == m_vecCells.empty())
+	{
+		for (auto iter : m_vecCells)
+		{
+			delete iter;
+		}
+
+		m_vecCells.clear();
+	}
+
+	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
+	{
+		_int iIdx1 = m_tOut.trianglelist[i * 3 + POINT_A];
+		_int iIdx2 = m_tOut.trianglelist[i * 3 + POINT_B];
+		_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
+
+		Vec3 vtx[POINT_END] =
+		{
+			{ m_tOut.pointlist[iIdx1 * 2], 0.f, m_tOut.pointlist[iIdx1 * 2 + 1] },
+			{ m_tOut.pointlist[iIdx2 * 2], 0.f, m_tOut.pointlist[iIdx2 * 2 + 1] },
+			{ m_tOut.pointlist[iIdx3 * 2], 0.f, m_tOut.pointlist[iIdx3 * 2 + 1] },
+		};
+
+		CellData* pCellData = new CellData;
+		pCellData->vPoints = { vtx[POINT_A], vtx[POINT_B], vtx[POINT_C] };
+		pCellData->CW();
+
+		m_vecCells.push_back(pCellData);
+	}
+	
+	SetUpNeighbors(m_vecCells);
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::BakeNavMeshLegacy()
 {
 	if (false == m_vecCells.empty())
 	{
@@ -460,6 +542,168 @@ HRESULT CNavMeshView::UpdateRegionList()
 				m_tIn.regionlist[4 * i + 1] = 0.f;
 			}
 	}
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
+{
+	set<CellData*> setIntersected;
+	map<Vec3, CellData*> mapOutlineCells;
+
+	GetIntersectedCells(tObst, setIntersected);
+
+	for (auto tCell : setIntersected)
+	{
+		for (_int i = 0; i < LINE_END; ++i)
+		{	// setIntersected에서 삭제되지 않을 이웃을 가진 edge만 추출 -> 즉 setIntersected내에 포함돼있지 않는 이웃만.
+			/*if (nullptr == tCell->arrNeighbors[i])
+			{
+				continue;
+			}*/
+
+			auto element = setIntersected.find(tCell->arrNeighbors[i]);
+			if (setIntersected.end() == element)
+			{	// 해당 edge는 outline이므로 추가. 시작점만 저장하면 됨.->아님. 양 끝점 다 저장해야함. 안그러면 새로 구한 영역에서도 out라인 구해야함..
+				// 근데 이걸 가지고 triangulation을 다시 수행해서
+				// 이웃을 재연결해야함. 그러면 시작점 말고 이웃자체도 알아야할듯...
+				mapOutlineCells.emplace(tCell->vPoints[i], tCell->arrNeighbors[i]);
+			}
+		}
+	}
+
+	// 단방향 정렬은 나중에 생각하자.
+	// 일단 했다 치고,
+	
+	// setIntersected는 delete 해야 하고, mapOutCells와 Obstacle로 재구성
+	/*for (auto tCell : setIntersected)
+	{
+		delete tCell;
+		tCell = nullptr;
+		_int a = 0;
+	}*/
+
+	triangulateio tIn = { 0 }, tOut = { 0 };
+
+#pragma region pointlist
+	tIn.numberofpoints = mapOutlineCells.size() + tObst.numberof;
+	if (0 < tIn.numberofpoints)
+	{
+		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
+
+		_int i = 0;
+		for (auto pair : mapOutlineCells)
+		{
+			tIn.pointlist[2 * i + 0] = pair.first.x;
+			tIn.pointlist[2 * i + 1] = pair.first.z;
+		}
+
+		// tObst
+	}
+#pragma endregion pointlist
+
+#pragma region segmentlist
+	tIn.numberofsegments = mapOutlineCells.size() + tObst.numberof;
+	if (0 < tIn.numberofsegments)
+	{
+		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
+
+		// Points
+		for (_int i = 0; i < mapOutlineCells.size() - 1; ++i)
+		{
+			tIn.segmentlist[2 * i + 0] = i + 0;
+			tIn.segmentlist[2 * i + 1] = i + 1;
+		}
+		tIn.segmentlist[2 * (tIn.numberofsegments - 1) + 0] = tIn.numberofsegments - 1;
+		tIn.segmentlist[2 * (tIn.numberofsegments - 1) + 1] = 0;
+
+		// Obstacles
+		_int iStartIndex = 2 * mapOutlineCells.size();
+		for (_int i = 0; i < tObst.numberof - 1; ++i)
+		{
+			tIn.segmentlist[iStartIndex + 2 * i + 0] = iStartIndex / 2 + i + 0;
+			tIn.segmentlist[iStartIndex + 2 * i + 1] = iStartIndex / 2 + i + 1;
+		}
+
+		tIn.segmentlist[iStartIndex + 2 * (tObst.numberof - 1) + 0] = iStartIndex / 2 + tObst.numberof - 1;
+		tIn.segmentlist[iStartIndex + 2 * (tObst.numberof - 1) + 1] = iStartIndex / 2;
+	}
+#pragma endregion segmentlist
+
+#pragma region holelist
+	tIn.numberofholes = 1;
+	if (0 < tIn.numberofholes)
+	{
+		SAFE_REALLOC(TRI_REAL, tIn.holelist, tIn.numberofholes * 2)
+
+		for (_int i = 0; i < tIn.numberofholes; ++i)
+		{
+			tIn.holelist[2 * i + 0] = tObst.center.x;
+			tIn.holelist[2 * i + 1] = tObst.center.z;
+		}
+	}
+#pragma endregion holelist
+
+	tIn.numberofregions = 0;
+
+	_char szTriswitches[3] = "pz";
+	triangulate(szTriswitches, &tIn, &tOut, nullptr);
+
+	// 부분 메쉬 생성.
+	vector<CellData*> vecNewCells;
+
+	for (_int i = 0; i < tOut.numberoftriangles; ++i)
+	{
+		_int iIdx1 = tOut.trianglelist[i * 3 + POINT_A];
+		_int iIdx2 = tOut.trianglelist[i * 3 + POINT_B];
+		_int iIdx3 = tOut.trianglelist[i * 3 + POINT_C];
+
+		Vec3 vtx[POINT_END] =
+		{
+			{ tOut.pointlist[iIdx1 * 2], 0.f, tOut.pointlist[iIdx1 * 2 + 1] },
+			{ tOut.pointlist[iIdx2 * 2], 0.f, tOut.pointlist[iIdx2 * 2 + 1] },
+			{ tOut.pointlist[iIdx3 * 2], 0.f, tOut.pointlist[iIdx3 * 2 + 1] },
+		};
+
+		CellData* pCellData = new CellData;
+		pCellData->vPoints = { vtx[POINT_A], vtx[POINT_B], vtx[POINT_C] };
+		pCellData->CW();
+
+		vecNewCells.push_back(pCellData);
+	}
+
+	SetUpNeighbors(vecNewCells);
+
+	// 재구성된 데이터를 다시 전체맵에 연결.
+	for (auto cell : vecNewCells)
+	{		
+		_bool IsNew = true; // temp
+
+		for (uint8 i = LINE_AB; i < LINE_END; ++i)
+		{
+			if (nullptr == cell->arrNeighbors[i])
+			{
+				auto OutCell = mapOutlineCells.find(cell->vPoints[i]);
+				if (mapOutlineCells.end() != OutCell)
+				{
+					cell->arrNeighbors[i] = OutCell->second;
+					IsNew = false;
+				}
+			}
+		}
+
+		if (true == IsNew) // temp
+		{
+			m_vecCells.push_back(cell);
+		}
+	}
+	
+	// 아래는 무시해도 되지만 일단 남겨두는 메모
+	// vecIntersected.size() 로는 전체 point를 알 수 없으니, point도 id를 부여해서 저장해야할듯.
+	// 'index'가 아니라 'id'임.
+	// vecIntersected의 전체 point 구해서
+
+	//////////
 
 	return S_OK;
 }
@@ -700,6 +944,17 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 		{
 			tObst.center = vCenter;
 			break;
+		}
+	}
+}
+
+void CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected)
+{
+	for (auto cell : m_vecCells)
+	{
+		if (true == tObst.AABB.Intersects(cell->vPoints[POINT_A], cell->vPoints[POINT_B], cell->vPoints[POINT_C]))
+		{
+			setIntersected.emplace(cell);
 		}
 	}
 }
@@ -978,13 +1233,13 @@ void CNavMeshView::InfoView()
 	ImGui::InputFloat("ClimbMax (height)", &m_fMaxClimb);
 	ImGui::InputFloat("AreaMin (degree)", &m_fMinArea);
 	ImGui::InputFloat3("AABB Center", (_float*)&m_tNavMeshBoundVolume.Center);
-	ImGui::InputFloat3("AABB Extent", (_float*)&m_tNavMeshBoundVolume.Extents);
+	ImGui::InputFloat3("AABB Extent", (_float*)&m_tNavMeshBoundVolume.Extents);*/
 
 	if (ImGui::Button("BakeNav"))
 	{
 		BakeNavMesh();
 	}ImGui::SameLine();
-	*/
+	
 	if (ImGui::Button("SaveNav"))
 	{
 		Save();
@@ -1029,26 +1284,47 @@ void CNavMeshView::ObstaclePointsGroup()
 	{
 		ImGui::SameLine();
 		if (ImGui::Button("CreateObstacle"))
-		{	
-			SafeReleaseTriangle(m_tOut);
-			SafeReleaseTriangle(m_tVD_out);
+		{
+			//SafeReleaseTriangle(m_tOut);
+			//SafeReleaseTriangle(m_tVD_out);
 
 			UpdatePointList();
+			
+			{
+				TRI_REAL fMaxX = 0.0f, fMinX = FLT_MAX, fMaxZ = 0.0f, fMinZ = FLT_MAX;
+				for (auto vPoint : m_vecObstaclePoints)
+				{
+					if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+					else if (fMinX > vPoint.x) fMinX = vPoint.x;
 
-			Obst tObst = { 2 * (m_vecPoints.size() - m_vecObstaclePoints.size()), m_vecObstaclePoints.size(), };
-			SetPolygonHoleCenter(tObst); 
-			m_vecObstacles.push_back(tObst);
+					if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+					else if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+				}
+
+				_int iStartIndex = 2 * (m_vecPoints.size() - m_vecObstaclePoints.size());
+				_int iNumberOfPoints = m_vecObstaclePoints.size();
+				Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+				Vec3 vAABBExtent(fMaxX - vAABBCenter.x, 10.0f, fMaxZ - vAABBCenter.z);
+				Obst tObst(iStartIndex, iNumberOfPoints, Vec3::Zero, BoundingBox(vAABBCenter, vAABBExtent));
+
+				SetPolygonHoleCenter(tObst);
+				
+				m_vecObstacles.push_back(tObst);
+				
+				//
+				DynamicUpdate(tObst);
+				//
+			}
+
+			//UpdateSegmentList();
+			//UpdateHoleList();
+
+			//static _char triswitches[3] = "pz";
+			//triangulate(triswitches, &m_tIn, &m_tOut, nullptr);
 
 			for_each(m_strObstaclePoints.begin(), m_strObstaclePoints.end(), [](const _char* szPoint) { delete szPoint; });
 			m_strObstaclePoints.clear();
 			m_vecObstaclePoints.clear();
-
-			UpdateSegmentList();
-			UpdateHoleList();
-
-			//static _char triswitches[4] = "pqz";
-			static _char triswitches[3] = "pz";
-			triangulate(triswitches, &m_tIn, &m_tOut, nullptr);
 		}
 	}
 }
@@ -1082,7 +1358,7 @@ HRESULT CNavMeshView::SafeReleaseTriangle(triangulateio& tTriangle)
 	if (tTriangle.segmentlist)				{ free(tTriangle.segmentlist);				tTriangle.segmentlist = nullptr; }
 	if (tTriangle.segmentmarkerlist)		{ free(tTriangle.segmentmarkerlist);		tTriangle.segmentmarkerlist = nullptr; }
 	//if (tTriangle.holelist)					{ free(tTriangle.holelist);					tTriangle.holelist = nullptr; }
-	if (tTriangle.regionlist)				{ free(tTriangle.regionlist);				tTriangle.regionlist = nullptr; }
+	//if (tTriangle.regionlist)				{ free(tTriangle.regionlist);				tTriangle.regionlist = nullptr; }
 	if (tTriangle.edgelist)					{ free(tTriangle.edgelist);					tTriangle.edgelist = nullptr; }
 	if (tTriangle.edgemarkerlist)			{ free(tTriangle.edgemarkerlist);			tTriangle.edgemarkerlist = nullptr; }
 	if (tTriangle.normlist)					{ free(tTriangle.normlist);					tTriangle.normlist = nullptr; }
