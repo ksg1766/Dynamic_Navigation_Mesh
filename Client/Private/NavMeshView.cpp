@@ -185,28 +185,6 @@ HRESULT CNavMeshView::DebugRender()
 
 	if (!m_vecCells.empty())
 	{
-		for (_int i = 0; i < m_vecCells.size(); ++i)
-		{
-			if (true == m_vecCells[i]->isDead)
-			{
-				// 여기서 neighbor 상호적으로 다 끊어주고 삭제해야함.
-				for (uint8 j = LINE_AB; j < LINE_END; ++j)
-				{
-					if (nullptr != m_vecCells[i]->arrNeighbors[j])
-					{
-						for (uint8 k = LINE_AB; k < LINE_END; ++k)
-						{
-							if (m_vecCells[i] == m_vecCells[i]->arrNeighbors[j]->arrNeighbors[k])
-							{
-								m_vecCells[i]->arrNeighbors[j]->arrNeighbors[k] = nullptr;
-							}						
-						}
-						m_vecCells[i]->arrNeighbors[j] = nullptr;
-					}
-				}
-			}
-		}
-
 		for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
 		{
 			if (nullptr != (*cell) && true == (*cell)->isDead)
@@ -235,7 +213,6 @@ HRESULT CNavMeshView::DebugRender()
 		}
 	}
 
-	// 임시로 빨갛게 표시해보자...
 	if (false == m_vecObstacles.empty())
 	{
 		m_pBatch->Begin();
@@ -251,10 +228,8 @@ HRESULT CNavMeshView::DebugRender()
 				};
 				Vec3 vLine2 =
 				{
-					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 2],
 					m_vecObstacles[i].vecPoints[j + 1].x,
 					0.0f,
-					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 3]
 					m_vecObstacles[i].vecPoints[j + 1].z,
 				};
 
@@ -263,19 +238,15 @@ HRESULT CNavMeshView::DebugRender()
 
 			Vec3 vLine1 =
 			{
-				//m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].vecPoints.size() - 2],
 				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].x,
 				0.0f,
-				//m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].vecPoints.size() - 1]
 				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].z
 
 			};
 			Vec3 vLine2 =
 			{
-				//m_tIn.pointlist[m_vecObstacles[i].start],
 				m_vecObstacles[i].vecPoints[0].x,
 				0.0f,
-				//m_tIn.pointlist[m_vecObstacles[i].start + 1]
 				m_vecObstacles[i].vecPoints[0].z
 			};
 
@@ -616,14 +587,12 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 	for (auto tCell : setIntersected)
 	{
 		for (uint8 i = 0; i < LINE_END; ++i)
-		{	// setIntersected에서 삭제되지 않을 이웃을 가진 edge 만 추출 -> 즉 setIntersected내에 포함돼있지 않는 이웃만.
+		{	// neighbor가 유효한 edge 추출 
 			if (setIntersected.end() == setIntersected.find(tCell->arrNeighbors[i]))
-			{	// 해당 edge 는 outline 이므로 추가. 양 끝점 다 저장해야함. 안그러면 새로 구한 영역에서도 outline 구해야함..
-				// 근데 이걸 가지고 triangulation 을 다시 수행해서
-				// 이웃을 재연결해야함. 그러면 시작점 말고 이웃자체도 알아야할듯...
+			{	// 해당 edge는 outline.
 				if (mapOutlineCells.end() != mapOutlineCells.find(tCell->vPoints[i]))
 				{
-					_int a = 0; // delete는 돼고 쓰레기값 초기화 돼서 이웃 설정 안돼있는 경우 아주 많이 발견...
+					_int a = 0;
 				}
 				else
 				{
@@ -633,9 +602,7 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 		}
 	}
 
-	// 시계 방향 정렬
-	// sort 로는 안됨. 시점을 하나 정해서 이어져 있는 점을 검색해서 순서를 만들어야함.
-	vector<Vec3> vecOutlineCW;
+	vector<Vec3> vecOutlineCW;	// 시계 방향 정렬
 	vecOutlineCW.push_back(mapOutlineCells.begin()->first);
 
 	while (vecOutlineCW.size() < mapOutlineCells.size())
@@ -651,7 +618,6 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 		}
 	}
 
-	// setIntersected는 delete 해야 하고, mapOutCells와 Obstacle 로 재구성
 	for (auto tCell : setIntersected)
 	{
 		tCell->isDead = true;
@@ -754,27 +720,20 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 
 	SetUpNeighbors(vecNewCells);
 
-	// 재구성된 데이터를 다시 전체 맵에 연결.
 	for (auto cell : vecNewCells)
-	{
-		// 전체 neighbor를 다시 setup 하도록 했을 때 오류가 확 줄긴 함, 여전히 있음 근데... 여기도 문제고 위에도 문제인듯...
+	{	// 재구성된 데이터를 다시 전체 맵에 연결.
 		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
-			if (nullptr == cell->arrNeighbors[i]) // 새로 생성된 cell의 outline은 neighbor가 없을 것이므로. // 물론 hole 부분에도 없을 것...
-			{
+			if (nullptr == cell->arrNeighbors[i])
+			{	// new cell의 outline은 neighbor가 없음.
 				auto OutCell = mapOutlineCells.find(cell->vPoints[i]);
 				if (mapOutlineCells.end() != OutCell)
 				{
 					if (cell->vPoints[(i + 1) % POINT_END] == OutCell->second.first)
-					{	// mapOutlineCells의 outline과 일치한다면
-						cell->arrNeighbors[i] = OutCell->second.second; // cell과 OutCell->second.second을 상호 연결
+					{	// mapOutlineCells에서 outline 찾았다면 상호 연결
+						cell->arrNeighbors[i] = OutCell->second.second;
 
-						if (nullptr == OutCell->second.second)
-						{
-							continue;
-						}
-
-						if (OutCell->second.second == cell)
+						if (nullptr == OutCell->second.second || OutCell->second.second == cell)
 						{
 							continue;
 						}
@@ -799,13 +758,6 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 		cell->isNew = true;
 		m_vecCells.push_back(cell);
 	}
-
-	// 아래는 무시해도 되지만 일단 남겨두는 메모
-	// vecIntersected.size() 로는 전체 point를 알 수 없으니, point도 id를 부여해서 저장해야할듯.
-	// 'index'가 아니라 'id'임.
-	// vecIntersected의 전체 point 구해서
-
-	//////////
 
 	return S_OK;
 }
@@ -941,18 +893,14 @@ HRESULT CNavMeshView::RenderDT()
 			{
 				Vec3 vLine1 =
 				{
-					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 0],
 					m_vecObstacles[i].vecPoints[j].x,
 					0.0f,
-					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 1]
 					m_vecObstacles[i].vecPoints[j].z,
 				};
 				Vec3 vLine2 =
 				{
-					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 2],
 					m_vecObstacles[i].vecPoints[j + 1].x,
 					0.0f,
-					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 3]
 					m_vecObstacles[i].vecPoints[j + 1].z,
 				};
 
@@ -961,18 +909,14 @@ HRESULT CNavMeshView::RenderDT()
 
 			Vec3 vLine1 =
 			{
-				//m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].vecPoints.size() - 2],
 				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].x,
 				0.0f,
-				//m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].vecPoints.size() - 1]
 				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].z
 			};
 			Vec3 vLine2 =
 			{
-				//m_tIn.pointlist[m_vecObstacles[i].start],
 				m_vecObstacles[i].vecPoints[0].x,
 				0.0f,
-				//m_tIn.pointlist[m_vecObstacles[i].start + 1]
 				m_vecObstacles[i].vecPoints[0].z,
 			};
 
@@ -1179,9 +1123,6 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		m_pTerrainBuffer->Pick(p.x, p.y, pickPos, fDistance, m_pTerrainBuffer->GetTransform()->WorldMatrix());
 	}
 	
-	/*BoundingSphere* tSphere = new BoundingSphere;
-	tSphere->Center = pickPos;
-	tSphere->Radius = 2.f;*/
 	BoundingSphere tSphere;
 	tSphere.Center = pickPos;
 	tSphere.Radius = 2.f;
@@ -1196,14 +1137,12 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		if (3 <= m_vecPoints.size())
 		{
 			SafeReleaseTriangle(m_tOut);
-			//SafeReleaseTriangle(m_tVD_out);
 
 			UpdatePointList();
 			UpdateSegmentList();
 			UpdateHoleList();
 			UpdateRegionList();
 
-			//static _char triswitches[4] = "pqz";
 			static _char triswitches[3] = "pz";
 			triangulate(triswitches, &m_tIn, &m_tOut, nullptr);
 		}
@@ -1272,9 +1211,7 @@ HRESULT CNavMeshView::Load()
 		
 		for (_int i = 0; i < 3; ++i)
 		{
-			/*BoundingSphere* tSphere = new BoundingSphere;
-			tSphere->Center = tCellData->vPoints[i];
-			tSphere->Radius = 1.f;*/
+
 			BoundingSphere tSphere;
 			tSphere.Center = tCellData->vPoints[i];
 			tSphere.Radius = 1.f;
