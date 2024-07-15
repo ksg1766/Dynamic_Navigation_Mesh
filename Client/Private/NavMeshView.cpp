@@ -16,6 +16,8 @@ struct CNavMeshView::CellData
 	array<CellData*, LINE_END> arrNeighbors = { nullptr, nullptr, nullptr };
 
 	// cache
+	_bool	isDead = false;
+	_bool	isNew = false;
 	_bool	isOverSlope = false;
 	_int	iSlope = -1;
 
@@ -97,17 +99,17 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 		return E_FAIL;
 	}
 
-	m_vecPoints.push_back(Vec3(-512.f, 0.f, -512.f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.f, 0.f, -512.f), 2.f));
+	m_vecPoints.push_back(Vec3(-512.0f, 0.f, -512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, -512.0f), 2.f));
 
-	m_vecPoints.push_back(Vec3(+512.f, 0.f, -512.f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.f, 0.f, -512.f), 2.f));
+	m_vecPoints.push_back(Vec3(+512.0f, 0.f, -512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, -512.0f), 2.f));
 	
-	m_vecPoints.push_back(Vec3(+512.f, 0.f, +512.f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.f, 0.f, +512.f), 2.f));
+	m_vecPoints.push_back(Vec3(+512.0f, 0.f, +512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, +512.0f), 2.f));
 
-	m_vecPoints.push_back(Vec3(-512.f, 0.f, +512.f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.f, 0.f, +512.f), 2.f));
+	m_vecPoints.push_back(Vec3(-512.0f, 0.f, +512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, +512.0f), 2.f));
 
 	m_iPointCount = m_vecPoints.size();
 
@@ -119,7 +121,6 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 	_char szTriswitches[3] = "pz";
 	triangulate(szTriswitches, &m_tIn, &m_tOut, nullptr);
 	
-
 	BakeNavMesh();
 
 	return S_OK;
@@ -170,15 +171,31 @@ HRESULT CNavMeshView::DebugRender()
 
 	if (!m_vecCells.empty())
 	{
-		for (_int i = 0; i < m_vecCells.size(); ++i)
+		for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
 		{
-			Vec3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
-			Vec3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
-			Vec3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
+			if (true == (*cell)->isDead)
+			{
+				delete *cell;
+				cell = m_vecCells.erase(cell);
+				continue;
+			}
+
+			Vec3 vP0 = (*cell)->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
+			Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
+			Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
 			m_pBatch->Begin();
-			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
+			if (true == (*cell)->isNew)
+			{
+				DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Blue);
+			}
+			else
+			{
+				DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
+			}
 			m_pBatch->End();
+
+			++cell;
 		}
 	}
 
@@ -549,7 +566,8 @@ HRESULT CNavMeshView::UpdateRegionList()
 HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 {
 	set<CellData*> setIntersected;
-	map<Vec3, CellData*> mapOutlineCells;
+	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
+	vector<Vec3> vecOutlineSorted;
 
 	GetIntersectedCells(tObst, setIntersected);
 
@@ -557,68 +575,75 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 	{
 		for (_int i = 0; i < LINE_END; ++i)
 		{	// setIntersected에서 삭제되지 않을 이웃을 가진 edge만 추출 -> 즉 setIntersected내에 포함돼있지 않는 이웃만.
-			/*if (nullptr == tCell->arrNeighbors[i])
-			{
-				continue;
-			}*/
-
 			auto element = setIntersected.find(tCell->arrNeighbors[i]);
 			if (setIntersected.end() == element)
-			{	// 해당 edge는 outline이므로 추가. 시작점만 저장하면 됨.->아님. 양 끝점 다 저장해야함. 안그러면 새로 구한 영역에서도 out라인 구해야함..
+			{	// 해당 edge는 outline이므로 추가. 양 끝점 다 저장해야함. 안그러면 새로 구한 영역에서도 out라인 구해야함..
 				// 근데 이걸 가지고 triangulation을 다시 수행해서
 				// 이웃을 재연결해야함. 그러면 시작점 말고 이웃자체도 알아야할듯...
-				mapOutlineCells.emplace(tCell->vPoints[i], tCell->arrNeighbors[i]);
+				mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->arrNeighbors[i]));
 			}
 		}
 	}
 
-	// 단방향 정렬은 나중에 생각하자.
-	// 일단 했다 치고,
-	
-	// setIntersected는 delete 해야 하고, mapOutCells와 Obstacle로 재구성
-	/*for (auto tCell : setIntersected)
+	// 시계 방향 정렬
+	// sort로는 안됨. 시점을 하나 정해서 이어져 있는 점을 검색해서 순서를 만들어야함.
+	vecOutlineSorted.emplace_back(mapOutlineCells.begin()->first);
+
+	while (vecOutlineSorted.size() < mapOutlineCells.size())
 	{
-		delete tCell;
-		tCell = nullptr;
-		_int a = 0;
-	}*/
+		auto pair = mapOutlineCells.find(*(vecOutlineSorted.end() - 1));
+
+		vecOutlineSorted.emplace_back(pair->second.first);
+	}
+
+	// setIntersected는 delete 해야 하고, mapOutCells와 Obstacle로 재구성
+	for (auto tCell : setIntersected)
+	{
+		tCell->isDead = true;
+	}
 
 	triangulateio tIn = { 0 }, tOut = { 0 };
 
 #pragma region pointlist
-	tIn.numberofpoints = mapOutlineCells.size() + tObst.numberof;
+	tIn.numberofpoints = vecOutlineSorted.size() + tObst.numberof;
 	if (0 < tIn.numberofpoints)
 	{
 		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
 
 		_int i = 0;
-		for (auto pair : mapOutlineCells)
+		for (auto point : vecOutlineSorted)
 		{
-			tIn.pointlist[2 * i + 0] = pair.first.x;
-			tIn.pointlist[2 * i + 1] = pair.first.z;
+			tIn.pointlist[2 * i + 0] = point.x;
+			tIn.pointlist[2 * i + 1] = point.z;
+			++i;
 		}
 
 		// tObst
+		for (_int j = 0; j < tObst.numberof; ++j)
+		{	// TODO : Obst가 정점을 직접 포함하도록 구조를 바꾸자...
+			tIn.pointlist[2 * (i + j) + 0] = m_tIn.pointlist[tObst.start + 2 * j + 0];
+			tIn.pointlist[2 * (i + j) + 1] = m_tIn.pointlist[tObst.start + 2 * j + 1];
+		}
 	}
 #pragma endregion pointlist
 
 #pragma region segmentlist
-	tIn.numberofsegments = mapOutlineCells.size() + tObst.numberof;
+	tIn.numberofsegments = vecOutlineSorted.size() + tObst.numberof;
 	if (0 < tIn.numberofsegments)
 	{
 		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
 
 		// Points
-		for (_int i = 0; i < mapOutlineCells.size() - 1; ++i)
+		for (_int i = 0; i < vecOutlineSorted.size() - 1; ++i)
 		{
 			tIn.segmentlist[2 * i + 0] = i + 0;
 			tIn.segmentlist[2 * i + 1] = i + 1;
 		}
-		tIn.segmentlist[2 * (tIn.numberofsegments - 1) + 0] = tIn.numberofsegments - 1;
-		tIn.segmentlist[2 * (tIn.numberofsegments - 1) + 1] = 0;
+		tIn.segmentlist[2 * (vecOutlineSorted.size() - 1) + 0] = vecOutlineSorted.size() - 1;
+		tIn.segmentlist[2 * (vecOutlineSorted.size() - 1) + 1] = 0;
 
 		// Obstacles
-		_int iStartIndex = 2 * mapOutlineCells.size();
+		_int iStartIndex = 2 * vecOutlineSorted.size();
 		for (_int i = 0; i < tObst.numberof - 1; ++i)
 		{
 			tIn.segmentlist[iStartIndex + 2 * i + 0] = iStartIndex / 2 + i + 0;
@@ -676,26 +701,21 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 
 	// 재구성된 데이터를 다시 전체맵에 연결.
 	for (auto cell : vecNewCells)
-	{		
-		_bool IsNew = true; // temp
-
+	{
 		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
-			if (nullptr == cell->arrNeighbors[i])
+			if (nullptr == cell->arrNeighbors[i]) // 새로 생성된 cell의 outline은 neighbor가 없을 것이므로.
 			{
 				auto OutCell = mapOutlineCells.find(cell->vPoints[i]);
-				if (mapOutlineCells.end() != OutCell)
-				{
-					cell->arrNeighbors[i] = OutCell->second;
-					IsNew = false;
+				if (mapOutlineCells.end() != OutCell && cell->vPoints[(i + 1) % POINT_END] == OutCell->second.first)
+				{	// mapOutlineCells의 outline과 일치한다면
+					cell->arrNeighbors[i] = OutCell->second.second; // 둘이 연결
 				}
 			}
 		}
 
-		if (true == IsNew) // temp
-		{
-			m_vecCells.push_back(cell);
-		}
+		cell->isNew = true;
+		m_vecCells.push_back(cell);
 	}
 	
 	// 아래는 무시해도 되지만 일단 남겨두는 메모
@@ -1291,26 +1311,33 @@ void CNavMeshView::ObstaclePointsGroup()
 			UpdatePointList();
 			
 			{
-				TRI_REAL fMaxX = 0.0f, fMinX = FLT_MAX, fMaxZ = 0.0f, fMinZ = FLT_MAX;
+				TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
 				for (auto vPoint : m_vecObstaclePoints)
 				{
 					if (fMaxX < vPoint.x) fMaxX = vPoint.x;
-					else if (fMinX > vPoint.x) fMinX = vPoint.x;
+					if (fMinX > vPoint.x) fMinX = vPoint.x;
 
 					if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
-					else if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+					if (fMinZ > vPoint.z) fMinZ = vPoint.z;
 				}
 
 				_int iStartIndex = 2 * (m_vecPoints.size() - m_vecObstaclePoints.size());
 				_int iNumberOfPoints = m_vecObstaclePoints.size();
 				Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
-				Vec3 vAABBExtent(fMaxX - vAABBCenter.x, 10.0f, fMaxZ - vAABBCenter.z);
+				Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f, 10.0f, (fMaxZ - fMinZ) * 0.5f);
 				Obst tObst(iStartIndex, iNumberOfPoints, Vec3::Zero, BoundingBox(vAABBCenter, vAABBExtent));
 
 				SetPolygonHoleCenter(tObst);
 				
 				m_vecObstacles.push_back(tObst);
 				
+				for (auto cell : m_vecCells)
+				{
+					if (true == cell->isNew)
+					{
+						cell->isNew = false;
+					}
+				}
 				//
 				DynamicUpdate(tObst);
 				//
