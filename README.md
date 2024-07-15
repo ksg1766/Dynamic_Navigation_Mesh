@@ -43,16 +43,21 @@
         	}
         }
   
-  * subset에 대한 triangulation을 수행했다면, 기존 영역의 cell들을 삭제한 후 새로운 subset으로 교체했습니다.
-    1. 우선 새로 구성한 subset의 cell들의 neighbor를 전부 지정하고 나면, 자연스럽게 outline을 구성하는 edge의 neighbor는 nullptr일 것이라 생각했습니다.
-    2. 이 nullptr상태인 neighbor들은 이전의 map에서 찾을 수 있습니다.
-    3. map에서 outline edge의 시작점을 key로 검색해 구한 pair의 second에는 시작점과 끝점이 각각 key, pair.first인 edge의 neighbor가 보관돼 있습니다.
-    4. 따라서 outline edge를 포함하는 cell들도 neighbor를 지정해 subset 영역을 기존 영역에 다시 통합할 수 있습니다.
+    9. subset에 대한 triangulation을 수행했다면, 기존 영역의 cell들을 삭제한 후 새로운 subset으로 교체했습니다.
+    10. 우선 새로 구성한 subset의 cell들의 neighbor를 전부 지정하고 나면, 자연스럽게 outline을 구성하는 edge의 neighbor는 nullptr일 것이라 생각했습니다.
+    11. 이 nullptr상태인 neighbor들은 이전의 map에서 찾을 수 있습니다.
+    12. map에서 outline edge의 시작점을 key로 검색해 구한 pair의 second에는 시작점과 끝점이 각각 key, pair.first인 edge의 neighbor가 보관돼 있습니다.
+    13. 따라서 outline edge를 포함하는 cell들도 neighbor를 지정해 subset 영역을 기존 영역에 다시 통합할 수 있습니다.
+
+        ![3](https://github.com/user-attachments/assets/0fc43855-0f1a-4037-9ed0-44cbbcd6d7ba)
+  
+  * 처음부터 모든 것을 고려하고 구현했던 것이 아니기에 발생한 논리적 버그가 많아 많은 시간을 소요했던 것 같습니다.
  
 ⚠️ 발견된 문제
-  * 
+  * 매우 얇고 긴 obstacle을 생성하려할 때 triangulation을 수행할 수 없습니다. 문제가 될 일은 거의 없을 것 같지만 후에 원인을 파악해보려 합니다.
+
 ⚽ 이후 계획
-  * 
+  * 동일하게 obstacle 삭제시에도 일부 영역만을 update할 수 있도록 구현할 예정입니다. 얼핏 생각해서 비슷하게 구현할 수 있을 것 같은데, 방심하지 않으려 합니다.
   
 ---
 # 📅 2024.07.12
