@@ -11,11 +11,12 @@ END
 
 struct tagObstacle
 {
-	_int start = -1;					// index of start point
-	_int numberof = 0;					// number of points of this obstakle
+	//_int start = -1;			// index of start point
+	//_int numberof = 0;		// number of points of this obstacle
 	Vec3 center = Vec3::Zero;	// center of gravity
-	
 	BoundingBox AABB;
+
+	vector<Vec3> vecPoints;
 };
 
 using Obst = tagObstacle;

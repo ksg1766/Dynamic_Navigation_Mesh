@@ -114,9 +114,23 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 	m_iPointCount = m_vecPoints.size();
 
 	UpdatePointList();
-	UpdateSegmentList();
-	UpdateHoleList();
-	UpdateRegionList();
+	//UpdateSegmentList();
+	m_tIn.numberofsegments = m_iPointCount;
+	if (0 < m_tIn.numberofsegments)
+	{
+		SAFE_REALLOC(_int, m_tIn.segmentlist, m_tIn.numberofsegments * 2)
+
+		// Points
+		for (_int i = 0; i < m_iPointCount - 1; ++i)
+		{
+			m_tIn.segmentlist[2 * i + 0] = i + 0;
+			m_tIn.segmentlist[2 * i + 1] = i + 1;
+		}
+		m_tIn.segmentlist[2 * (m_iPointCount - 1) + 0] = m_iPointCount - 1;
+		m_tIn.segmentlist[2 * (m_iPointCount - 1) + 1] = 0;
+	}
+	//UpdateHoleList();
+	//UpdateRegionList();
 
 	_char szTriswitches[3] = "pz";
 	triangulate(szTriswitches, &m_tIn, &m_tOut, nullptr);
@@ -175,7 +189,7 @@ HRESULT CNavMeshView::DebugRender()
 		{
 			if (true == (*cell)->isDead)
 			{
-				delete *cell;
+				Safe_Delete(*cell);
 				cell = m_vecCells.erase(cell);
 				continue;
 			}
@@ -205,19 +219,21 @@ HRESULT CNavMeshView::DebugRender()
 		m_pBatch->Begin();
 		for (_int i = 0; i < m_vecObstacles.size(); ++i)
 		{
-			for (_int j = 0; j < m_vecObstacles[i].numberof - 1; ++j)
+			for (_int j = 0; j < m_vecObstacles[i].vecPoints.size() - 1; ++j)
 			{
 				Vec3 vLine1 =
 				{
-					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 0],
+					m_vecObstacles[i].vecPoints[j].x,
 					0.0f,
-					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 1]
+					m_vecObstacles[i].vecPoints[j].z
 				};
 				Vec3 vLine2 =
 				{
-					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 2],
+					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 2],
+					m_vecObstacles[i].vecPoints[j + 1].x,
 					0.0f,
-					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 3]
+					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 3]
+					m_vecObstacles[i].vecPoints[j + 1].z,
 				};
 
 				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
@@ -225,15 +241,20 @@ HRESULT CNavMeshView::DebugRender()
 
 			Vec3 vLine1 =
 			{
-				m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 2],
+				//m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].vecPoints.size() - 2],
+				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].x,
 				0.0f,
-				m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 1]
+				//m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].vecPoints.size() - 1]
+				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].z
+
 			};
 			Vec3 vLine2 =
 			{
-				m_tIn.pointlist[m_vecObstacles[i].start],
+				//m_tIn.pointlist[m_vecObstacles[i].start],
+				m_vecObstacles[i].vecPoints[0].x,
 				0.0f,
-				m_tIn.pointlist[m_vecObstacles[i].start + 1]
+				//m_tIn.pointlist[m_vecObstacles[i].start + 1]
+				m_vecObstacles[i].vecPoints[0].z
 			};
 
 			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
@@ -329,7 +350,7 @@ HRESULT CNavMeshView::BakeNavMeshLegacy()
 	{
 		for (auto iter : m_vecCells)
 		{
-			delete iter;
+			Safe_Delete(iter);
 		}
 
 		m_vecCells.clear();
@@ -511,17 +532,17 @@ HRESULT CNavMeshView::UpdateSegmentList()
 		m_tIn.segmentlist[2 * (m_iPointCount - 1) + 0] = m_iPointCount - 1;
 		m_tIn.segmentlist[2 * (m_iPointCount - 1) + 1] = 0;
 
-		// Obstacles
-		for (_int j = 0; j < m_vecObstacles.size(); ++j)
-		{
-			for (_int i = 0; i < m_vecObstacles[j].numberof - 1; ++i)
-			{
-				m_tIn.segmentlist[m_vecObstacles[j].start + 2 * i + 0] = m_vecObstacles[j].start / 2 + i + 0;
-				m_tIn.segmentlist[m_vecObstacles[j].start + 2 * i + 1] = m_vecObstacles[j].start / 2 + i + 1;
-			}
-			m_tIn.segmentlist[m_vecObstacles[j].start + 2 * (m_vecObstacles[j].numberof - 1) + 0] = m_vecObstacles[j].start / 2 + m_vecObstacles[j].numberof - 1;
-			m_tIn.segmentlist[m_vecObstacles[j].start + 2 * (m_vecObstacles[j].numberof - 1) + 1] = m_vecObstacles[j].start / 2;
-		}
+		//// Obstacles
+		//for (_int j = 0; j < m_vecObstacles.size(); ++j)
+		//{
+		//	for (_int i = 0; i < m_vecObstacles[j].numberof - 1; ++i)
+		//	{
+		//		m_tIn.segmentlist[m_vecObstacles[j].start + 2 * i + 0] = m_vecObstacles[j].start / 2 + i + 0;
+		//		m_tIn.segmentlist[m_vecObstacles[j].start + 2 * i + 1] = m_vecObstacles[j].start / 2 + i + 1;
+		//	}
+		//	m_tIn.segmentlist[m_vecObstacles[j].start + 2 * (m_vecObstacles[j].numberof - 1) + 0] = m_vecObstacles[j].start / 2 + m_vecObstacles[j].numberof - 1;
+		//	m_tIn.segmentlist[m_vecObstacles[j].start + 2 * (m_vecObstacles[j].numberof - 1) + 1] = m_vecObstacles[j].start / 2;
+		//}
 	}
 
 	return S_OK;
@@ -574,19 +595,24 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 	for (auto tCell : setIntersected)
 	{
 		for (_int i = 0; i < LINE_END; ++i)
-		{	// setIntersected에서 삭제되지 않을 이웃을 가진 edge만 추출 -> 즉 setIntersected내에 포함돼있지 않는 이웃만.
+		{	// setIntersected에서 삭제되지 않을 이웃을 가진 edge 만 추출 -> 즉 setIntersected내에 포함돼있지 않는 이웃만.
 			auto element = setIntersected.find(tCell->arrNeighbors[i]);
 			if (setIntersected.end() == element)
-			{	// 해당 edge는 outline이므로 추가. 양 끝점 다 저장해야함. 안그러면 새로 구한 영역에서도 out라인 구해야함..
-				// 근데 이걸 가지고 triangulation을 다시 수행해서
+			{	// 해당 edge 는 outline 이므로 추가. 양 끝점 다 저장해야함. 안그러면 새로 구한 영역에서도 outline 구해야함..
+				// 근데 이걸 가지고 triangulation 을 다시 수행해서
 				// 이웃을 재연결해야함. 그러면 시작점 말고 이웃자체도 알아야할듯...
+				if (mapOutlineCells.end() != mapOutlineCells.find(tCell->vPoints[i]))
+				{
+					_int a = 0; // delete는 돼고 쓰레기값 초기화 돼서 이웃 설정 안돼있는 경우 아주 많이 발견...
+				}
+
 				mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->arrNeighbors[i]));
 			}
 		}
 	}
 
 	// 시계 방향 정렬
-	// sort로는 안됨. 시점을 하나 정해서 이어져 있는 점을 검색해서 순서를 만들어야함.
+	// sort 로는 안됨. 시점을 하나 정해서 이어져 있는 점을 검색해서 순서를 만들어야함.
 	vecOutlineSorted.emplace_back(mapOutlineCells.begin()->first);
 
 	while (vecOutlineSorted.size() < mapOutlineCells.size())
@@ -596,7 +622,7 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 		vecOutlineSorted.emplace_back(pair->second.first);
 	}
 
-	// setIntersected는 delete 해야 하고, mapOutCells와 Obstacle로 재구성
+	// setIntersected는 delete 해야 하고, mapOutCells와 Obstacle 로 재구성
 	for (auto tCell : setIntersected)
 	{
 		tCell->isDead = true;
@@ -605,7 +631,7 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 	triangulateio tIn = { 0 }, tOut = { 0 };
 
 #pragma region pointlist
-	tIn.numberofpoints = vecOutlineSorted.size() + tObst.numberof;
+	tIn.numberofpoints = vecOutlineSorted.size() + tObst.vecPoints.size();
 	if (0 < tIn.numberofpoints)
 	{
 		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
@@ -619,16 +645,16 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 		}
 
 		// tObst
-		for (_int j = 0; j < tObst.numberof; ++j)
-		{	// TODO : Obst가 정점을 직접 포함하도록 구조를 바꾸자...
-			tIn.pointlist[2 * (i + j) + 0] = m_tIn.pointlist[tObst.start + 2 * j + 0];
-			tIn.pointlist[2 * (i + j) + 1] = m_tIn.pointlist[tObst.start + 2 * j + 1];
+		for (_int j = 0; j < tObst.vecPoints.size(); ++j)
+		{
+			tIn.pointlist[2 * (i + j) + 0] = tObst.vecPoints[j].x;
+			tIn.pointlist[2 * (i + j) + 1] = tObst.vecPoints[j].z;
 		}
 	}
 #pragma endregion pointlist
 
 #pragma region segmentlist
-	tIn.numberofsegments = vecOutlineSorted.size() + tObst.numberof;
+	tIn.numberofsegments = vecOutlineSorted.size() + tObst.vecPoints.size();
 	if (0 < tIn.numberofsegments)
 	{
 		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
@@ -644,14 +670,14 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 
 		// Obstacles
 		_int iStartIndex = 2 * vecOutlineSorted.size();
-		for (_int i = 0; i < tObst.numberof - 1; ++i)
+		for (_int i = 0; i < tObst.vecPoints.size() - 1; ++i)
 		{
 			tIn.segmentlist[iStartIndex + 2 * i + 0] = iStartIndex / 2 + i + 0;
 			tIn.segmentlist[iStartIndex + 2 * i + 1] = iStartIndex / 2 + i + 1;
 		}
 
-		tIn.segmentlist[iStartIndex + 2 * (tObst.numberof - 1) + 0] = iStartIndex / 2 + tObst.numberof - 1;
-		tIn.segmentlist[iStartIndex + 2 * (tObst.numberof - 1) + 1] = iStartIndex / 2;
+		tIn.segmentlist[iStartIndex + 2 * (tObst.vecPoints.size() - 1) + 0] = iStartIndex / 2 + tObst.vecPoints.size() - 1;
+		tIn.segmentlist[iStartIndex + 2 * (tObst.vecPoints.size() - 1) + 1] = iStartIndex / 2;
 	}
 #pragma endregion segmentlist
 
@@ -702,9 +728,10 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 	// 재구성된 데이터를 다시 전체맵에 연결.
 	for (auto cell : vecNewCells)
 	{
+		// 전체 neighbor를 다시 setup 하도록 했을 때 오류가 확 줄긴 함, 여전히 있음 근데... 여기도 문제고 위에도 문제인듯...
 		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
-			if (nullptr == cell->arrNeighbors[i]) // 새로 생성된 cell의 outline은 neighbor가 없을 것이므로.
+			if (nullptr == cell->arrNeighbors[i]) // 새로 생성된 cell의 outline은 neighbor가 없을 것이므로. // 물론 hole 부분에도 없을 것...
 			{
 				auto OutCell = mapOutlineCells.find(cell->vPoints[i]);
 				if (mapOutlineCells.end() != OutCell && cell->vPoints[(i + 1) % POINT_END] == OutCell->second.first)
@@ -717,7 +744,7 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 		cell->isNew = true;
 		m_vecCells.push_back(cell);
 	}
-	
+
 	// 아래는 무시해도 되지만 일단 남겨두는 메모
 	// vecIntersected.size() 로는 전체 point를 알 수 없으니, point도 id를 부여해서 저장해야할듯.
 	// 'index'가 아니라 'id'임.
@@ -855,19 +882,23 @@ HRESULT CNavMeshView::RenderDT()
 		m_pBatch->Begin();
 		for (_int i = 0; i < m_vecObstacles.size(); ++i)
 		{
-			for (_int j = 0; j < m_vecObstacles[i].numberof - 1; ++j)
+			for (_int j = 0; j < m_vecObstacles[i].vecPoints.size() - 1; ++j)
 			{
 				Vec3 vLine1 =
 				{
-					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 0],
+					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 0],
+					m_vecObstacles[i].vecPoints[j].x,
 					0.0f,
-					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 1]
+					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 1]
+					m_vecObstacles[i].vecPoints[j].z,
 				};
 				Vec3 vLine2 =
 				{
-					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 2],
+					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 2],
+					m_vecObstacles[i].vecPoints[j + 1].x,
 					0.0f,
-					m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 3]
+					//m_tIn.pointlist[m_vecObstacles[i].start + 2 * j + 3]
+					m_vecObstacles[i].vecPoints[j + 1].z,
 				};
 
 				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
@@ -875,15 +906,19 @@ HRESULT CNavMeshView::RenderDT()
 
 			Vec3 vLine1 =
 			{
-				m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 2],
+				//m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].vecPoints.size() - 2],
+				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].x,
 				0.0f,
-				m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].numberof - 1]
+				//m_tIn.pointlist[m_vecObstacles[i].start + 2 * m_vecObstacles[i].vecPoints.size() - 1]
+				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].z
 			};
 			Vec3 vLine2 =
 			{
-				m_tIn.pointlist[m_vecObstacles[i].start],
+				//m_tIn.pointlist[m_vecObstacles[i].start],
+				m_vecObstacles[i].vecPoints[0].x,
 				0.0f,
-				m_tIn.pointlist[m_vecObstacles[i].start + 1]
+				//m_tIn.pointlist[m_vecObstacles[i].start + 1]
+				m_vecObstacles[i].vecPoints[0].z,
 			};
 
 			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
@@ -920,14 +955,16 @@ HRESULT CNavMeshView::RenderVD()
 
 void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 {
-	for (_int i = 0; i < tObst.numberof; ++i)
+	_int iSize = tObst.vecPoints.size();
+
+	for (_int i = 0; i < iSize; ++i)
 	{
 		Vec3 vCenter = Vec3::Zero;
 
 		for(_int j = 0; j < 3; ++j)
 		{
-			vCenter.x += m_tIn.pointlist[tObst.start + (2 * (i + j)) % (2 * tObst.numberof)];
-			vCenter.z += m_tIn.pointlist[tObst.start + (2 * (i + j) + 1) % (2 * tObst.numberof)];
+			vCenter.x += tObst.vecPoints[(i + j) % iSize].x;
+			vCenter.z += tObst.vecPoints[(i + j) % iSize].z;
 		}
 
 		vCenter /= 3.f;
@@ -935,19 +972,13 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 		// RayCast
 		_int iCrosses = 0;
 
-		for (_int m = 0; m < tObst.numberof; ++m)
+		for (_int m = 0; m < iSize; ++m)
 		{
-			_int idxX = tObst.start + (2 * m) % (2 * tObst.numberof);
-			_int idxZ = tObst.start + (2 * m + 1) % (2 * tObst.numberof);
+			_float fSourX = tObst.vecPoints[m % iSize].x;
+			_float fSourZ = tObst.vecPoints[m % iSize].z;
 
-			_float fSourX = m_tIn.pointlist[idxX];
-			_float fSourZ = m_tIn.pointlist[idxZ];
-
-			idxX = tObst.start + (2 * m + 2) % (2 * tObst.numberof);
-			idxZ = tObst.start + (2 * m + 3) % (2 * tObst.numberof);
-
-			_float fDestX = m_tIn.pointlist[idxX];
-			_float fDestZ = m_tIn.pointlist[idxZ];
+			_float fDestX = tObst.vecPoints[(m + 1) % iSize].x;
+			_float fDestZ = tObst.vecPoints[(m + 1) % iSize].z;
 
 			if ((fSourX > vCenter.x) != (fDestX > vCenter.x))	// x 좌표 검사
 			{
@@ -1311,6 +1342,8 @@ void CNavMeshView::ObstaclePointsGroup()
 			UpdatePointList();
 			
 			{
+				Obst tObst;
+
 				TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
 				for (auto vPoint : m_vecObstaclePoints)
 				{
@@ -1319,13 +1352,15 @@ void CNavMeshView::ObstaclePointsGroup()
 
 					if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
 					if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+
+					tObst.vecPoints.push_back(vPoint);
 				}
 
-				_int iStartIndex = 2 * (m_vecPoints.size() - m_vecObstaclePoints.size());
-				_int iNumberOfPoints = m_vecObstaclePoints.size();
+				//_int iStartIndex = 2 * (m_vecPoints.size() - m_vecObstaclePoints.size());
+				//_int iNumberOfPoints = m_vecObstaclePoints.size();
 				Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
 				Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f, 10.0f, (fMaxZ - fMinZ) * 0.5f);
-				Obst tObst(iStartIndex, iNumberOfPoints, Vec3::Zero, BoundingBox(vAABBCenter, vAABBExtent));
+				tObst.AABB = BoundingBox(vAABBCenter, vAABBExtent);
 
 				SetPolygonHoleCenter(tObst);
 				
