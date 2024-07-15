@@ -4,11 +4,32 @@
     * hole을 설정하기 위한 내부의 점을 찾는 과정에서 obstacle의 edge를 구성하는 point가 point list에 저장되지 않았습니다.
     * 내부 점을 찾기 이전에 obstacle의 edge를 미리 point list에 추가함으로서 해결할 수 있었습니다.
       ![FPS_60-DEBUG2024-07-1212-12-53-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/3bf92443-ff6a-4a06-8463-2aadf66b9483)
-    * 작성 중...
-    * 
   * 동적으로 추가되는 obstacle에 대해 navigation mesh를 수정할 때, obstacle 주위의 cell만 update하도록 구현중입니다.
-    * 고려
+    * obstacle 정점을 포함하는 AABB영역과 겹치는 삼각형 cell들을 추려 구성한 subset의 outline으로 triangulation을 수행한 후, 다시 원래의 전체 mesh에 합치는 방식으로 구현 중입니다.
+    * 간단한 그림으로 표현하면 아래와 같습니다.
+      * obstacle영역과 교차하는 cell과 outline을 계산합니다.
+        
+        ![1](https://github.com/user-attachments/assets/1270518f-3578-455f-a0b6-734f34b79ec8)
+      
+      * 해당 영역에서 triangulation을 수행합니다.
+        
+        ![2](https://github.com/user-attachments/assets/708478b4-ee94-4a71-8727-2225dde9a640)
+      
+      * 결과를 다시 원래의 전체 mesh에 합친 후, neighbor를 연결합니다.
+        
+        ![3](https://github.com/user-attachments/assets/e91a2886-ccbf-4b21-87f1-4b69e9244cee)
+      
+      * 현재 어느정도 진행이 되었으나 outline의 시계방향 정렬 등 처리해야할 작업이 남아 구현중입니다.
 
+⚠️ 발견된 문제
+  * 불필요한 삼각형이 추가로 생성되는 것으로 보아 정점의 배치 순서가 일정하지 않은 것으로 예상됩니다. outline의 정렬 상태부터 점검해 수정할 계획입니다.
+  * 동적으로 navigation mesh를 갱신하는 작업이 생각보다 고려해야 할 사항이 많은 것 같아 시간을 더 투자해 신중하게 작업해 볼 계획입니다.
+  * hole 영역을 비워둘 필요가 있는지 재고해보아야 할것 같습니다. 굳이 빈 공간으로 두지 않고 속성을 부여해 obstacle영역임을 구분할 수 있을 것 같아 더 생각해보려합니다.
+
+⚽ 이후 계획
+  * 정상적으로 추가가 된다면, obstacle 삭제 시 동적 업데이트 또한 구현할 계획입니다.
+  * 방향을 수정하고 시행착오를 겪으면서 비효율적이고 불필요한 코드가 많이 생성돼, obstacle 제거 구현전에 이후 작업의 편의를 위해 구조를 한 번 정리할 계획입니다.
+    
 ---
   * 240712 생각 메모...
     * obstacle을 추가한 영역에 대해서만 triangle 갱신.
