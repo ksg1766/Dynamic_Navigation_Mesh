@@ -6,6 +6,8 @@
       ![FPS_60-DEBUG2024-07-1212-12-53-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/3bf92443-ff6a-4a06-8463-2aadf66b9483)
     * 작성 중...
     * 
+  * 동적으로 추가되는 obstacle에 대해 navigation mesh를 수정할 때, obstacle 주위의 cell만 update하도록 구현중입니다.
+    * 고려
 
 ---
   * 240712 생각 메모...
@@ -24,6 +26,7 @@
     * obstacle과 겹치는 삼각형의 좌표를 가지고 와서 triangulation 수행. 결과를 원래 영역에 붙여넣어야함.
     * 원래 영역의 neighbor와 새로 분할된 영역의 edge를 연결하는 것은 어렵지 않음. edge와 닿아 있는 삼각형들은 neighbor를 다시 돌려주면 되고 나머지는 그냥 자기들끼리 이어주면 된다.
     * 일단 해보자!
+    * ++i 누락했음..
 
 ---
 # 📅 2024.07.11
