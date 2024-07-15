@@ -1,3 +1,60 @@
+# 📅 2024.07.15
+📋 진행 사항
+  * 동적으로 추가되는 obstacle에 대해 주변의 cell만 update하도록 구현했습니다. obstacle이 추가된 영역의 subset만을 triangulation하는 과정은 아래와 같습니다.
+    1. 우선 obstacle의 AABB영역과 교차하는 삼각형 cell을 추출해 subset을 구성했습니다.
+    2. subset의 cell들 중, subset에 포함되지 않는 cell을 neighbor를 보유한 경우 전체 subset의 outline을 구성할 가능성이 있을 것이라 생각했습니다.
+    3. 따라서 해당 edge와 neighbor의 정보를 자료구조에 수집했습니다. 시작 point를 key, 끝 point와 neighbor의 pair를 value로 map에 저장했습니다.
+    4. 올바른 triangluation을 위해 map의 edge를 Clockwise로 정렬할 필요가 있었습니다. 모든 edge의 방향은 생성 시 CW로 정렬되어 있기 때문에 edge의 연결 순서만 올바르게 지정하면 됩니다.
+    5. map의 key는 edge의 시작점이기 때문에 value의 pair.first에 저장된 끝점을 다시 key로 검색을 계속해 연결된 edge의 list를 얻을 수 있었습니다.
+    6. 이렇게 얻은 subset의 edge list로 Delaunay Triangulation을 수행했습니다.
+
+       ![1](https://github.com/user-attachments/assets/d96e319c-4708-48ac-b70e-07fc73e17920)
+       
+    8. 아래는 코드 예시입니다.
+       
+        ```
+        set<CellData*> setIntersected;
+        map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
+
+        GetIntersectedCells(tObst, setIntersected);	// obstacle과 교차하는 삼각형 cell 추출
+        for (auto tCell : setIntersected)
+        {
+        	for (uint8 i = 0; i < LINE_END; ++i) 	// neighbor가 유효한 edge 추출
+       		{
+        		if (setIntersected.end() == setIntersected.find(tCell->arrNeighbors[i])) // 해당 edge는 outline
+	  	        	{
+	    			if (mapOutlineCells.end() == mapOutlineCells.find(tCell->vPoints[i]))	    			
+	    			{
+	      				mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->arrNeighbors[i]));
+      				}
+        		}
+                }
+        }
+        
+        vector<Vec3> vecOutlineCW;	// 시계 방향 정렬
+        vecOutlineCW.push_back(mapOutlineCells.begin()->first);
+
+        while (vecOutlineCW.size() < mapOutlineCells.size())
+        {
+        	auto pair = mapOutlineCells.find(vecOutlineCW.back());
+        	if (mapOutlineCells.end() != pair)
+        	{        	
+        		vecOutlineCW.push_back(pair->second.first);
+        	}
+        }
+  
+  * subset에 대한 triangulation을 수행했다면, 기존 영역의 cell들을 삭제한 후 새로운 subset으로 교체했습니다.
+    1. 우선 새로 구성한 subset의 cell들의 neighbor를 전부 지정하고 나면, 자연스럽게 outline을 구성하는 edge의 neighbor는 nullptr일 것이라 생각했습니다.
+    2. 이 nullptr상태인 neighbor들은 이전의 map에서 찾을 수 있습니다.
+    3. map에서 outline edge의 시작점을 key로 검색해 구한 pair의 second에는 시작점과 끝점이 각각 key, pair.first인 edge의 neighbor가 보관돼 있습니다.
+    4. 따라서 outline edge를 포함하는 cell들도 neighbor를 지정해 subset 영역을 기존 영역에 다시 통합할 수 있습니다.
+ 
+⚠️ 발견된 문제
+  * 
+⚽ 이후 계획
+  * 
+  
+---
 # 📅 2024.07.12
 📋 진행 사항
   * obstacle의 edge를 하나씩 추가할 경우 이상이 없지만 한번에 edge를 추가한 뒤 triangulation을 하도록 구현하면 hole이 생성되지 않았던 현상을 수정했습니다.
@@ -31,23 +88,20 @@
   * 방향을 수정하고 시행착오를 겪으면서 비효율적이고 불필요한 코드가 많이 생성돼, obstacle 제거 구현전에 이후 작업의 편의를 위해 구조를 한 번 정리할 계획입니다.
     
 ---
-  * 240712 생각 메모...
-    * obstacle을 추가한 영역에 대해서만 triangle 갱신.
-      * 생각보다 어렵다...
-    * 전체 맵의 edge point 수는 변하지 않음.
-      * 따라서 수정할 부분은 pointcount 이후..?
-    * obstacle 영역을 포함하는 삼각형을 어떻게든 구하자.
-      * 
-    * 맵에 grid를 적용.
-      * 각 cell은 어떤 삼각형을 포함하는지 보유하도록 -> obstacle이 위치한 그리드의 삼각형만을 가지고 와서 triangulation.
-      	* 혹은, 최대, 최소 가로 세로 위치의 AABB를 가지고 좀 더 넓은 영역의 삼각형을 triangulation. -> max x, z / mix x, z
-      * ...
+  * ~~240712 생각 메모...~~
+    * ~~obstacle을 추가한 영역에 대해서만 triangle 갱신.~~
+      * ~~생각보다 어렵다...~~
+    * ~~전체 맵의 edge point 수는 변하지 않음.~~
+      * ~~따라서 수정할 부분은 pointcount 이후..?~~
+    * ~~obstacle 영역을 포함하는 삼각형을 어떻게든 구하자.~~
+    * ~~맵에 grid를 적용?~~
+      * ~~각 cell은 어떤 삼각형을 포함하는지 보유하도록 -> obstacle이 위치한 그리드의 삼각형만을 가지고 와서 triangulation.~~
+      	* ~~혹은, 최대, 최소 가로 세로 위치의 AABB를 가지고 좀 더 넓은 영역의 삼각형을 triangulation. -> max x, z / mix x, z~~
     * ~~in에는 전체 맵에 대한 초기 point list는 어차피 (사각형이라 가정하면) 8개 고정. 이후부터 obstacle의 point. 이 중 특정 obstacle의 point를 찾아내는건 가능함.~~
-    * 우선 neighbor들까지 전부 설정된 네비게이션 메쉬를 만들어야함.
-    * obstacle과 겹치는 삼각형의 좌표를 가지고 와서 triangulation 수행. 결과를 원래 영역에 붙여넣어야함.
-    * 원래 영역의 neighbor와 새로 분할된 영역의 edge를 연결하는 것은 어렵지 않음. edge와 닿아 있는 삼각형들은 neighbor를 다시 돌려주면 되고 나머지는 그냥 자기들끼리 이어주면 된다.
-    * 일단 해보자!
-    * ++i 누락했음..
+    * ~~우선 neighbor들까지 전부 설정된 네비게이션 메쉬를 만들어야함.~~
+    * ~~obstacle과 겹치는 삼각형의 좌표를 가지고 와서 triangulation 수행. 결과를 원래 영역에 붙여넣어야함.~~
+    * ~~원래 영역의 neighbor와 새로 분할된 영역의 edge를 연결하는 것은 어렵지 않음. edge와 닿아 있는 삼각형들은 neighbor를 다시 돌려주면 되고 나머지는 그냥 자기들끼리 이어주면 된다.~~
+    * ~~일단 해보자!~~
 
 ---
 # 📅 2024.07.11
