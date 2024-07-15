@@ -27,14 +27,14 @@ struct CNavMeshView::CellData
 		Vec3 vB(vPoints[POINT_B].x, 0.f, vPoints[POINT_B].z);
 		Vec3 vC(vPoints[POINT_C].x, 0.f, vPoints[POINT_C].z);
 
-		Vec3 vFlatAB = Vec3(vB - vA);
-		Vec3 vFlatBC = Vec3(vC - vB);
+		Vec3 vFlatAB = vB - vA;
+		Vec3 vFlatBC = vC - vB;
 		Vec3 vResult;
 		vFlatAB.Cross(vFlatBC, vResult);
 
 		if (vResult.y < 0.f)
 		{
-			::swap(vPoints[1], vPoints[2]);
+			::swap(vPoints[POINT_B], vPoints[POINT_C]);
 		}
 	}
 
@@ -185,9 +185,31 @@ HRESULT CNavMeshView::DebugRender()
 
 	if (!m_vecCells.empty())
 	{
+		for (_int i = 0; i < m_vecCells.size(); ++i)
+		{
+			if (true == m_vecCells[i]->isDead)
+			{
+				// 여기서 neighbor 상호적으로 다 끊어주고 삭제해야함.
+				for (uint8 j = LINE_AB; j < LINE_END; ++j)
+				{
+					if (nullptr != m_vecCells[i]->arrNeighbors[j])
+					{
+						for (uint8 k = LINE_AB; k < LINE_END; ++k)
+						{
+							if (m_vecCells[i] == m_vecCells[i]->arrNeighbors[j]->arrNeighbors[k])
+							{
+								m_vecCells[i]->arrNeighbors[j]->arrNeighbors[k] = nullptr;
+							}						
+						}
+						m_vecCells[i]->arrNeighbors[j] = nullptr;
+					}
+				}
+			}
+		}
+
 		for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
 		{
-			if (true == (*cell)->isDead)
+			if (nullptr != (*cell) && true == (*cell)->isDead)
 			{
 				Safe_Delete(*cell);
 				cell = m_vecCells.erase(cell);
@@ -588,16 +610,14 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 {
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
-	vector<Vec3> vecOutlineSorted;
 
 	GetIntersectedCells(tObst, setIntersected);
 
 	for (auto tCell : setIntersected)
 	{
-		for (_int i = 0; i < LINE_END; ++i)
+		for (uint8 i = 0; i < LINE_END; ++i)
 		{	// setIntersected에서 삭제되지 않을 이웃을 가진 edge 만 추출 -> 즉 setIntersected내에 포함돼있지 않는 이웃만.
-			auto element = setIntersected.find(tCell->arrNeighbors[i]);
-			if (setIntersected.end() == element)
+			if (setIntersected.end() == setIntersected.find(tCell->arrNeighbors[i]))
 			{	// 해당 edge 는 outline 이므로 추가. 양 끝점 다 저장해야함. 안그러면 새로 구한 영역에서도 outline 구해야함..
 				// 근데 이걸 가지고 triangulation 을 다시 수행해서
 				// 이웃을 재연결해야함. 그러면 시작점 말고 이웃자체도 알아야할듯...
@@ -605,21 +625,30 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 				{
 					_int a = 0; // delete는 돼고 쓰레기값 초기화 돼서 이웃 설정 안돼있는 경우 아주 많이 발견...
 				}
-
-				mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->arrNeighbors[i]));
+				else
+				{
+					mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->arrNeighbors[i]));
+				}
 			}
 		}
 	}
 
 	// 시계 방향 정렬
 	// sort 로는 안됨. 시점을 하나 정해서 이어져 있는 점을 검색해서 순서를 만들어야함.
-	vecOutlineSorted.emplace_back(mapOutlineCells.begin()->first);
+	vector<Vec3> vecOutlineCW;
+	vecOutlineCW.push_back(mapOutlineCells.begin()->first);
 
-	while (vecOutlineSorted.size() < mapOutlineCells.size())
+	while (vecOutlineCW.size() < mapOutlineCells.size())
 	{
-		auto pair = mapOutlineCells.find(*(vecOutlineSorted.end() - 1));
-
-		vecOutlineSorted.emplace_back(pair->second.first);
+		auto pair = mapOutlineCells.find(*(vecOutlineCW.end() - 1));
+		if (mapOutlineCells.end() == pair)
+		{
+			_int a = 0;
+		}
+		else
+		{
+			vecOutlineCW.push_back(pair->second.first);
+		}
 	}
 
 	// setIntersected는 delete 해야 하고, mapOutCells와 Obstacle 로 재구성
@@ -631,13 +660,13 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 	triangulateio tIn = { 0 }, tOut = { 0 };
 
 #pragma region pointlist
-	tIn.numberofpoints = vecOutlineSorted.size() + tObst.vecPoints.size();
+	tIn.numberofpoints = vecOutlineCW.size() + tObst.vecPoints.size();
 	if (0 < tIn.numberofpoints)
 	{
 		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
 
 		_int i = 0;
-		for (auto point : vecOutlineSorted)
+		for (auto point : vecOutlineCW)
 		{
 			tIn.pointlist[2 * i + 0] = point.x;
 			tIn.pointlist[2 * i + 1] = point.z;
@@ -654,22 +683,22 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 #pragma endregion pointlist
 
 #pragma region segmentlist
-	tIn.numberofsegments = vecOutlineSorted.size() + tObst.vecPoints.size();
+	tIn.numberofsegments = vecOutlineCW.size() + tObst.vecPoints.size();
 	if (0 < tIn.numberofsegments)
 	{
 		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
 
 		// Points
-		for (_int i = 0; i < vecOutlineSorted.size() - 1; ++i)
+		for (_int i = 0; i < vecOutlineCW.size() - 1; ++i)
 		{
 			tIn.segmentlist[2 * i + 0] = i + 0;
 			tIn.segmentlist[2 * i + 1] = i + 1;
 		}
-		tIn.segmentlist[2 * (vecOutlineSorted.size() - 1) + 0] = vecOutlineSorted.size() - 1;
-		tIn.segmentlist[2 * (vecOutlineSorted.size() - 1) + 1] = 0;
+		tIn.segmentlist[2 * (vecOutlineCW.size() - 1) + 0] = vecOutlineCW.size() - 1;
+		tIn.segmentlist[2 * (vecOutlineCW.size() - 1) + 1] = 0;
 
 		// Obstacles
-		_int iStartIndex = 2 * vecOutlineSorted.size();
+		_int iStartIndex = 2 * vecOutlineCW.size();
 		for (_int i = 0; i < tObst.vecPoints.size() - 1; ++i)
 		{
 			tIn.segmentlist[iStartIndex + 2 * i + 0] = iStartIndex / 2 + i + 0;
@@ -725,7 +754,7 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 
 	SetUpNeighbors(vecNewCells);
 
-	// 재구성된 데이터를 다시 전체맵에 연결.
+	// 재구성된 데이터를 다시 전체 맵에 연결.
 	for (auto cell : vecNewCells)
 	{
 		// 전체 neighbor를 다시 setup 하도록 했을 때 오류가 확 줄긴 함, 여전히 있음 근데... 여기도 문제고 위에도 문제인듯...
@@ -734,9 +763,35 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 			if (nullptr == cell->arrNeighbors[i]) // 새로 생성된 cell의 outline은 neighbor가 없을 것이므로. // 물론 hole 부분에도 없을 것...
 			{
 				auto OutCell = mapOutlineCells.find(cell->vPoints[i]);
-				if (mapOutlineCells.end() != OutCell && cell->vPoints[(i + 1) % POINT_END] == OutCell->second.first)
-				{	// mapOutlineCells의 outline과 일치한다면
-					cell->arrNeighbors[i] = OutCell->second.second; // 둘이 연결
+				if (mapOutlineCells.end() != OutCell)
+				{
+					if (cell->vPoints[(i + 1) % POINT_END] == OutCell->second.first)
+					{	// mapOutlineCells의 outline과 일치한다면
+						cell->arrNeighbors[i] = OutCell->second.second; // cell과 OutCell->second.second을 상호 연결
+
+						if (nullptr == OutCell->second.second)
+						{
+							continue;
+						}
+
+						if (OutCell->second.second == cell)
+						{
+							continue;
+						}
+
+						if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_A], OutCell->second.second->vPoints[POINT_B]))
+						{
+							OutCell->second.second->arrNeighbors[LINE_AB] = cell;
+						}
+						else if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_B], OutCell->second.second->vPoints[POINT_C]))
+						{
+							OutCell->second.second->arrNeighbors[LINE_BC] = cell;
+						}
+						else if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_C], OutCell->second.second->vPoints[POINT_A]))
+						{
+							OutCell->second.second->arrNeighbors[LINE_CA] = cell;
+						}						
+					}
 				}
 			}
 		}
