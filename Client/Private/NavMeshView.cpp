@@ -589,7 +589,7 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 		for (uint8 i = 0; i < LINE_END; ++i)
 		{	// neighbor가 유효한 edge 추출 
 			if (setIntersected.end() == setIntersected.find(tCell->arrNeighbors[i]))
-			{	// 해당 edge는 outline.
+			{	// 해당 edge는 outline
 				if (mapOutlineCells.end() != mapOutlineCells.find(tCell->vPoints[i]))
 				{
 					_int a = 0;
@@ -607,7 +607,7 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 
 	while (vecOutlineCW.size() < mapOutlineCells.size())
 	{
-		auto pair = mapOutlineCells.find(*(vecOutlineCW.end() - 1));
+		auto pair = mapOutlineCells.find(vecOutlineCW.back());
 		if (mapOutlineCells.end() == pair)
 		{
 			_int a = 0;
