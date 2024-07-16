@@ -345,6 +345,9 @@
     <ClInclude Include="Client_Macro.h">
       <Filter>99.Defines</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\tinyxml2.h">
+      <Filter>99.Defines</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -481,6 +484,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\StaticScene.cpp">
       <Filter>03.GameObjects\00.Static\StaticScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\tinyxml2.cpp">
+      <Filter>99.Defines</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -214,6 +214,7 @@
     <ClInclude Include="..\Public\StaticTest.h" />
     <ClInclude Include="..\Public\TempCube.h" />
     <ClInclude Include="..\Public\TestAIController.h" />
+    <ClInclude Include="..\Public\tinyxml2.h" />
     <ClInclude Include="..\Public\ViewMediator.h" />
     <ClInclude Include="..\Public\TransformView.h" />
     <ClInclude Include="..\Public\View.h" />
@@ -270,6 +271,7 @@
     <ClCompile Include="..\Private\StaticTest.cpp" />
     <ClCompile Include="..\Private\TempCube.cpp" />
     <ClCompile Include="..\Private\TestAIController.cpp" />
+    <ClCompile Include="..\Private\tinyxml2.cpp" />
     <ClCompile Include="..\Private\ViewMediator.cpp" />
     <ClCompile Include="..\Private\TransformView.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>

@@ -101,13 +101,15 @@ private:
 	string					m_strCurrentTriangleMode = "Obstacle";
 	TRIMODE					m_eCurrentTriangleMode = TRIMODE::OBSTACLE;
 
-	_int					m_iPointCount = 0;
+	_int					m_iStaticPointCount = 0;
 	vector<Obst>			m_vecObstacles;
 	vector<const _char*>	m_strObstacles;
 	vector<Vec3>			m_vecObstaclePoints;
 	vector<const _char*>	m_strObstaclePoints;
 
 	vector<Vec3>			m_vecRegions;
+
+	_char					m_szTriswitches[3] = "pz";
 
 	///////////////////////////////////////////////////
 
@@ -116,14 +118,14 @@ private:
 	CShader*				m_pShader = nullptr;
 
 	_int					m_Item_Current = 0;
-	wstring					m_strFilePath = TEXT("MainStageNavMesh");
+	string					m_strFilePath = "StaticObstacles";
 
 	vector<CellData*>		m_vecCells;
 	vector<_char*>			m_strCells;
 
 	vector<Vec3>			m_vecPoints;
 	vector<const _char*>	m_strPoints;
-	_int					m_Point_Current = 0;
+	_int					m_item_Current = 0;
 
 	vector<BoundingSphere>	m_vecPointSpheres;
 	vector<BoundingSphere>	m_vecObstaclePointSpheres;

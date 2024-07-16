@@ -4,11 +4,13 @@
 #include "GameInstance.h"
 #include "GameObject.h"
 #include "FileUtils.h"
+#include <filesystem>
 #include "Utils.h"
 #include "Layer.h"
 #include "DissolveManager.h"
 #include "DebugDraw.h"
 #include "Client_Macro.h"
+#include "tinyxml2.h"
 
 struct CNavMeshView::CellData
 {
@@ -113,29 +115,14 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 	m_vecPoints.push_back(Vec3(-512.0f, 0.f, +512.0f));
 	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, +512.0f), 2.f));
 
-	m_iPointCount = m_vecPoints.size();
+	m_iStaticPointCount = m_vecPoints.size();
 
 	UpdatePointList();
-	//UpdateSegmentList();
-	m_tIn.numberofsegments = m_iPointCount;
-	if (0 < m_tIn.numberofsegments)
-	{
-		SAFE_REALLOC(_int, m_tIn.segmentlist, m_tIn.numberofsegments * 2)
+	UpdateSegmentList();
+	UpdateHoleList();
+	UpdateRegionList();
 
-		// Points
-		for (_int i = 0; i < m_iPointCount - 1; ++i)
-		{
-			m_tIn.segmentlist[2 * i + 0] = i + 0;
-			m_tIn.segmentlist[2 * i + 1] = i + 1;
-		}
-		m_tIn.segmentlist[2 * (m_iPointCount - 1) + 0] = m_iPointCount - 1;
-		m_tIn.segmentlist[2 * (m_iPointCount - 1) + 1] = 0;
-	}
-	//UpdateHoleList();
-	//UpdateRegionList();
-
-	_char szTriswitches[3] = "pz";
-	triangulate(szTriswitches, &m_tIn, &m_tOut, nullptr);
+	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 	
 	BakeNavMesh();
 
@@ -519,25 +506,28 @@ HRESULT CNavMeshView::UpdateSegmentList()
 		SAFE_REALLOC(_int, m_tIn.segmentlist, m_tIn.numberofsegments * 2)
 
 		// Points
-		for (_int i = 0; i < m_iPointCount - 1; ++i)
+		for (_int i = 0; i < m_iStaticPointCount - 1; ++i)
 		{
 			m_tIn.segmentlist[2 * i + 0] = i + 0;
 			m_tIn.segmentlist[2 * i + 1] = i + 1;
 		}
-		m_tIn.segmentlist[2 * (m_iPointCount - 1) + 0] = m_iPointCount - 1;
-		m_tIn.segmentlist[2 * (m_iPointCount - 1) + 1] = 0;
+		m_tIn.segmentlist[2 * (m_iStaticPointCount - 1) + 0] = m_iStaticPointCount - 1;
+		m_tIn.segmentlist[2 * (m_iStaticPointCount - 1) + 1] = 0;
 
-		//// Obstacles
-		//for (_int j = 0; j < m_vecObstacles.size(); ++j)
-		//{
-		//	for (_int i = 0; i < m_vecObstacles[j].numberof - 1; ++i)
-		//	{
-		//		m_tIn.segmentlist[m_vecObstacles[j].start + 2 * i + 0] = m_vecObstacles[j].start / 2 + i + 0;
-		//		m_tIn.segmentlist[m_vecObstacles[j].start + 2 * i + 1] = m_vecObstacles[j].start / 2 + i + 1;
-		//	}
-		//	m_tIn.segmentlist[m_vecObstacles[j].start + 2 * (m_vecObstacles[j].numberof - 1) + 0] = m_vecObstacles[j].start / 2 + m_vecObstacles[j].numberof - 1;
-		//	m_tIn.segmentlist[m_vecObstacles[j].start + 2 * (m_vecObstacles[j].numberof - 1) + 1] = m_vecObstacles[j].start / 2;
-		//}
+		// Obstacles
+		_int iSegmentCount = m_iStaticPointCount;
+		for (_int j = 0; j < m_vecObstacles.size(); ++j)
+		{
+			for (_int i = 0; i < m_vecObstacles[j].vecPoints.size() - 1; ++i)
+			{
+				m_tIn.segmentlist[2 * (iSegmentCount + i) + 0] = iSegmentCount + i + 0;
+				m_tIn.segmentlist[2 * (iSegmentCount + i) + 1] = iSegmentCount + i + 1;
+			}
+			m_tIn.segmentlist[2 * (iSegmentCount + (m_vecObstacles[j].vecPoints.size() - 1)) + 0] = iSegmentCount + m_vecObstacles[j].vecPoints.size() - 1;
+			m_tIn.segmentlist[2 * (iSegmentCount + (m_vecObstacles[j].vecPoints.size() - 1)) + 1] = iSegmentCount;
+
+			iSegmentCount += m_vecObstacles[j].vecPoints.size();
+		}
 	}
 
 	return S_OK;
@@ -567,13 +557,13 @@ HRESULT CNavMeshView::UpdateRegionList()
 	{
 		SAFE_REALLOC(TRI_REAL, m_tIn.regionlist, m_tIn.numberofregions * 4)
 
-			for (_int i = 0; i < m_vecRegions.size(); ++i)
-			{
-				m_tIn.regionlist[4 * i + 0] = m_vecRegions[i].x;
-				m_tIn.regionlist[4 * i + 1] = m_vecRegions[i].z;
-				m_tIn.regionlist[4 * i + 1] = 0.f;
-				m_tIn.regionlist[4 * i + 1] = 0.f;
-			}
+		for (_int i = 0; i < m_vecRegions.size(); ++i)
+		{
+			m_tIn.regionlist[4 * i + 0] = m_vecRegions[i].x;
+			m_tIn.regionlist[4 * i + 1] = m_vecRegions[i].z;
+			m_tIn.regionlist[4 * i + 1] = 0.f; //
+			m_tIn.regionlist[4 * i + 1] = 0.f; //
+		}
 	}
 
 	return S_OK;
@@ -581,7 +571,19 @@ HRESULT CNavMeshView::UpdateRegionList()
 
 HRESULT CNavMeshView::StaticCreate(const Obst& tObst)
 {
+	if (3 > m_vecPoints.size())
+	{
+		return E_FAIL;
+	}
 
+	SafeReleaseTriangle(m_tOut);
+
+	UpdatePointList();
+	UpdateSegmentList();
+	UpdateHoleList();
+	UpdateRegionList();
+
+	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 
 	return S_OK;
 }
@@ -679,7 +681,6 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 			tIn.segmentlist[iStartIndex + 2 * i + 0] = iStartIndex / 2 + i + 0;
 			tIn.segmentlist[iStartIndex + 2 * i + 1] = iStartIndex / 2 + i + 1;
 		}
-
 		tIn.segmentlist[iStartIndex + 2 * (tObst.vecPoints.size() - 1) + 0] = iStartIndex / 2 + tObst.vecPoints.size() - 1;
 		tIn.segmentlist[iStartIndex + 2 * (tObst.vecPoints.size() - 1) + 1] = iStartIndex / 2;
 	}
@@ -701,8 +702,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 
 	tIn.numberofregions = 0;
 
-	_char szTriswitches[3] = "pz";
-	triangulate(szTriswitches, &tIn, &tOut, nullptr);
+	triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
 
 	// 부분 메쉬 생성.
 	vector<CellData*> vecNewCells;
@@ -800,56 +800,17 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		}
 	}
 
-	vector<Vec3> vecOutlineCW;	// 시계 방향 정렬
-								// Create 때와 다르게 Obstacle의 Outline은 Skip 해야한다. -> Skip 필요 없음. map 정렬로 begin은 무조건 outline의 점.
-								// 그러나 setIntersected의 영역이 Create 때와 달라 질 수 있음. -> AABB의 크기를 약간 더 키워서 간단히 해결 가능. FLT_EPSILON은 너무 작고 적절한 값을 찾아보자.
-								// mapOutlineCells.begin()->first 이 Obstacle Outline의 일부라면 Obstacle Outline 갯수 만큼 Skip
-								// 아니라면 반복 횟수를 Obstacle Outline 갯수 만큼 덜 한 상태에서 종료
+	vector<Vec3> vecOutlineCW;
 
-	/*_bool bStartInnerCycle = false;
+	vecOutlineCW.push_back(mapOutlineCells.begin()->first);
 
-	for (auto& point : tObst.vecPoints)
+	for(_int i = 0; i < mapOutlineCells.size() - tObst.vecPoints.size() - 1; ++i)
 	{
-		if (mapOutlineCells.begin()->first == point)
+		auto pair = mapOutlineCells.find(vecOutlineCW.back());
+
+		if (mapOutlineCells.end() != pair)
 		{
-			bStartInnerCycle = true;
-			break;
-		}
-	}
-
-	if (true == bStartInnerCycle)
-	{
-		auto pair = mapOutlineCells.find(mapOutlineCells.begin()->first);
-
-		for (_int i = 0; i < tObst.vecPoints.size(); ++i)
-		{
-			pair = mapOutlineCells.find(pair->first);	// skip inner cycle
-		}
-
-		vecOutlineCW.push_back(pair->first);
-
-		for (_int i = 0; i < mapOutlineCells.size() - tObst.vecPoints.size() - 1; ++i)
-		{
-			pair = mapOutlineCells.find(vecOutlineCW.back());
-
-			if (mapOutlineCells.end() != pair)
-			{
-				vecOutlineCW.push_back(pair->second.first);
-			}
-		}
-	}
-	else // if (false == bStartInnerCycle)*/
-	{
-		vecOutlineCW.push_back(mapOutlineCells.begin()->first);
-
-		for(_int i = 0; i < mapOutlineCells.size() - tObst.vecPoints.size() - 1; ++i)
-		{
-			auto pair = mapOutlineCells.find(vecOutlineCW.back());
-
-			if (mapOutlineCells.end() != pair)
-			{
-				vecOutlineCW.push_back(pair->second.first);
-			}
+			vecOutlineCW.push_back(pair->second.first);
 		}
 	}
 
@@ -901,8 +862,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	tIn.numberofregions = 0;
 #pragma endregion regionlist
 
-	_char szTriswitches[3] = "pz";
-	triangulate(szTriswitches, &tIn, &tOut, nullptr);
+	triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
 
 	// 부분 메쉬 생성.
 	vector<CellData*> vecNewCells;
@@ -1341,7 +1301,7 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		m_vecPoints.push_back(pickPos);
 		m_vecPointSpheres.push_back(tSphere);
 		s2cPushBack(m_strPoints, to_string(pickPos.x) + " " + to_string(pickPos.y) + " " + to_string(pickPos.z));
-		++m_iPointCount;
+		++m_iStaticPointCount;
 
 		if (3 <= m_vecPoints.size())
 		{
@@ -1352,8 +1312,7 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 			UpdateHoleList();
 			UpdateRegionList();
 
-			static _char triswitches[3] = "pz";
-			triangulate(triswitches, &m_tIn, &m_tOut, nullptr);
+			triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 		}
 	}
 	else if (TRIMODE::OBSTACLE == m_eCurrentTriangleMode)
@@ -1395,40 +1354,78 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 
 HRESULT CNavMeshView::Save()
 {
-	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
+	namespace fs = std::filesystem;
+	
+	fs::path strPath = fs::path("../Bin/Resources/Effects/EffectData/" + m_strFilePath + "/");
 
-	shared_ptr<FileUtils> file = make_shared<FileUtils>();
-	file->Open(TEXT("../Bin/LevelData/NavMesh/") + m_strFilePath + TEXT(".nav"), Write);
+	if (true == m_vecObstacles.empty())
+	{
+		MSG_BOX("You need to Create Obstacles");
+	}
 
-	for (auto& iter : m_vecCells)
-		file->Write(*iter);
+	fs::create_directories(strPath);
+
+	shared_ptr<tinyxml2::XMLDocument> document = make_shared<tinyxml2::XMLDocument>();
+
+	fs::path finalPath;
+
+	tinyxml2::XMLDeclaration* decl = document->NewDeclaration();
+	document->LinkEndChild(decl);
+
+	tinyxml2::XMLElement* root = document->NewElement("Obstacles");
+	document->LinkEndChild(root);
+
+	tinyxml2::XMLElement* node = nullptr;
+	tinyxml2::XMLElement* element = nullptr;
+
+	for (_int i = 0; i < m_vecObstacles.size(); ++i)
+	{
+		string strName = "Obstacle" + to_string(i);
+		node = document->NewElement(strName.c_str());
+
+		root->LinkEndChild(node);
+		{
+			element = document->NewElement("InnerPoint");
+			element->SetAttribute("X", m_vecObstacles[i].center.x);
+			element->SetAttribute("Y", m_vecObstacles[i].center.y);
+			element->SetAttribute("Z", m_vecObstacles[i].center.z);
+			node->LinkEndChild(element);
+
+			element = document->NewElement("AABBCenter");
+			element->SetAttribute("X", m_vecObstacles[i].AABB.Center.x);
+			element->SetAttribute("Y", m_vecObstacles[i].AABB.Center.y);
+			element->SetAttribute("Z", m_vecObstacles[i].AABB.Center.z);
+			node->LinkEndChild(element);
+			
+			element = document->NewElement("AABBExtents");
+			element->SetAttribute("X", m_vecObstacles[i].AABB.Extents.x);
+			element->SetAttribute("Y", m_vecObstacles[i].AABB.Extents.y);
+			element->SetAttribute("Z", m_vecObstacles[i].AABB.Extents.z);
+			node->LinkEndChild(element);
+
+			element = document->NewElement("Points");
+			tinyxml2::XMLElement* point = nullptr;
+			for (_int j = 0; j < m_vecObstacles[i].vecPoints.size(); ++j)
+			{
+				string strName = "Point" + to_string(i);
+				point = document->NewElement(strName.c_str());
+				point->SetAttribute("X", m_vecObstacles[i].vecPoints[j].x);
+				point->SetAttribute("Y", m_vecObstacles[i].vecPoints[j].y);
+				point->SetAttribute("Z", m_vecObstacles[i].vecPoints[j].z);
+				element->LinkEndChild(point);
+			}
+			node->LinkEndChild(element);
+		}
+
+		document->SaveFile(finalPath.generic_string().c_str());
+	}
 
 	return S_OK;
 }
 
 HRESULT CNavMeshView::Load()
 {
-	shared_ptr<FileUtils> file = make_shared<FileUtils>();
-	file->Open(TEXT("../Bin/LevelData/NavMesh/") + m_strFilePath + TEXT(".nav"), Read);
 
-	while (true)
-	{
-		CellData* tCellData = new CellData;
-
-		if (false == file->Read(*tCellData))
-			break;
-		
-		for (_int i = 0; i < 3; ++i)
-		{
-
-			BoundingSphere tSphere;
-			tSphere.Center = tCellData->vPoints[i];
-			tSphere.Radius = 1.f;
-			m_vecPointSpheres.push_back(tSphere);
-		}
-		m_vecCells.push_back(tCellData);
-		s2cPushBack(m_strCells, to_string(m_vecCells.size() - 1));
-	}
 
 	return S_OK;
 }
@@ -1468,7 +1465,7 @@ void CNavMeshView::InfoView()
 			{
 				m_strCurrentTriangleMode = szMode[i];
 				m_eCurrentTriangleMode = (TRIMODE)i;
-				m_Point_Current = 0;
+				m_item_Current = 0;
 			}
 
 			if (true == isSelected)
@@ -1505,7 +1502,7 @@ void CNavMeshView::InfoView()
 
 void CNavMeshView::PointsGroup()
 {
-	ImGui::ListBox("Points", &m_Point_Current, m_strPoints.data(), m_strPoints.size(), 3);
+	ImGui::ListBox("Points", &m_item_Current, m_strPoints.data(), m_strPoints.size(), 3);
 	if (ImGui::Button("PopBackPoint"))
 	{
 		if (m_vecPoints.empty())
@@ -1519,7 +1516,7 @@ void CNavMeshView::PointsGroup()
 
 void CNavMeshView::ObstaclesGroup()
 {
-	ImGui::ListBox("ObstaclePoints", &m_Point_Current, m_strObstaclePoints.data(), m_strObstaclePoints.size(), 3);
+	ImGui::ListBox("ObstaclePoints", &m_item_Current, m_strObstaclePoints.data(), m_strObstaclePoints.size(), 3);
 	
 	if (ImGui::Button("PopBackObstaclePoint"))
 	{
@@ -1535,90 +1532,71 @@ void CNavMeshView::ObstaclesGroup()
 	if (false == m_vecObstaclePoints.empty())
 	{
 		ImGui::SameLine();
-		if (ImGui::Button("CreateObstacle"))
+		if (ImGui::Button("CreateDynamic"))
 		{
-			//SafeReleaseTriangle(m_tOut);
-			//SafeReleaseTriangle(m_tVD_out);
-
 			UpdatePointList();
-			
+						
+			Obst tObst;
+
+			TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
+			for (auto vPoint : m_vecObstaclePoints)
 			{
-				Obst tObst;
+				if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+				if (fMinX > vPoint.x) fMinX = vPoint.x;
 
-				TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
-				for (auto vPoint : m_vecObstaclePoints)
-				{
-					if (fMaxX < vPoint.x) fMaxX = vPoint.x;
-					if (fMinX > vPoint.x) fMinX = vPoint.x;
+				if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+				if (fMinZ > vPoint.z) fMinZ = vPoint.z;
 
-					if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
-					if (fMinZ > vPoint.z) fMinZ = vPoint.z;
-
-					tObst.vecPoints.push_back(vPoint);
-				}
-
-				//_int iStartIndex = 2 * (m_vecPoints.size() - m_vecObstaclePoints.size());
-				//_int iNumberOfPoints = m_vecObstaclePoints.size();
-				Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
-				//Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f + FLT_EPSILON, 10.0f, (fMaxZ - fMinZ) * 0.5f + FLT_EPSILON);
-				Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f, 10.0f, (fMaxZ - fMinZ) * 0.5f);
-				tObst.AABB = BoundingBox(vAABBCenter, vAABBExtent);
-
-				SetPolygonHoleCenter(tObst);
-				
-				m_vecObstacles.push_back(tObst);
-				s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back().center.x) + ", " + to_string(m_vecObstacles.back().center.z));
-
-				for (auto cell : m_vecCells)
-				{
-					if (true == cell->isNew)
-					{
-						cell->isNew = false;
-					}
-				}
-
-				DynamicCreate(tObst);
+				tObst.vecPoints.push_back(vPoint);
 			}
 
-			//UpdateSegmentList();
-			//UpdateHoleList();
+			Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+			Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f, 10.0f, (fMaxZ - fMinZ) * 0.5f);
+			tObst.AABB = BoundingBox(vAABBCenter, vAABBExtent);
 
-			//static _char triswitches[3] = "pz";
-			//triangulate(triswitches, &m_tIn, &m_tOut, nullptr);
+			SetPolygonHoleCenter(tObst);
+			
+			m_vecObstacles.push_back(tObst);
+			s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back().center.x) + ", " + to_string(m_vecObstacles.back().center.z));
 
+			for (auto cell : m_vecCells)
+			{
+				if (true == cell->isNew)
+				{
+					cell->isNew = false;
+				}
+			}
+
+			DynamicCreate(tObst);
+			
 			for_each(m_strObstaclePoints.begin(), m_strObstaclePoints.end(), [](const _char* szPoint) { delete szPoint; });
 			m_strObstaclePoints.clear();
 			m_vecObstaclePoints.clear();
 		}
 	}
 
-	ImGui::ListBox("Obstacles", &m_Point_Current, m_strObstacles.data(), m_strObstacles.size(), 3);
+	ImGui::ListBox("Obstacles", &m_item_Current, m_strObstacles.data(), m_strObstacles.size(), 3);
 
 	if (false == m_strObstacles.empty())
 	{
 		ImGui::NewLine();
-		if (ImGui::Button("DeleteObstacle"))
+		if (ImGui::Button("DeleteDynamic"))
 		{
-			//SafeReleaseTriangle(m_tOut);
-			//SafeReleaseTriangle(m_tVD_out);
-
 			UpdatePointList();
 
+			for (auto cell : m_vecCells)
 			{
-				for (auto cell : m_vecCells)
+				if (true == cell->isNew)
 				{
-					if (true == cell->isNew)
-					{
-						cell->isNew = false;
-					}
+					cell->isNew = false;
 				}
-
-				DynamicDelete(m_vecObstacles[m_Point_Current]);
-				auto iter = m_vecObstacles.begin() + m_Point_Current;
-				auto iterStr = m_strObstacles.begin() + m_Point_Current;
-				m_vecObstacles.erase(iter);
-				m_strObstacles.erase(iterStr);
 			}
+
+			DynamicDelete(m_vecObstacles[m_item_Current]);
+			auto iter = m_vecObstacles.begin() + m_item_Current;
+			auto iterStr = m_strObstacles.begin() + m_item_Current;
+			m_vecObstacles.erase(iter);
+			m_strObstacles.erase(iterStr);			
 		}
 	}
 }
@@ -1679,10 +1657,15 @@ void CNavMeshView::Free()
 
 	Safe_Delete(m_pBatch);
 	Safe_Delete(m_pEffect);
-
 	Safe_Release(m_pInputLayout);
 
 	SafeReleaseTriangle(m_tIn);
 	SafeReleaseTriangle(m_tOut);
 	//SafeReleaseTriangle(m_tVD_out);
+
+	for (auto cell : m_vecCells)
+	{
+		Safe_Delete(cell);
+	}
+	m_vecCells.clear();
 }
