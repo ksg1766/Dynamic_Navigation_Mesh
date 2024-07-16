@@ -50,7 +50,12 @@
     13. 따라서 outline edge를 포함하는 cell들도 neighbor를 지정해 subset 영역을 기존 영역에 다시 통합할 수 있습니다.
 
         ![3](https://github.com/user-attachments/assets/0fc43855-0f1a-4037-9ed0-44cbbcd6d7ba)
-  
+
+  * 결과는 아래와 같습니다. 파란색 영역은 새로 계산된 영역입니다.
+    
+    ![FPS_61-DEBUG2024-07-1610-16-27-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/3a67dfec-7b67-407a-9baa-5ea55d6469bf)
+
+
   * 처음부터 모든 것을 고려하고 구현했던 것이 아니기에 발생한 논리적 버그가 많아 많은 시간을 소요했던 것 같습니다.
  
 ⚠️ 발견된 문제
