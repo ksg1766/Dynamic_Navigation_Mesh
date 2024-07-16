@@ -55,7 +55,8 @@ private:
 	HRESULT	UpdateHoleList();
 	HRESULT	UpdateRegionList();
 	
-	HRESULT DynamicUpdate(const Obst& tObst);
+	HRESULT DynamicCreate(const Obst& tObst);
+	HRESULT DynamicDelete(const Obst& tObst);
 
 	HRESULT	SafeReleaseTriangle(triangulateio& tTriangle);
 
@@ -79,7 +80,7 @@ private:
 private:
 	void	InfoView();
 	void	PointsGroup();
-	void	ObstaclePointsGroup();
+	void	ObstaclesGroup();
 	void	CellGroup();
 
 private:
@@ -101,6 +102,7 @@ private:
 
 	_int					m_iPointCount = 0;
 	vector<Obst>			m_vecObstacles;
+	vector<const _char*>	m_strObstacles;
 	vector<Vec3>			m_vecObstaclePoints;
 	vector<const _char*>	m_strObstaclePoints;
 
@@ -120,7 +122,7 @@ private:
 
 	vector<Vec3>			m_vecPoints;
 	vector<const _char*>	m_strPoints;
-	_int					m_Point_Current;
+	_int					m_Point_Current = 0;
 
 	vector<BoundingSphere>	m_vecPointSpheres;
 	vector<BoundingSphere>	m_vecObstaclePointSpheres;

@@ -18,6 +18,8 @@ struct CNavMeshView::CellData
 	// cache
 	_bool	isDead = false;
 	_bool	isNew = false;
+		
+	// Dummy
 	_bool	isOverSlope = false;
 	_int	iSlope = -1;
 
@@ -153,7 +155,7 @@ HRESULT CNavMeshView::Tick()
 		PointsGroup();
 		break;
 	case TRIMODE::OBSTACLE:
-		ObstaclePointsGroup();
+		ObstaclesGroup();
 		break;
 	case TRIMODE::REGION:
 		
@@ -577,7 +579,7 @@ HRESULT CNavMeshView::UpdateRegionList()
 	return S_OK;
 }
 
-HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
+HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 {
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
@@ -750,6 +752,202 @@ HRESULT CNavMeshView::DynamicUpdate(const Obst& tObst)
 						{
 							OutCell->second.second->arrNeighbors[LINE_CA] = cell;
 						}						
+					}
+				}
+			}
+		}
+
+		cell->isNew = true;
+		m_vecCells.push_back(cell);
+	}
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
+{
+	set<CellData*> setIntersected;
+	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
+
+	GetIntersectedCells(tObst, setIntersected);
+
+	for (auto tCell : setIntersected)
+	{
+		for (uint8 i = 0; i < LINE_END; ++i)
+		{	// neighbor가 유효한 edge 추출
+			if (setIntersected.end() == setIntersected.find(tCell->arrNeighbors[i]))
+			{	// 해당 edge는 outline
+				if (mapOutlineCells.end() != mapOutlineCells.find(tCell->vPoints[i]))
+				{
+					_int a = 0;
+				}
+				else
+				{
+					mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->arrNeighbors[i]));
+				}
+			}
+		}
+	}
+
+	vector<Vec3> vecOutlineCW;	// 시계 방향 정렬
+								// Create 때와 다르게 Obstacle의 Outline은 Skip 해야한다.
+								// 그러나 setIntersected의 영역이 Create 때와 달라 질 수 있음. -> AABB의 크기를 약간 더 키워서 간단히 해결 가능. FLT_EPSILON은 너무 작고 적절한 값을 찾아보자.
+								// mapOutlineCells.begin()->first 이 Obstacle Outline의 일부라면 Obstacle Outline 갯수 만큼 Skip
+								// 아니라면 반복 횟수를 Obstacle Outline 갯수 만큼 덜 한 상태에서 종료
+
+	_bool bStartInnerCycle = false;
+
+	for (auto& point : tObst.vecPoints)
+	{
+		if (mapOutlineCells.begin()->first == point)
+		{
+			bStartInnerCycle = true;
+			break;
+		}
+	}
+
+	if (true == bStartInnerCycle)
+	{
+		auto pair = mapOutlineCells.find(mapOutlineCells.begin()->first);
+
+		for (_int i = 0; i < tObst.vecPoints.size(); ++i)
+		{
+			pair = mapOutlineCells.find(pair->first);	// skip inner cycle
+		}
+
+		vecOutlineCW.push_back(pair->first);
+
+		for (_int i = 0; i < mapOutlineCells.size() - tObst.vecPoints.size() - 1; ++i)
+		{
+			pair = mapOutlineCells.find(vecOutlineCW.back());
+
+			if (mapOutlineCells.end() != pair)
+			{
+				vecOutlineCW.push_back(pair->second.first);
+			}
+		}
+	}
+	else // if (false == bStartInnerCycle)
+	{
+		vecOutlineCW.push_back(mapOutlineCells.begin()->first);
+
+		for(_int i = 0; i < mapOutlineCells.size() - tObst.vecPoints.size() - 1; ++i)
+		{
+			auto pair = mapOutlineCells.find(vecOutlineCW.back());
+
+			if (mapOutlineCells.end() != pair)
+			{
+				vecOutlineCW.push_back(pair->second.first);
+			}
+		}
+	}
+
+	for (auto tCell : setIntersected)
+	{
+		tCell->isDead = true;
+	}
+
+	triangulateio tIn = { 0 }, tOut = { 0 };
+
+#pragma region pointlist
+	tIn.numberofpoints = vecOutlineCW.size();
+	if (0 < tIn.numberofpoints)
+	{
+		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
+
+		_int i = 0;
+		for (auto point : vecOutlineCW)
+		{
+			tIn.pointlist[2 * i + 0] = point.x;
+			tIn.pointlist[2 * i + 1] = point.z;
+			++i;
+		}
+	}
+#pragma endregion pointlist
+
+#pragma region segmentlist
+	tIn.numberofsegments = vecOutlineCW.size();
+	if (0 < tIn.numberofsegments)
+	{
+		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
+
+		// Points
+		for (_int i = 0; i < tIn.numberofsegments - 1; ++i)
+		{
+			tIn.segmentlist[2 * i + 0] = i + 0;
+			tIn.segmentlist[2 * i + 1] = i + 1;
+		}
+		tIn.segmentlist[2 * (vecOutlineCW.size() - 1) + 0] = vecOutlineCW.size() - 1;
+		tIn.segmentlist[2 * (vecOutlineCW.size() - 1) + 1] = 0;
+	}
+#pragma endregion segmentlist
+
+#pragma region holelist
+	tIn.numberofholes = 0;
+#pragma endregion holelist
+
+#pragma region regionlist
+	tIn.numberofregions = 0;
+#pragma endregion regionlist
+
+	_char szTriswitches[3] = "pz";
+	triangulate(szTriswitches, &tIn, &tOut, nullptr);
+
+	// 부분 메쉬 생성.
+	vector<CellData*> vecNewCells;
+
+	for (_int i = 0; i < tOut.numberoftriangles; ++i)
+	{
+		_int iIdx1 = tOut.trianglelist[i * 3 + POINT_A];
+		_int iIdx2 = tOut.trianglelist[i * 3 + POINT_B];
+		_int iIdx3 = tOut.trianglelist[i * 3 + POINT_C];
+
+		Vec3 vtx[POINT_END] =
+		{
+			{ tOut.pointlist[iIdx1 * 2], 0.f, tOut.pointlist[iIdx1 * 2 + 1] },
+			{ tOut.pointlist[iIdx2 * 2], 0.f, tOut.pointlist[iIdx2 * 2 + 1] },
+			{ tOut.pointlist[iIdx3 * 2], 0.f, tOut.pointlist[iIdx3 * 2 + 1] },
+		};
+
+		CellData* pCellData = new CellData;
+		pCellData->vPoints = { vtx[POINT_A], vtx[POINT_B], vtx[POINT_C] };
+		pCellData->CW();
+
+		vecNewCells.push_back(pCellData);
+	}
+
+	SetUpNeighbors(vecNewCells);
+
+	for (auto cell : vecNewCells)
+	{	// 재구성된 데이터를 다시 전체 맵에 연결.
+		for (uint8 i = LINE_AB; i < LINE_END; ++i)
+		{
+			if (nullptr == cell->arrNeighbors[i])
+			{	// new cell의 outline은 neighbor가 없음.
+				auto OutCell = mapOutlineCells.find(cell->vPoints[i]);
+				if (mapOutlineCells.end() != OutCell)
+				{
+					if (cell->vPoints[(i + 1) % POINT_END] == OutCell->second.first)
+					{	// mapOutlineCells에서 outline 찾았다면 상호 연결
+						cell->arrNeighbors[i] = OutCell->second.second;
+
+						if (nullptr == OutCell->second.second || OutCell->second.second == cell)
+						{
+							continue;
+						}
+
+						if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_A], OutCell->second.second->vPoints[POINT_B]))
+						{
+							OutCell->second.second->arrNeighbors[LINE_AB] = cell;
+						}
+						else if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_B], OutCell->second.second->vPoints[POINT_C]))
+						{
+							OutCell->second.second->arrNeighbors[LINE_BC] = cell;
+						}
+						else if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_C], OutCell->second.second->vPoints[POINT_A]))
+						{
+							OutCell->second.second->arrNeighbors[LINE_CA] = cell;
+						}
 					}
 				}
 			}
@@ -1308,7 +1506,7 @@ void CNavMeshView::PointsGroup()
 	}
 }
 
-void CNavMeshView::ObstaclePointsGroup()
+void CNavMeshView::ObstaclesGroup()
 {
 	ImGui::ListBox("ObstaclePoints", &m_Point_Current, m_strObstaclePoints.data(), m_strObstaclePoints.size(), 3);
 	
@@ -1351,13 +1549,15 @@ void CNavMeshView::ObstaclePointsGroup()
 				//_int iStartIndex = 2 * (m_vecPoints.size() - m_vecObstaclePoints.size());
 				//_int iNumberOfPoints = m_vecObstaclePoints.size();
 				Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+				//Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f + FLT_EPSILON, 10.0f, (fMaxZ - fMinZ) * 0.5f + FLT_EPSILON);
 				Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f, 10.0f, (fMaxZ - fMinZ) * 0.5f);
 				tObst.AABB = BoundingBox(vAABBCenter, vAABBExtent);
 
 				SetPolygonHoleCenter(tObst);
 				
 				m_vecObstacles.push_back(tObst);
-				
+				s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back().center.x) + ", " + to_string(m_vecObstacles.back().center.z));
+
 				for (auto cell : m_vecCells)
 				{
 					if (true == cell->isNew)
@@ -1365,9 +1565,8 @@ void CNavMeshView::ObstaclePointsGroup()
 						cell->isNew = false;
 					}
 				}
-				//
-				DynamicUpdate(tObst);
-				//
+
+				DynamicCreate(tObst);
 			}
 
 			//UpdateSegmentList();
@@ -1379,6 +1578,36 @@ void CNavMeshView::ObstaclePointsGroup()
 			for_each(m_strObstaclePoints.begin(), m_strObstaclePoints.end(), [](const _char* szPoint) { delete szPoint; });
 			m_strObstaclePoints.clear();
 			m_vecObstaclePoints.clear();
+		}
+	}
+
+	ImGui::ListBox("Obstacles", &m_Point_Current, m_strObstacles.data(), m_strObstacles.size(), 3);
+
+	if (false == m_strObstacles.empty())
+	{
+		ImGui::NewLine();
+		if (ImGui::Button("DeleteObstacle"))
+		{
+			//SafeReleaseTriangle(m_tOut);
+			//SafeReleaseTriangle(m_tVD_out);
+
+			UpdatePointList();
+
+			{
+				for (auto cell : m_vecCells)
+				{
+					if (true == cell->isNew)
+					{
+						cell->isNew = false;
+					}
+				}
+
+				DynamicDelete(m_vecObstacles[m_Point_Current]);
+				auto iter = m_vecObstacles.begin() + m_Point_Current;
+				auto iterStr = m_strObstacles.begin() + m_Point_Current;
+				m_vecObstacles.erase(iter);
+				m_strObstacles.erase(iterStr);
+			}
 		}
 	}
 }

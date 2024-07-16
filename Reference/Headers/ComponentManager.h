@@ -46,8 +46,8 @@ public:
 private:
 	_uint											m_iNumLevels = { 0 };
 	/* 원형객체들을 레벨별로 보관할까?! */
-	unordered_map<const wstring, class CComponent*, djb2Hasher>*	m_pPrototypes = { nullptr };
-	typedef unordered_map<const wstring, class CComponent*, djb2Hasher>	PROTOTYPES;
+	map<const wstring, class CComponent*>*	m_pPrototypes = { nullptr };
+	typedef map<const wstring, class CComponent*>	PROTOTYPES;
 
 private:
 	class CComponent* Find_Prototype(_uint iLevelIndex, const wstring& strPrototypeTag);
