@@ -9,7 +9,8 @@
       * 따라서 내부의 hole outline을 판별하는 코드를 작성했으나, 사실 이는 전혀 고려할 필요가 없어 취소했습니다.
         * outline의 정보를 보관하는 map자료구조는 outline의 각 point를 key로 사용하기 때문에, 데이터를 삽입 시 좌표에 의해 오름차순 정렬합니다.
         * 어떤 내부 outline 점도 외부 outline의 가장 좌측 점보다 작은 x값을 가질 수 없기 때문에 map의 데이터는 무조건 외부 outline의 점으로 시작합니다.
-    3. obstacle의 AABB영역과 교차하는 삼각형 cell을 추출해 subset을 구성할 때, subset이 아래와 같이 설정되는 경우가 있습니다. 이 경우 바로 위 문제 해결의 반례가 될 수 있으며, outline의 단방향 정렬과정에서 외부 outline과 내부의 hole outline이 연결되는 문제가 발생합니다.
+    3. obstacle의 AABB영역과 교차하는 삼각형 cell을 추출해 subset을 구성할 때, subset이 아래와 같이 설정되는 경우가 있습니다.
+      * 이 경우 바로 위 문제 해결의 반례가 될 수 있으며, outline의 단방향 정렬과정에서 외부 outline과 내부의 hole outline이 연결되는 문제가 발생했습니다. 또한 Cell이 충분히 복원되지 않는 문제가 발생했습니다.
       * 해당 지점을 포함하는 삼각형을 추가로 탐색하는 방안도 생각했으나, obstacle의 AABB를 미세하게 확대해 몇 개의 삼각형을 더 포함하는 것으로 간단히 해결할 수 있었습니다. 이러한 방식으로 인해 발생할 수 있는 문제에 대해서는 아직 예상되는 것이 없으나 만에 하나 발생 시 이 부분만 수정할 생각입니다.
         
       ![4](https://github.com/user-attachments/assets/377160c1-2dfd-44df-887a-46935a989a47)
