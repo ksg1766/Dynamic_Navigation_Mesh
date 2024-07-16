@@ -55,6 +55,8 @@ private:
 	HRESULT	UpdateHoleList();
 	HRESULT	UpdateRegionList();
 	
+	HRESULT StaticCreate(const Obst& tObst);
+
 	HRESULT DynamicCreate(const Obst& tObst);
 	HRESULT DynamicDelete(const Obst& tObst);
 

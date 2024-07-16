@@ -579,6 +579,13 @@ HRESULT CNavMeshView::UpdateRegionList()
 	return S_OK;
 }
 
+HRESULT CNavMeshView::StaticCreate(const Obst& tObst)
+{
+
+
+	return S_OK;
+}
+
 HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 {
 	set<CellData*> setIntersected;
