@@ -1,3 +1,6 @@
+https://equal-paw-e8f.notion.site/2-ab7058a10821484a9878ed1abdca29ac
+
+---
 # 📅 2024.07.15
 📋 진행 사항
   * 동적으로 추가되는 obstacle에 대해 주변의 cell만 update하도록 구현했습니다. obstacle이 추가된 영역의 subset만을 triangulation하는 과정은 아래와 같습니다.
