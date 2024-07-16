@@ -1,4 +1,27 @@
-https://equal-paw-e8f.notion.site/2-ab7058a10821484a9878ed1abdca29ac
+# 📅 2024.07.15
+📋 진행 사항
+  * 2주차 주간 회의 피드백을 통해 앞으로 어떤식으로 과제를 해결해 나가야 할지 고민중입니다.
+    * 우선 진행중인 Dynamic Obstacle에 대한 Update 기능을 마무리한 후에는, 경로 탐색을 구현할 예정입니다. 최대한 안정적인 성능을 유지할 수 있도록 노력해보려합니다.
+    * 이후 2D 상에서 작동하고 있는 시스템을 3D에서도 적용할 수 있도록 고민해보려합니다.
+
+  * 동적으로 삭제되는 obstacle에 대해 주변의 cell만 update하도록 구현했습니다. obstacle이 삭제된 영역의 subset만을 다시 triangulation하는 과정은 대체로 생성과정과 비슷하지만 추가로 고려할 부분이 있었습니다.
+    1. subset의 outline에 외부 outline뿐 아니라 내부 hole영역의 outline까지 포함돼, 이를 배제해는 작업이 필요할 것이라 생각했습니다.
+      * 따라서 내부의 hole outline을 판별하는 코드를 작성했으나, 사실 이는 전혀 고려할 필요가 없어 취소했습니다.
+        * outline의 정보를 보관하는 map자료구조는 outline의 각 point를 key로 사용하기 때문에, 데이터를 삽입 시 좌표에 의해 오름차순 정렬합니다.
+        * 어떤 내부 outline 점도 외부 outline의 가장 좌측 점보다 작은 x값을 가질 수 없기 때문에 map의 데이터는 무조건 외부 outline의 점으로 시작합니다.
+    3. obstacle의 AABB영역과 교차하는 삼각형 cell을 추출해 subset을 구성할 때, subset이 아래와 같이 설정되는 경우가 있습니다. 이 경우 바로 위 문제 해결의 반례가 될 수 있으며, outline의 단방향 정렬과정에서 외부 outline과 내부의 hole outline이 연결되는 문제가 발생합니다.
+      * 해당 지점을 포함하는 삼각형을 추가로 탐색하는 방안도 생각했으나, obstacle의 AABB를 미세하게 확대해 몇 개의 삼각형을 더 포함하는 것으로 간단히 해결할 수 있었습니다. 이러한 방식으로 인해 발생할 수 있는 문제에 대해서는 아직 예상되는 것이 없으나 만에 하나 발생 시 이 부분만 수정할 생각입니다.
+        
+      ![4](https://github.com/user-attachments/assets/377160c1-2dfd-44df-887a-46935a989a47)
+
+  * Dynamic Obstacle의 Delete 결과는 아래와 같습니다.
+    
+    ![FPS_61-DEBUG2024-07-1617-54-17-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/94307766-acb6-4ae1-9f25-4416808aa066)
+
+  * 작성 중...
+
+---
+2주차 요약 정리 : https://equal-paw-e8f.notion.site/2-ab7058a10821484a9878ed1abdca29ac
 
 ---
 # 📅 2024.07.15
