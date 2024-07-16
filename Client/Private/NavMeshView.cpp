@@ -794,12 +794,12 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	}
 
 	vector<Vec3> vecOutlineCW;	// 시계 방향 정렬
-								// Create 때와 다르게 Obstacle의 Outline은 Skip 해야한다.
+								// Create 때와 다르게 Obstacle의 Outline은 Skip 해야한다. -> Skip 필요 없음. map 정렬로 begin은 무조건 outline의 점.
 								// 그러나 setIntersected의 영역이 Create 때와 달라 질 수 있음. -> AABB의 크기를 약간 더 키워서 간단히 해결 가능. FLT_EPSILON은 너무 작고 적절한 값을 찾아보자.
 								// mapOutlineCells.begin()->first 이 Obstacle Outline의 일부라면 Obstacle Outline 갯수 만큼 Skip
 								// 아니라면 반복 횟수를 Obstacle Outline 갯수 만큼 덜 한 상태에서 종료
 
-	_bool bStartInnerCycle = false;
+	/*_bool bStartInnerCycle = false;
 
 	for (auto& point : tObst.vecPoints)
 	{
@@ -831,7 +831,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 			}
 		}
 	}
-	else // if (false == bStartInnerCycle)
+	else // if (false == bStartInnerCycle)*/
 	{
 		vecOutlineCW.push_back(mapOutlineCells.begin()->first);
 
