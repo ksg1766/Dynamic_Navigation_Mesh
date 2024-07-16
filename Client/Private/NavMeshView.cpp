@@ -769,6 +769,10 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
+	const _float fAABBOffset = 0.01f;
+	const_cast<Obst&>(tObst).AABB.Extents.x += fAABBOffset;
+	const_cast<Obst&>(tObst).AABB.Extents.z += fAABBOffset;
+
 	GetIntersectedCells(tObst, setIntersected);
 
 	for (auto tCell : setIntersected)

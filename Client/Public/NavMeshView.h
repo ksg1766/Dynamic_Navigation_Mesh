@@ -69,7 +69,6 @@ private:
 	void	SetPolygonHoleCenter(Obst& tObst);
 	void	GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected);
 
-
 private:
 	void	Input();
 	_bool	Pick(_uint screenX, _uint screenY);
