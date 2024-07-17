@@ -1367,8 +1367,6 @@ HRESULT CNavMeshView::Save()
 
 	shared_ptr<tinyxml2::XMLDocument> document = make_shared<tinyxml2::XMLDocument>();
 
-	fs::path finalPath;
-
 	tinyxml2::XMLDeclaration* decl = document->NewDeclaration();
 	document->LinkEndChild(decl);
 
@@ -1415,17 +1413,72 @@ HRESULT CNavMeshView::Save()
 				element->LinkEndChild(point);
 			}
 			node->LinkEndChild(element);
-		}
-
-		document->SaveFile(finalPath.generic_string().c_str());
+		}		
 	}
+
+	document->SaveFile(strPath.generic_string().c_str());
 
 	return S_OK;
 }
 
 HRESULT CNavMeshView::Load()
 {
+	namespace fs = std::filesystem;
+	
+	fs::path strPath = fs::path("../Bin/Resources/Effects/EffectData/" + m_strFilePath + "/");
+	
+	const auto& file = fs::directory_entry(strPath);
 
+	if (false == file.is_regular_file() || ".xml" != file.path().extension())
+	{
+		return E_FAIL;
+	}
+
+	shared_ptr<tinyxml2::XMLDocument> document = make_shared<tinyxml2::XMLDocument>();
+	tinyxml2::XMLError error = document->LoadFile(file.path().generic_string().c_str());
+	assert(error == tinyxml2::XML_SUCCESS);
+
+	tinyxml2::XMLElement* root = nullptr;
+	root = document->FirstChildElement();
+	tinyxml2::XMLElement* node = nullptr;
+	node = root->FirstChildElement();
+
+	if (nullptr == node)
+	{
+		MSG_BOX("Fail to Load");
+		return E_FAIL;
+	}
+
+	tinyxml2::XMLElement* element = nullptr;
+
+	// Obstacles
+	while (nullptr != node)
+	{
+		Obst tObst;
+
+		// InnerPoint
+		element = node->FirstChildElement();
+		tObst.center.x = element->FloatAttribute("X");
+		tObst.center.y = element->FloatAttribute("Y");
+		tObst.center.z = element->FloatAttribute("Z");
+
+		element = element->NextSiblingElement();
+		tObst.AABB.Center.x = element->FloatAttribute("X");
+		tObst.AABB.Center.y = element->FloatAttribute("Y");
+		tObst.AABB.Center.z = element->FloatAttribute("Z");
+
+		element = element->NextSiblingElement();
+		tObst.AABB.Extents.x = element->FloatAttribute("X");
+		tObst.AABB.Extents.y = element->FloatAttribute("Y");
+		tObst.AABB.Extents.z = element->FloatAttribute("Z");
+		
+		element = element->NextSiblingElement();
+		tinyxml2::XMLElement* point = element->FirstChildElement();
+		while (nullptr != point)
+		{
+			// ¿€º∫¡ﬂ...
+		}
+	}
 
 	return S_OK;
 }
