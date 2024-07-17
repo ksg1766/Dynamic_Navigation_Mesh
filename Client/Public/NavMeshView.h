@@ -27,7 +27,8 @@ private:
 	enum POINTS	: uint8	{ POINT_A, POINT_B, POINT_C, POINT_END };
 	enum LINES	: uint8	{ LINE_AB, LINE_BC, LINE_CA, LINE_END };
 
-	enum class TRIMODE	: uint8	{ DEFAULT, OBSTACLE, REGION, MODE_END };
+	enum class TRIMODE : uint8 { DEFAULT, OBSTACLE, REGION, MODE_END };
+	enum class STRESSMODE : uint8 { SINGLERECT, MULTIRECT, STRESS_END };
 
 private:
 	CNavMeshView(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -56,6 +57,8 @@ private:
 
 	HRESULT DynamicCreate(const Obst& tObst);
 	HRESULT DynamicDelete(const Obst& tObst);
+
+	HRESULT StressTest();
 
 	HRESULT	SafeReleaseTriangle(triangulateio& tTriangle);
 
@@ -98,7 +101,7 @@ private:
 	vector<Vec3>			m_vecPoints;
 	vector<const _char*>	m_strPoints;
 
-	vector<Obst>			m_vecObstacles;
+	vector<Obst*>			m_vecObstacles;
 	vector<const _char*>	m_strObstacles;
 	vector<Vec3>			m_vecObstaclePoints;
 	vector<const _char*>	m_strObstaclePoints;
@@ -110,7 +113,9 @@ private:
 	vector<const _char*>	m_strCells;
 
 	// Polygon (stress test)
-	Obst					m_tStressObst;
+	_bool					m_bStressTest = false;
+	Obst*					m_pStressObst = nullptr;
+	Matrix					m_matStressOffset = Matrix::Identity;
 
 	// Default
 	CTerrain*				m_pTerrainBuffer = nullptr;

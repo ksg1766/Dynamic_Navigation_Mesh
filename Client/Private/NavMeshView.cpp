@@ -139,10 +139,35 @@ HRESULT CNavMeshView::Tick()
 		ObstaclesGroup();
 		break;
 	case TRIMODE::REGION:
-		
+
 		break;
 	}
-	//CellGroup();
+	ImGui::NewLine();
+	// CellGroup();
+
+	// stress test
+	const _char* szStressButon = (true == m_bStressTest) ? "Stop Stress Test" : "Start Stress Test";
+	if (ImGui::Button(szStressButon))
+	{
+		if (true == m_bStressTest)
+		{
+			m_bStressTest = false;
+			//m_fStressRadian = 0.f;
+			//m_vStressPosition = Vec3::Zero;
+		}
+		else
+		{
+			m_bStressTest = true;
+		}
+	}
+
+	if (true == m_bStressTest)
+	{
+		if (FAILED(StressTest()))
+		{
+			return E_FAIL;
+		}
+	}
 
 	ImGui::End();
 
@@ -201,19 +226,19 @@ HRESULT CNavMeshView::DebugRender()
 		m_pBatch->Begin();
 		for (_int i = 0; i < m_vecObstacles.size(); ++i)
 		{
-			for (_int j = 0; j < m_vecObstacles[i].vecPoints.size() - 1; ++j)
+			for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size() - 1; ++j)
 			{
 				Vec3 vLine1 =
 				{
-					m_vecObstacles[i].vecPoints[j].x,
+					m_vecObstacles[i]->vecPoints[j].x,
 					0.0f,
-					m_vecObstacles[i].vecPoints[j].z
+					m_vecObstacles[i]->vecPoints[j].z
 				};
 				Vec3 vLine2 =
 				{
-					m_vecObstacles[i].vecPoints[j + 1].x,
+					m_vecObstacles[i]->vecPoints[j + 1].x,
 					0.0f,
-					m_vecObstacles[i].vecPoints[j + 1].z,
+					m_vecObstacles[i]->vecPoints[j + 1].z,
 				};
 
 				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
@@ -221,16 +246,16 @@ HRESULT CNavMeshView::DebugRender()
 
 			Vec3 vLine1 =
 			{
-				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].x,
+				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].x,
 				0.0f,
-				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].z
+				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].z
 
 			};
 			Vec3 vLine2 =
 			{
-				m_vecObstacles[i].vecPoints[0].x,
+				m_vecObstacles[i]->vecPoints[0].x,
 				0.0f,
-				m_vecObstacles[i].vecPoints[0].z
+				m_vecObstacles[i]->vecPoints[0].z
 			};
 
 			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
@@ -526,7 +551,7 @@ HRESULT CNavMeshView::UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& 
 		_int iRepeatCount = ((nullptr == pObst) ? m_vecObstacles.size() : 1);
 		for (_int j = 0; j < iRepeatCount; ++j)
 		{
-			const Obst& tObst = ((nullptr == pObst) ? m_vecObstacles[j] : *pObst);
+			const Obst& tObst = ((nullptr == pObst) ? *m_vecObstacles[j] : *pObst);
 
 			for (_int i = 0; i < tObst.vecPoints.size() - 1; ++i)
 			{
@@ -556,7 +581,7 @@ HRESULT CNavMeshView::UpdateHoleList(triangulateio& tIn, const Obst* pObst)
 
 		for (_int i = 0; i < tIn.numberofholes; ++i)
 		{
-			const Obst& tObst = ((nullptr == pObst) ? m_vecObstacles[i] : *pObst);
+			const Obst& tObst = ((nullptr == pObst) ? *m_vecObstacles[i] : *pObst);
 
 			tIn.holelist[2 * i + 0] = tObst.vInnerPoint.x;
 			tIn.holelist[2 * i + 1] = tObst.vInnerPoint.z;
@@ -630,7 +655,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	}
 
 	vector<Vec3> vecOutlineCW;	// 시계 방향 정렬
-	vecOutlineCW.push_back(mapOutlineCells.begin()->first);
+	vecOutlineCW.emplace_back(mapOutlineCells.begin()->first);
 
 	while (vecOutlineCW.size() < mapOutlineCells.size())
 	{
@@ -694,7 +719,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		pCellData->vPoints = { vtx[POINT_A], vtx[POINT_B], vtx[POINT_C] };
 		pCellData->CW();
 
-		vecNewCells.push_back(pCellData);
+		vecNewCells.emplace_back(pCellData);
 	}
 
 	SetUpNeighbors(vecNewCells);
@@ -735,7 +760,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		}
 
 		cell->isNew = true;
-		m_vecCells.push_back(cell);
+		m_vecCells.emplace_back(cell);
 	}
 
 	return S_OK;
@@ -772,7 +797,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 
 	vector<Vec3> vecOutlineCW;
 
-	vecOutlineCW.push_back(mapOutlineCells.begin()->first);
+	vecOutlineCW.emplace_back(mapOutlineCells.begin()->first);
 
 	for(_int i = 0; i < mapOutlineCells.size() - tObst.vecPoints.size() - 1; ++i)
 	{
@@ -780,7 +805,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 
 		if (mapOutlineCells.end() != pair)
 		{
-			vecOutlineCW.push_back(pair->second.first);
+			vecOutlineCW.emplace_back(pair->second.first);
 		}
 	}
 
@@ -843,7 +868,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		pCellData->vPoints = { vtx[POINT_A], vtx[POINT_B], vtx[POINT_C] };
 		pCellData->CW();
 
-		vecNewCells.push_back(pCellData);
+		vecNewCells.emplace_back(pCellData);
 	}
 
 	SetUpNeighbors(vecNewCells);
@@ -884,7 +909,85 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		}
 
 		cell->isNew = true;
-		m_vecCells.push_back(cell);
+		m_vecCells.emplace_back(cell);
+	}
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::StressTest()
+{
+	for (auto cell : m_vecCells)
+	{
+		if (true == cell->isNew)
+		{
+			cell->isNew = false;
+		}
+	}
+
+	if (nullptr != m_pStressObst)
+	{
+		if (FAILED(DynamicDelete(*m_pStressObst)))
+		{
+			return E_FAIL;
+		}
+
+		m_pStressObst = nullptr;
+	}
+	//if (nullptr == m_pStressObst)	// delete 가 프레임 마지막에 이루어지므로 일단 보류. create도 마지막에 몰아서 하도록 하든지 잘 맞춰야 함...
+	else if (nullptr == m_pStressObst)
+	{
+		//m_matStressOffset = XMMatrixRotationY(fTimeDelta);
+
+		static _float fStressRadian = 0;
+		static Vec3 vStressPosition = Vec3::Zero;
+		if (fStressRadian > 360.0f)
+		{
+			fStressRadian -= 360.f;
+		}
+		else
+		{
+			fStressRadian += 0.1f;
+		}
+
+		static const _float fSpeed = 4.f;
+
+		if (KEY_PRESSING(KEY::LEFT_ARROW))
+			vStressPosition.x -= fSpeed;
+		if (KEY_PRESSING(KEY::RIGHT_ARROW))
+			vStressPosition.x += fSpeed;
+		if (KEY_PRESSING(KEY::UP_ARROW))
+			vStressPosition.z += fSpeed;
+		if (KEY_PRESSING(KEY::DOWN_ARROW))
+			vStressPosition.z -= fSpeed;
+
+		Matrix matOffset = XMMatrixRotationY(fStressRadian) * XMMatrixTranslationFromVector(vStressPosition);
+
+		m_pStressObst = new Obst;
+
+		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(-12.0f, 0.0f, -12.0f), matOffset));
+		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(-12.0f, 0.0f, +12.0f), matOffset));
+		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(+12.0f, 0.0f, +12.0f), matOffset));
+		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(+12.0f, 0.0f, -12.0f), matOffset));
+
+		TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
+		for (auto vPoint : m_pStressObst->vecPoints)
+		{
+			if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+			if (fMinX > vPoint.x) fMinX = vPoint.x;
+
+			if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+			if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+		}
+
+		SetPolygonHoleCenter(*m_pStressObst);
+		m_pStressObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+		m_pStressObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f, 10.f, (fMaxZ - fMinZ) * 0.5f);
+
+		if (FAILED(DynamicCreate(*m_pStressObst)))
+		{
+			return E_FAIL;
+		}
 	}
 
 	return S_OK;
@@ -1017,19 +1120,19 @@ HRESULT CNavMeshView::RenderDT()
 		m_pBatch->Begin();
 		for (_int i = 0; i < m_vecObstacles.size(); ++i)
 		{
-			for (_int j = 0; j < m_vecObstacles[i].vecPoints.size() - 1; ++j)
+			for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size() - 1; ++j)
 			{
 				Vec3 vLine1 =
 				{
-					m_vecObstacles[i].vecPoints[j].x,
+					m_vecObstacles[i]->vecPoints[j].x,
 					0.0f,
-					m_vecObstacles[i].vecPoints[j].z,
+					m_vecObstacles[i]->vecPoints[j].z,
 				};
 				Vec3 vLine2 =
 				{
-					m_vecObstacles[i].vecPoints[j + 1].x,
+					m_vecObstacles[i]->vecPoints[j + 1].x,
 					0.0f,
-					m_vecObstacles[i].vecPoints[j + 1].z,
+					m_vecObstacles[i]->vecPoints[j + 1].z,
 				};
 
 				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
@@ -1037,15 +1140,15 @@ HRESULT CNavMeshView::RenderDT()
 
 			Vec3 vLine1 =
 			{
-				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].x,
+				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].x,
 				0.0f,
-				m_vecObstacles[i].vecPoints[m_vecObstacles[i].vecPoints.size() - 1].z
+				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].z
 			};
 			Vec3 vLine2 =
 			{
-				m_vecObstacles[i].vecPoints[0].x,
+				m_vecObstacles[i]->vecPoints[0].x,
 				0.0f,
-				m_vecObstacles[i].vecPoints[0].z,
+				m_vecObstacles[i]->vecPoints[0].z,
 			};
 
 			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
@@ -1343,32 +1446,32 @@ HRESULT CNavMeshView::SaveFile()
 		root->LinkEndChild(node);
 		{
 			element = document->NewElement("InnerPoint");
-			element->SetAttribute("X", m_vecObstacles[i].vInnerPoint.x);
-			element->SetAttribute("Y", m_vecObstacles[i].vInnerPoint.y);
-			element->SetAttribute("Z", m_vecObstacles[i].vInnerPoint.z);
+			element->SetAttribute("X", m_vecObstacles[i]->vInnerPoint.x);
+			element->SetAttribute("Y", m_vecObstacles[i]->vInnerPoint.y);
+			element->SetAttribute("Z", m_vecObstacles[i]->vInnerPoint.z);
 			node->LinkEndChild(element);
 
 			element = document->NewElement("AABBCenter");
-			element->SetAttribute("X", m_vecObstacles[i].tAABB.Center.x);
-			element->SetAttribute("Y", m_vecObstacles[i].tAABB.Center.y);
-			element->SetAttribute("Z", m_vecObstacles[i].tAABB.Center.z);
+			element->SetAttribute("X", m_vecObstacles[i]->tAABB.Center.x);
+			element->SetAttribute("Y", m_vecObstacles[i]->tAABB.Center.y);
+			element->SetAttribute("Z", m_vecObstacles[i]->tAABB.Center.z);
 			node->LinkEndChild(element);
 			
 			element = document->NewElement("AABBExtents");
-			element->SetAttribute("X", m_vecObstacles[i].tAABB.Extents.x);
-			element->SetAttribute("Y", m_vecObstacles[i].tAABB.Extents.y);
-			element->SetAttribute("Z", m_vecObstacles[i].tAABB.Extents.z);
+			element->SetAttribute("X", m_vecObstacles[i]->tAABB.Extents.x);
+			element->SetAttribute("Y", m_vecObstacles[i]->tAABB.Extents.y);
+			element->SetAttribute("Z", m_vecObstacles[i]->tAABB.Extents.z);
 			node->LinkEndChild(element);
 
 			element = document->NewElement("Points");
 			tinyxml2::XMLElement* point = nullptr;
-			for (_int j = 0; j < m_vecObstacles[i].vecPoints.size(); ++j)
+			for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size(); ++j)
 			{
 				string strName = "Point" + to_string(j);
 				point = document->NewElement(strName.c_str());
-				point->SetAttribute("X", m_vecObstacles[i].vecPoints[j].x);
-				point->SetAttribute("Y", m_vecObstacles[i].vecPoints[j].y);
-				point->SetAttribute("Z", m_vecObstacles[i].vecPoints[j].z);
+				point->SetAttribute("X", m_vecObstacles[i]->vecPoints[j].x);
+				point->SetAttribute("Y", m_vecObstacles[i]->vecPoints[j].y);
+				point->SetAttribute("Z", m_vecObstacles[i]->vecPoints[j].z);
 				element->LinkEndChild(point);
 			}
 			node->LinkEndChild(element);
@@ -1423,24 +1526,24 @@ HRESULT CNavMeshView::LoadFile()
 	tinyxml2::XMLElement* element = nullptr;
 	while (nullptr != node)
 	{
-		Obst tObst;
+		Obst* pObst = new Obst;
 
 		// InnerPoint
 		element = node->FirstChildElement();
-		tObst.vInnerPoint.x = element->FloatAttribute("X");
-		tObst.vInnerPoint.y = element->FloatAttribute("Y");
-		tObst.vInnerPoint.z = element->FloatAttribute("Z");
+		pObst->vInnerPoint.x = element->FloatAttribute("X");
+		pObst->vInnerPoint.y = element->FloatAttribute("Y");
+		pObst->vInnerPoint.z = element->FloatAttribute("Z");
 		
 		// AABB
 		element = element->NextSiblingElement();
-		tObst.tAABB.Center.x = element->FloatAttribute("X");
-		tObst.tAABB.Center.y = element->FloatAttribute("Y");
-		tObst.tAABB.Center.z = element->FloatAttribute("Z");
+		pObst->tAABB.Center.x = element->FloatAttribute("X");
+		pObst->tAABB.Center.y = element->FloatAttribute("Y");
+		pObst->tAABB.Center.z = element->FloatAttribute("Z");
 
 		element = element->NextSiblingElement();
-		tObst.tAABB.Extents.x = element->FloatAttribute("X");
-		tObst.tAABB.Extents.y = element->FloatAttribute("Y");
-		tObst.tAABB.Extents.z = element->FloatAttribute("Z");
+		pObst->tAABB.Extents.x = element->FloatAttribute("X");
+		pObst->tAABB.Extents.y = element->FloatAttribute("Y");
+		pObst->tAABB.Extents.z = element->FloatAttribute("Z");
 		
 		// Points
 		element = element->NextSiblingElement();
@@ -1452,20 +1555,20 @@ HRESULT CNavMeshView::LoadFile()
 			vPoint.y = point->FloatAttribute("Y");
 			vPoint.z = point->FloatAttribute("Z");
 
-			tObst.vecPoints.push_back(vPoint);
+			pObst->vecPoints.push_back(vPoint);
 
 			point = point->NextSiblingElement();
 		}
 
-		m_vecObstacles.push_back(tObst);		
-		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back().vInnerPoint.x) + ", " + to_string(m_vecObstacles.back().vInnerPoint.z));
+		m_vecObstacles.push_back(pObst);		
+		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back()->vInnerPoint.x) + ", " + to_string(m_vecObstacles.back()->vInnerPoint.z));
 
 		node = node->NextSiblingElement();
 	}
 
-	for (auto& tObst : m_vecObstacles)
+	for (auto pObst : m_vecObstacles)
 	{
-		for (auto& vPoint : tObst.vecPoints)
+		for (auto& vPoint : pObst->vecPoints)
 		{
 			m_vecPoints.push_back(vPoint);
 		}
@@ -1658,7 +1761,7 @@ void CNavMeshView::ObstaclesGroup()
 		ImGui::SameLine();
 		if (ImGui::Button("CreateDynamic"))
 		{
-			Obst tObst;
+			Obst* pObst = new Obst;
 
 			TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
 			for (auto vPoint : m_vecObstaclePoints)
@@ -1669,17 +1772,17 @@ void CNavMeshView::ObstaclesGroup()
 				if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
 				if (fMinZ > vPoint.z) fMinZ = vPoint.z;
 
-				tObst.vecPoints.push_back(vPoint);
+				pObst->vecPoints.push_back(vPoint);
 			}
 
 			Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
 			Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f, 10.0f, (fMaxZ - fMinZ) * 0.5f);
-			tObst.tAABB = BoundingBox(vAABBCenter, vAABBExtent);
+			pObst->tAABB = BoundingBox(vAABBCenter, vAABBExtent);
 
-			SetPolygonHoleCenter(tObst);
+			SetPolygonHoleCenter(*pObst);
 			
-			m_vecObstacles.push_back(tObst);
-			s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back().vInnerPoint.x) + ", " + to_string(m_vecObstacles.back().vInnerPoint.z));
+			m_vecObstacles.push_back(pObst);
+			s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back()->vInnerPoint.x) + ", " + to_string(m_vecObstacles.back()->vInnerPoint.z));
 
 			for (auto cell : m_vecCells)
 			{
@@ -1689,7 +1792,7 @@ void CNavMeshView::ObstaclesGroup()
 				}
 			}
 
-			DynamicCreate(tObst);
+			DynamicCreate(*pObst);
 			
 			for_each(m_strObstaclePoints.begin(), m_strObstaclePoints.end(), [](const _char* szPoint) { delete szPoint; });
 			m_strObstaclePoints.clear();
@@ -1712,7 +1815,7 @@ void CNavMeshView::ObstaclesGroup()
 				}
 			}
 
-			DynamicDelete(m_vecObstacles[m_item_Current]);
+			DynamicDelete(*m_vecObstacles[m_item_Current]);
 			auto iter = m_vecObstacles.begin() + m_item_Current;
 			auto iterStr = m_strObstacles.begin() + m_item_Current;
 			m_vecObstacles.erase(iter);
@@ -1890,4 +1993,10 @@ void CNavMeshView::Free()
 		Safe_Delete(cell);
 	}
 	m_vecCells.clear();
+
+	for (auto obst : m_vecObstacles)
+	{
+		Safe_Delete(obst);
+	}
+	m_vecObstacles.clear();
 }
