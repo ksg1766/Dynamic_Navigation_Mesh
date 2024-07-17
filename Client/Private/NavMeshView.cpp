@@ -103,28 +103,15 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 		return E_FAIL;
 	}
 
-	m_vecPoints.push_back(Vec3(-512.0f, 0.f, -512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, -512.0f), 2.f));
+	if (FAILED(InitialSetting()))
+	{
+		return E_FAIL;
+	}
 
-	m_vecPoints.push_back(Vec3(+512.0f, 0.f, -512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, -512.0f), 2.f));
-	
-	m_vecPoints.push_back(Vec3(+512.0f, 0.f, +512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, +512.0f), 2.f));
-
-	m_vecPoints.push_back(Vec3(-512.0f, 0.f, +512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, +512.0f), 2.f));
-
-	m_iStaticPointCount = m_vecPoints.size();
-
-	UpdatePointList();
-	UpdateSegmentList();
-	UpdateHoleList();
-	UpdateRegionList();
-
-	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
-	
-	BakeNavMesh();
+	if (FAILED(BakeNavMesh()))
+	{
+		return E_FAIL;
+	}
 
 	return S_OK;
 }
@@ -542,8 +529,8 @@ HRESULT CNavMeshView::UpdateHoleList()
 
 		for (_int i = 0; i < m_tIn.numberofholes; ++i)
 		{
-			m_tIn.holelist[2 * i + 0] = m_vecObstacles[i].center.x;
-			m_tIn.holelist[2 * i + 1] = m_vecObstacles[i].center.z;
+			m_tIn.holelist[2 * i + 0] = m_vecObstacles[i].vInnerPoint.x;
+			m_tIn.holelist[2 * i + 1] = m_vecObstacles[i].vInnerPoint.z;
 		}
 	}
 
@@ -694,8 +681,8 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 
 		for (_int i = 0; i < tIn.numberofholes; ++i)
 		{
-			tIn.holelist[2 * i + 0] = tObst.center.x;
-			tIn.holelist[2 * i + 1] = tObst.center.z;
+			tIn.holelist[2 * i + 0] = tObst.vInnerPoint.x;
+			tIn.holelist[2 * i + 1] = tObst.vInnerPoint.z;
 		}
 	}
 #pragma endregion holelist
@@ -777,8 +764,8 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
 	const _float fAABBOffset = 0.01f;
-	const_cast<Obst&>(tObst).AABB.Extents.x += fAABBOffset;
-	const_cast<Obst&>(tObst).AABB.Extents.z += fAABBOffset;
+	const_cast<Obst&>(tObst).tAABB.Extents.x += fAABBOffset;
+	const_cast<Obst&>(tObst).tAABB.Extents.z += fAABBOffset;
 
 	GetIntersectedCells(tObst, setIntersected);
 
@@ -1161,7 +1148,7 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 
 		if (0 < iCrosses % 2)
 		{
-			tObst.center = vCenter;
+			tObst.vInnerPoint = vCenter;
 			break;
 		}
 	}
@@ -1171,7 +1158,7 @@ void CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& se
 {
 	for (auto cell : m_vecCells)
 	{
-		if (true == tObst.AABB.Intersects(cell->vPoints[POINT_A], cell->vPoints[POINT_B], cell->vPoints[POINT_C]))
+		if (true == tObst.tAABB.Intersects(cell->vPoints[POINT_A], cell->vPoints[POINT_B], cell->vPoints[POINT_C]))
 		{
 			setIntersected.emplace(cell);
 		}
@@ -1356,11 +1343,11 @@ HRESULT CNavMeshView::Save()
 {
 	namespace fs = std::filesystem;
 	
-	fs::path strPath = fs::path("../Bin/Resources/Effects/EffectData/" + m_strFilePath + "/");
+	fs::path strPath = fs::path("../Bin/Resources/LevelData/" + m_strFilePath + "/");
 
 	if (true == m_vecObstacles.empty())
 	{
-		MSG_BOX("You need to Create Obstacles");
+		MSG_BOX("Fail to Save : You need to Create Obstacles");
 	}
 
 	fs::create_directories(strPath);
@@ -1373,6 +1360,9 @@ HRESULT CNavMeshView::Save()
 	tinyxml2::XMLElement* root = document->NewElement("Obstacles");
 	document->LinkEndChild(root);
 
+	size_t iNumberofFiles = std::distance(fs::directory_iterator(strPath), fs::directory_iterator{});
+	fs::path finalPath = strPath.generic_string() + "ObstacleData" + to_string(iNumberofFiles) + ".xml";
+
 	tinyxml2::XMLElement* node = nullptr;
 	tinyxml2::XMLElement* element = nullptr;
 
@@ -1384,28 +1374,28 @@ HRESULT CNavMeshView::Save()
 		root->LinkEndChild(node);
 		{
 			element = document->NewElement("InnerPoint");
-			element->SetAttribute("X", m_vecObstacles[i].center.x);
-			element->SetAttribute("Y", m_vecObstacles[i].center.y);
-			element->SetAttribute("Z", m_vecObstacles[i].center.z);
+			element->SetAttribute("X", m_vecObstacles[i].vInnerPoint.x);
+			element->SetAttribute("Y", m_vecObstacles[i].vInnerPoint.y);
+			element->SetAttribute("Z", m_vecObstacles[i].vInnerPoint.z);
 			node->LinkEndChild(element);
 
 			element = document->NewElement("AABBCenter");
-			element->SetAttribute("X", m_vecObstacles[i].AABB.Center.x);
-			element->SetAttribute("Y", m_vecObstacles[i].AABB.Center.y);
-			element->SetAttribute("Z", m_vecObstacles[i].AABB.Center.z);
+			element->SetAttribute("X", m_vecObstacles[i].tAABB.Center.x);
+			element->SetAttribute("Y", m_vecObstacles[i].tAABB.Center.y);
+			element->SetAttribute("Z", m_vecObstacles[i].tAABB.Center.z);
 			node->LinkEndChild(element);
 			
 			element = document->NewElement("AABBExtents");
-			element->SetAttribute("X", m_vecObstacles[i].AABB.Extents.x);
-			element->SetAttribute("Y", m_vecObstacles[i].AABB.Extents.y);
-			element->SetAttribute("Z", m_vecObstacles[i].AABB.Extents.z);
+			element->SetAttribute("X", m_vecObstacles[i].tAABB.Extents.x);
+			element->SetAttribute("Y", m_vecObstacles[i].tAABB.Extents.y);
+			element->SetAttribute("Z", m_vecObstacles[i].tAABB.Extents.z);
 			node->LinkEndChild(element);
 
 			element = document->NewElement("Points");
 			tinyxml2::XMLElement* point = nullptr;
 			for (_int j = 0; j < m_vecObstacles[i].vecPoints.size(); ++j)
 			{
-				string strName = "Point" + to_string(i);
+				string strName = "Point" + to_string(j);
 				point = document->NewElement(strName.c_str());
 				point->SetAttribute("X", m_vecObstacles[i].vecPoints[j].x);
 				point->SetAttribute("Y", m_vecObstacles[i].vecPoints[j].y);
@@ -1416,7 +1406,7 @@ HRESULT CNavMeshView::Save()
 		}		
 	}
 
-	document->SaveFile(strPath.generic_string().c_str());
+	document->SaveFile(finalPath.generic_string().c_str());
 
 	return S_OK;
 }
@@ -1425,13 +1415,22 @@ HRESULT CNavMeshView::Load()
 {
 	namespace fs = std::filesystem;
 	
-	fs::path strPath = fs::path("../Bin/Resources/Effects/EffectData/" + m_strFilePath + "/");
+	fs::path strPath = fs::path("../Bin/Resources/LevelData/" + m_strFilePath + "/");
 	
-	const auto& file = fs::directory_entry(strPath);
+	fs::directory_entry file;
 
-	if (false == file.is_regular_file() || ".xml" != file.path().extension())
+	for (const auto& entry : fs::directory_iterator(strPath))
 	{
-		return E_FAIL;
+		if (false == entry.is_regular_file() || ".xml" != entry.path().extension())
+		{
+			MSG_BOX("Fail to Load");
+			return E_FAIL;
+		}
+		else
+		{
+			file = entry;
+			break;
+		}
 	}
 
 	shared_ptr<tinyxml2::XMLDocument> document = make_shared<tinyxml2::XMLDocument>();
@@ -1449,35 +1448,74 @@ HRESULT CNavMeshView::Load()
 		return E_FAIL;
 	}
 
-	tinyxml2::XMLElement* element = nullptr;
+	Reset();
+	InitialSetting();
 
 	// Obstacles
+	tinyxml2::XMLElement* element = nullptr;
 	while (nullptr != node)
 	{
 		Obst tObst;
 
 		// InnerPoint
 		element = node->FirstChildElement();
-		tObst.center.x = element->FloatAttribute("X");
-		tObst.center.y = element->FloatAttribute("Y");
-		tObst.center.z = element->FloatAttribute("Z");
-
-		element = element->NextSiblingElement();
-		tObst.AABB.Center.x = element->FloatAttribute("X");
-		tObst.AABB.Center.y = element->FloatAttribute("Y");
-		tObst.AABB.Center.z = element->FloatAttribute("Z");
-
-		element = element->NextSiblingElement();
-		tObst.AABB.Extents.x = element->FloatAttribute("X");
-		tObst.AABB.Extents.y = element->FloatAttribute("Y");
-		tObst.AABB.Extents.z = element->FloatAttribute("Z");
+		tObst.vInnerPoint.x = element->FloatAttribute("X");
+		tObst.vInnerPoint.y = element->FloatAttribute("Y");
+		tObst.vInnerPoint.z = element->FloatAttribute("Z");
 		
+		// AABB
+		element = element->NextSiblingElement();
+		tObst.tAABB.Center.x = element->FloatAttribute("X");
+		tObst.tAABB.Center.y = element->FloatAttribute("Y");
+		tObst.tAABB.Center.z = element->FloatAttribute("Z");
+
+		element = element->NextSiblingElement();
+		tObst.tAABB.Extents.x = element->FloatAttribute("X");
+		tObst.tAABB.Extents.y = element->FloatAttribute("Y");
+		tObst.tAABB.Extents.z = element->FloatAttribute("Z");
+		
+		// Points
 		element = element->NextSiblingElement();
 		tinyxml2::XMLElement* point = element->FirstChildElement();
 		while (nullptr != point)
 		{
-			// ÀÛ¼ºÁß...
+			Vec3 vPoint;
+			vPoint.x = point->FloatAttribute("X");
+			vPoint.y = point->FloatAttribute("Y");
+			vPoint.z = point->FloatAttribute("Z");
+
+			tObst.vecPoints.push_back(vPoint);
+
+			point = point->NextSiblingElement();
 		}
+
+		m_vecObstacles.push_back(tObst);		
+		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back().vInnerPoint.x) + ", " + to_string(m_vecObstacles.back().vInnerPoint.z));
+
+		node = node->NextSiblingElement();
+	}
+
+	for (auto& tObst : m_vecObstacles)
+	{
+		for (auto& vPoint : tObst.vecPoints)
+		{
+			m_vecPoints.push_back(vPoint);
+		}
+	}
+
+	SafeReleaseTriangle(m_tIn);
+	SafeReleaseTriangle(m_tOut);
+
+	UpdatePointList();
+	UpdateSegmentList();
+	UpdateHoleList();
+	UpdateRegionList();
+
+	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
+	
+	if (FAILED(BakeNavMesh()))
+	{
+		return E_FAIL;
 	}
 
 	return S_OK;
@@ -1587,8 +1625,6 @@ void CNavMeshView::ObstaclesGroup()
 		ImGui::SameLine();
 		if (ImGui::Button("CreateDynamic"))
 		{
-			UpdatePointList();
-						
 			Obst tObst;
 
 			TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
@@ -1605,12 +1641,12 @@ void CNavMeshView::ObstaclesGroup()
 
 			Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
 			Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f, 10.0f, (fMaxZ - fMinZ) * 0.5f);
-			tObst.AABB = BoundingBox(vAABBCenter, vAABBExtent);
+			tObst.tAABB = BoundingBox(vAABBCenter, vAABBExtent);
 
 			SetPolygonHoleCenter(tObst);
 			
 			m_vecObstacles.push_back(tObst);
-			s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back().center.x) + ", " + to_string(m_vecObstacles.back().center.z));
+			s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back().vInnerPoint.x) + ", " + to_string(m_vecObstacles.back().vInnerPoint.z));
 
 			for (auto cell : m_vecCells)
 			{
@@ -1633,10 +1669,8 @@ void CNavMeshView::ObstaclesGroup()
 	if (false == m_strObstacles.empty())
 	{
 		ImGui::NewLine();
-		if (ImGui::Button("DeleteDynamic"))
+		if (ImGui::Button("DeleteObstacle"))
 		{
-			UpdatePointList();
-
 			for (auto cell : m_vecCells)
 			{
 				if (true == cell->isNew)
@@ -1656,7 +1690,7 @@ void CNavMeshView::ObstaclesGroup()
 // https://gdcvault.com/play/1014514/AI-Navigation-It-s-Not
 void CNavMeshView::CellGroup()
 {
-	ImGui::ListBox("Cells", &m_Item_Current, m_strCells.data(), m_strCells.size(), 3);
+	ImGui::ListBox("Cells", &m_item_Current, m_strCells.data(), m_strCells.size(), 3);
 	if (ImGui::Button("PopBackCell"))
 	{
 		if (m_vecCells.empty())
@@ -1669,6 +1703,103 @@ void CNavMeshView::CellGroup()
 		for(_int i = 0; i < 3; ++i)
 			iter = m_vecPointSpheres.erase(iter);
 	}
+}
+
+HRESULT CNavMeshView::InitialSetting()
+{
+	m_vecPoints.push_back(Vec3(-512.0f, 0.f, -512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, -512.0f), 2.f));
+
+	m_vecPoints.push_back(Vec3(+512.0f, 0.f, -512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, -512.0f), 2.f));
+
+	m_vecPoints.push_back(Vec3(+512.0f, 0.f, +512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, +512.0f), 2.f));
+
+	m_vecPoints.push_back(Vec3(-512.0f, 0.f, +512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, +512.0f), 2.f));
+
+	m_iStaticPointCount = m_vecPoints.size();
+
+	if (FAILED(UpdatePointList()))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(UpdateSegmentList()))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(UpdateHoleList()))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(UpdateRegionList()))
+	{
+		return E_FAIL;
+	}
+
+	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::Reset()
+{
+	SafeReleaseTriangle(m_tIn);
+	SafeReleaseTriangle(m_tOut);
+	
+	if (m_tIn.holelist)
+	{
+		free(m_tIn.holelist);
+		m_tIn.holelist = nullptr;
+	}
+
+	if (m_tIn.regionlist)
+	{
+		free(m_tIn.regionlist);
+		m_tIn.regionlist = nullptr;
+	}
+
+	m_vecPoints.clear();
+
+	for (auto cell : m_vecCells)
+	{
+		Safe_Delete(cell);
+	}
+	m_vecCells.clear();
+
+	for (auto cell : m_strCells)
+	{
+		Safe_Delete(cell);
+	}
+	m_strCells.clear();
+
+	m_vecObstacles.clear();
+
+	for (auto obstacle : m_strObstacles)
+	{
+		Safe_Delete(obstacle);
+	}
+	m_strObstacles.clear();
+
+	m_vecObstaclePoints.clear();
+
+	for (auto obstacle : m_strObstaclePoints)
+	{
+		Safe_Delete(obstacle);
+	}
+	m_strObstaclePoints.clear();
+
+	m_item_Current = 0;
+
+	m_vecPointSpheres.clear();
+	m_vecObstaclePointSpheres.clear();
+	m_vecRegionSpheres.clear();
+
+	return S_OK;
 }
 
 HRESULT CNavMeshView::SafeReleaseTriangle(triangulateio& tTriangle)

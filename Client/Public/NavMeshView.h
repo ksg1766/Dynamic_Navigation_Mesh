@@ -9,19 +9,15 @@ class CShader;
 
 END
 
-struct tagObstacle
+BEGIN(Client)
+
+typedef struct tagObstacle
 {
-	//_int start = -1;			// index of start point
-	//_int numberof = 0;		// number of points of this obstacle
-	Vec3 center = Vec3::Zero;	// center of gravity
-	BoundingBox AABB;
+	Vec3 vInnerPoint = Vec3::Zero;
+	BoundingBox tAABB;
 
 	vector<Vec3> vecPoints;
-};
-
-using Obst = tagObstacle;
-
-BEGIN(Client)
+} Obst;
 
 class CNavMeshView final : public CView
 {
@@ -85,6 +81,10 @@ private:
 	void	CellGroup();
 
 private:
+	HRESULT InitialSetting();
+	HRESULT Reset();
+
+private:
 	_bool					m_isNavMeshOn = false;
 	_float					m_fSlopeDegree = 0.0f;
 	_float					m_fMaxClimb = 0.0f;
@@ -117,15 +117,14 @@ private:
 	CGameObject*			m_pPickedObject = nullptr;
 	CShader*				m_pShader = nullptr;
 
-	_int					m_Item_Current = 0;
+	_int					m_item_Current = 0;
 	string					m_strFilePath = "StaticObstacles";
 
 	vector<CellData*>		m_vecCells;
-	vector<_char*>			m_strCells;
+	vector<const _char*>	m_strCells;
 
 	vector<Vec3>			m_vecPoints;
 	vector<const _char*>	m_strPoints;
-	_int					m_item_Current = 0;
 
 	vector<BoundingSphere>	m_vecPointSpheres;
 	vector<BoundingSphere>	m_vecObstaclePointSpheres;
