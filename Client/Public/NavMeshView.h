@@ -117,8 +117,10 @@ private:
 	CGameObject*			m_pPickedObject = nullptr;
 	CShader*				m_pShader = nullptr;
 
+	_int					m_file_Current = 0;
 	_int					m_item_Current = 0;
 	string					m_strFilePath = "StaticObstacles";
+	//vector<const _char*>	m_vecDataFiles;
 
 	vector<CellData*>		m_vecCells;
 	vector<const _char*>	m_strCells;

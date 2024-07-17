@@ -12,6 +12,8 @@
 #include "Client_Macro.h"
 #include "tinyxml2.h"
 
+namespace fs = std::filesystem;
+
 struct CNavMeshView::CellData
 {
 	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
@@ -1341,8 +1343,6 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 
 HRESULT CNavMeshView::Save()
 {
-	namespace fs = std::filesystem;
-	
 	fs::path strPath = fs::path("../Bin/Resources/LevelData/" + m_strFilePath + "/");
 
 	if (true == m_vecObstacles.empty())
@@ -1413,8 +1413,6 @@ HRESULT CNavMeshView::Save()
 
 HRESULT CNavMeshView::Load()
 {
-	namespace fs = std::filesystem;
-	
 	fs::path strPath = fs::path("../Bin/Resources/LevelData/" + m_strFilePath + "/");
 	
 	fs::directory_entry file;
@@ -1544,7 +1542,7 @@ void CNavMeshView::InfoView()
 	}
 	ImGui::NewLine();
 
-	if (ImGui::BeginCombo(" ", m_strCurrentTriangleMode.c_str()))
+	if (ImGui::BeginCombo("Mode", m_strCurrentTriangleMode.c_str()))
 	{
 		static const _char* szMode[3] = { "Default", "Obstacle", "Region" };
 
@@ -1567,8 +1565,6 @@ void CNavMeshView::InfoView()
 		ImGui::EndCombo();
 	}
 
-	ImGui::NewLine();
-
 	/*ImGui::InputFloat("SlopeMax (degree)", &m_fSlopeDegree);
 	ImGui::InputFloat("ClimbMax (height)", &m_fMaxClimb);
 	ImGui::InputFloat("AreaMin (degree)", &m_fMinArea);
@@ -1578,12 +1574,39 @@ void CNavMeshView::InfoView()
 	if (ImGui::Button("BakeNav"))
 	{
 		BakeNavMesh();
-	}ImGui::SameLine();
-	
+	}
+
+#pragma region DataFiles
+	vector<const _char*> vecDataFiles;
+	fs::path strPath = fs::path("../Bin/Resources/LevelData/" + m_strFilePath + "/");
+
+	if (fs::exists(strPath) && fs::is_directory(strPath))
+	{
+		for (const auto& entry : fs::directory_iterator(strPath))
+		{
+			if (entry.is_regular_file())
+			{
+				s2cPushBack(vecDataFiles, entry.path().filename().generic_string());
+			}
+		}
+	}
+
+	ImGui::ListBox("Data Files", &m_file_Current, vecDataFiles.data(), vecDataFiles.size(), 3);
+
+	for (auto szDatafile : vecDataFiles)
+	{
+		Safe_Delete(szDatafile);
+	}
+	vecDataFiles.clear();
+
+	// TODO : 매프레임 호출되는중... 개선 필요.
+#pragma endregion DataFiles
+
 	if (ImGui::Button("SaveNav"))
 	{
 		Save();
-	}ImGui::SameLine();
+	}
+	ImGui::SameLine();
 
 	if (ImGui::Button("LoadNav"))
 	{
