@@ -19,7 +19,7 @@
     
     ![FPS_61-DEBUG2024-07-1617-54-17-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/94307766-acb6-4ae1-9f25-4416808aa066)
 
-  * 작성 중...
+  * obstacle 데이터 save, load 기능 추가 중입니다.(tinyxml2 사용)
 
 ⚠️ 발견된 문제
   * obstacle이 겹칠시 생성, 삭제가 제 기능을 하지 않습니다. 특히 삭제 후 복원이 정상적으로 이루어지지 않습니다. 전부터 인지하고 있던 문제이므로, obstacle이 서로 겹치지 않는 상황에서 성능 테스트 후 해결할 계획입니다.
