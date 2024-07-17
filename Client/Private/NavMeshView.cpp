@@ -475,95 +475,117 @@ HRESULT CNavMeshView::BakeNavMeshLegacy()
 	return S_OK;
 }
 
-HRESULT CNavMeshView::UpdatePointList()
+HRESULT CNavMeshView::UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst)
 {
-	m_tIn.numberofpoints = m_vecPoints.size();
+	tIn.numberofpoints = vecPoints.size() + ((nullptr == pObst) ? 0 : pObst->vecPoints.size());
 	if (0 < m_tIn.numberofpoints)
 	{
-		SAFE_REALLOC(TRI_REAL, m_tIn.pointlist, m_tIn.numberofpoints * 2)
+		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
 
-		for (_int i = 0; i < m_vecPoints.size(); ++i)
+		_int i = 0;
+		for (auto point : vecPoints)
 		{
-			m_tIn.pointlist[2 * i + 0] = m_vecPoints[i].x;
-			m_tIn.pointlist[2 * i + 1] = m_vecPoints[i].z;
+			tIn.pointlist[2 * i + 0] = point.x;
+			tIn.pointlist[2 * i + 1] = point.z;
+			++i;
+		}
+
+		// tObst
+		if (nullptr != pObst)
+		{
+			for (_int j = 0; j < pObst->vecPoints.size(); ++j)
+			{
+				tIn.pointlist[2 * (i + j) + 0] = pObst->vecPoints[j].x;
+				tIn.pointlist[2 * (i + j) + 1] = pObst->vecPoints[j].z;
+			}
 		}
 	}
 
 	return S_OK;
 }
 
-HRESULT CNavMeshView::UpdateSegmentList()
+HRESULT CNavMeshView::UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst)
 {
-	m_tIn.numberofsegments = m_vecPoints.size();
-	if (0 < m_tIn.numberofsegments)
+	tIn.numberofsegments = vecPoints.size() + ((nullptr == pObst) ? 0 : pObst->vecPoints.size());
+	if (0 < tIn.numberofsegments)
 	{
-		SAFE_REALLOC(_int, m_tIn.segmentlist, m_tIn.numberofsegments * 2)
+		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
 
 		// Points
-		for (_int i = 0; i < m_iStaticPointCount - 1; ++i)
+		_int iStartIndex = ((nullptr == pObst) ? m_iStaticPointCount : vecPoints.size());
+		for (_int i = 0; i < iStartIndex - 1; ++i)
 		{
-			m_tIn.segmentlist[2 * i + 0] = i + 0;
-			m_tIn.segmentlist[2 * i + 1] = i + 1;
+			tIn.segmentlist[2 * i + 0] = i + 0;
+			tIn.segmentlist[2 * i + 1] = i + 1;
 		}
-		m_tIn.segmentlist[2 * (m_iStaticPointCount - 1) + 0] = m_iStaticPointCount - 1;
-		m_tIn.segmentlist[2 * (m_iStaticPointCount - 1) + 1] = 0;
+		tIn.segmentlist[2 * (iStartIndex - 1) + 0] = iStartIndex - 1;
+		tIn.segmentlist[2 * (iStartIndex - 1) + 1] = 0;
 
 		// Obstacles
-		_int iSegmentCount = m_iStaticPointCount;
-		for (_int j = 0; j < m_vecObstacles.size(); ++j)
+		_int iSegmentCount = ((nullptr == pObst) ? m_iStaticPointCount : iStartIndex);
+		_int iRepeatCount = ((nullptr == pObst) ? m_vecObstacles.size() : 1);
+		for (_int j = 0; j < iRepeatCount; ++j)
 		{
-			for (_int i = 0; i < m_vecObstacles[j].vecPoints.size() - 1; ++i)
-			{
-				m_tIn.segmentlist[2 * (iSegmentCount + i) + 0] = iSegmentCount + i + 0;
-				m_tIn.segmentlist[2 * (iSegmentCount + i) + 1] = iSegmentCount + i + 1;
-			}
-			m_tIn.segmentlist[2 * (iSegmentCount + (m_vecObstacles[j].vecPoints.size() - 1)) + 0] = iSegmentCount + m_vecObstacles[j].vecPoints.size() - 1;
-			m_tIn.segmentlist[2 * (iSegmentCount + (m_vecObstacles[j].vecPoints.size() - 1)) + 1] = iSegmentCount;
+			const Obst& tObst = ((nullptr == pObst) ? m_vecObstacles[j] : *pObst);
 
-			iSegmentCount += m_vecObstacles[j].vecPoints.size();
+			for (_int i = 0; i < tObst.vecPoints.size() - 1; ++i)
+			{
+				tIn.segmentlist[2 * (iSegmentCount + i) + 0] = iSegmentCount + i + 0;
+				tIn.segmentlist[2 * (iSegmentCount + i) + 1] = iSegmentCount + i + 1;
+			}
+			_int iCache = iSegmentCount + tObst.vecPoints.size() - 1;
+			tIn.segmentlist[2 * iCache + 0] = iCache;
+			tIn.segmentlist[2 * iCache + 1] = iSegmentCount;
+
+			if (nullptr == pObst)
+			{
+				iSegmentCount += tObst.vecPoints.size();
+			}
 		}
 	}
 
 	return S_OK;
 }
 
-HRESULT CNavMeshView::UpdateHoleList()
+HRESULT CNavMeshView::UpdateHoleList(triangulateio& tIn, const Obst* pObst)
 {
-	m_tIn.numberofholes = m_vecObstacles.size();
+	tIn.numberofholes = ((nullptr == pObst) ? m_vecObstacles.size() : 1);
 	if (0 < m_tIn.numberofholes)
 	{
-		SAFE_REALLOC(TRI_REAL, m_tIn.holelist, m_tIn.numberofholes * 2)
+		SAFE_REALLOC(TRI_REAL, tIn.holelist, tIn.numberofholes * 2)
 
-		for (_int i = 0; i < m_tIn.numberofholes; ++i)
+		for (_int i = 0; i < tIn.numberofholes; ++i)
 		{
-			m_tIn.holelist[2 * i + 0] = m_vecObstacles[i].vInnerPoint.x;
-			m_tIn.holelist[2 * i + 1] = m_vecObstacles[i].vInnerPoint.z;
+			const Obst& tObst = ((nullptr == pObst) ? m_vecObstacles[i] : *pObst);
+
+			tIn.holelist[2 * i + 0] = tObst.vInnerPoint.x;
+			tIn.holelist[2 * i + 1] = tObst.vInnerPoint.z;
 		}
 	}
 
 	return S_OK;
 }
 
-HRESULT CNavMeshView::UpdateRegionList()
+HRESULT CNavMeshView::UpdateRegionList(triangulateio& tIn, const Obst* pObst)
 {
-	m_tIn.numberofregions = m_vecRegions.size();
+	tIn.numberofregions = m_vecRegions.size();
 	if (0 < m_tIn.numberofregions)
 	{
-		SAFE_REALLOC(TRI_REAL, m_tIn.regionlist, m_tIn.numberofregions * 4)
+		SAFE_REALLOC(TRI_REAL, tIn.regionlist, tIn.numberofregions * 4)
 
 		for (_int i = 0; i < m_vecRegions.size(); ++i)
 		{
-			m_tIn.regionlist[4 * i + 0] = m_vecRegions[i].x;
-			m_tIn.regionlist[4 * i + 1] = m_vecRegions[i].z;
-			m_tIn.regionlist[4 * i + 1] = 0.f; //
-			m_tIn.regionlist[4 * i + 1] = 0.f; //
+			tIn.regionlist[4 * i + 0] = m_vecRegions[i].x;
+			tIn.regionlist[4 * i + 1] = m_vecRegions[i].z;
+			tIn.regionlist[4 * i + 1] = 0.f; //
+			tIn.regionlist[4 * i + 1] = 0.f; //
 		}
 	}
 
 	return S_OK;
 }
 
-HRESULT CNavMeshView::StaticCreate(const Obst& tObst)
+HRESULT CNavMeshView::StaticCreate(const Obst& tObst/**/)
 {
 	if (3 > m_vecPoints.size())
 	{
@@ -572,10 +594,10 @@ HRESULT CNavMeshView::StaticCreate(const Obst& tObst)
 
 	SafeReleaseTriangle(m_tOut);
 
-	UpdatePointList();
-	UpdateSegmentList();
-	UpdateHoleList();
-	UpdateRegionList();
+	UpdatePointList(m_tIn, m_vecPoints);
+	UpdateSegmentList(m_tIn, m_vecPoints);
+	UpdateHoleList(m_tIn);
+	UpdateRegionList(m_tIn);
 
 	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 
@@ -630,71 +652,25 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 
 	triangulateio tIn = { 0 }, tOut = { 0 };
 
-#pragma region pointlist
-	tIn.numberofpoints = vecOutlineCW.size() + tObst.vecPoints.size();
-	if (0 < tIn.numberofpoints)
+	if (FAILED(UpdatePointList(tIn, vecOutlineCW, &tObst)))
 	{
-		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
-
-		_int i = 0;
-		for (auto point : vecOutlineCW)
-		{
-			tIn.pointlist[2 * i + 0] = point.x;
-			tIn.pointlist[2 * i + 1] = point.z;
-			++i;
-		}
-
-		// tObst
-		for (_int j = 0; j < tObst.vecPoints.size(); ++j)
-		{
-			tIn.pointlist[2 * (i + j) + 0] = tObst.vecPoints[j].x;
-			tIn.pointlist[2 * (i + j) + 1] = tObst.vecPoints[j].z;
-		}
+		return E_FAIL;
 	}
-#pragma endregion pointlist
 
-#pragma region segmentlist
-	tIn.numberofsegments = vecOutlineCW.size() + tObst.vecPoints.size();
-	if (0 < tIn.numberofsegments)
+	if (FAILED(UpdateSegmentList(tIn, vecOutlineCW, &tObst)))
 	{
-		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
-
-		// Points
-		for (_int i = 0; i < vecOutlineCW.size() - 1; ++i)
-		{
-			tIn.segmentlist[2 * i + 0] = i + 0;
-			tIn.segmentlist[2 * i + 1] = i + 1;
-		}
-		tIn.segmentlist[2 * (vecOutlineCW.size() - 1) + 0] = vecOutlineCW.size() - 1;
-		tIn.segmentlist[2 * (vecOutlineCW.size() - 1) + 1] = 0;
-
-		// Obstacles
-		_int iStartIndex = 2 * vecOutlineCW.size();
-		for (_int i = 0; i < tObst.vecPoints.size() - 1; ++i)
-		{
-			tIn.segmentlist[iStartIndex + 2 * i + 0] = iStartIndex / 2 + i + 0;
-			tIn.segmentlist[iStartIndex + 2 * i + 1] = iStartIndex / 2 + i + 1;
-		}
-		tIn.segmentlist[iStartIndex + 2 * (tObst.vecPoints.size() - 1) + 0] = iStartIndex / 2 + tObst.vecPoints.size() - 1;
-		tIn.segmentlist[iStartIndex + 2 * (tObst.vecPoints.size() - 1) + 1] = iStartIndex / 2;
+		return E_FAIL;
 	}
-#pragma endregion segmentlist
 
-#pragma region holelist
-	tIn.numberofholes = 1;
-	if (0 < tIn.numberofholes)
+	if (FAILED(UpdateHoleList(tIn, &tObst)))
 	{
-		SAFE_REALLOC(TRI_REAL, tIn.holelist, tIn.numberofholes * 2)
-
-		for (_int i = 0; i < tIn.numberofholes; ++i)
-		{
-			tIn.holelist[2 * i + 0] = tObst.vInnerPoint.x;
-			tIn.holelist[2 * i + 1] = tObst.vInnerPoint.z;
-		}
+		return E_FAIL;
 	}
-#pragma endregion holelist
 
-	tIn.numberofregions = 0;
+	if (FAILED(UpdateRegionList(tIn, &tObst)))
+	{
+		return E_FAIL;
+	}
 
 	triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
 
@@ -815,21 +791,10 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 
 	triangulateio tIn = { 0 }, tOut = { 0 };
 
-#pragma region pointlist
-	tIn.numberofpoints = vecOutlineCW.size();
-	if (0 < tIn.numberofpoints)
+	if (FAILED(UpdatePointList(tIn, vecOutlineCW)))
 	{
-		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
-
-		_int i = 0;
-		for (auto point : vecOutlineCW)
-		{
-			tIn.pointlist[2 * i + 0] = point.x;
-			tIn.pointlist[2 * i + 1] = point.z;
-			++i;
-		}
+		return E_FAIL;
 	}
-#pragma endregion pointlist
 
 #pragma region segmentlist
 	tIn.numberofsegments = vecOutlineCW.size();
@@ -1301,10 +1266,10 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		{
 			SafeReleaseTriangle(m_tOut);
 
-			UpdatePointList();
-			UpdateSegmentList();
-			UpdateHoleList();
-			UpdateRegionList();
+			UpdatePointList(m_tIn, m_vecPoints);
+			UpdateSegmentList(m_tIn, m_vecPoints);
+			UpdateHoleList(m_tIn);
+			UpdateRegionList(m_tIn);
 
 			triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 		}
@@ -1504,10 +1469,10 @@ HRESULT CNavMeshView::LoadFile()
 	SafeReleaseTriangle(m_tIn);
 	SafeReleaseTriangle(m_tOut);
 
-	UpdatePointList();
-	UpdateSegmentList();
-	UpdateHoleList();
-	UpdateRegionList();
+	UpdatePointList(m_tIn, m_vecPoints);
+	UpdateSegmentList(m_tIn, m_vecPoints);
+	UpdateHoleList(m_tIn);
+	UpdateRegionList(m_tIn);
 
 	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 	
@@ -1541,14 +1506,9 @@ HRESULT CNavMeshView::DeleteFile()
 	Safe_Delete(m_vecDataFiles[m_file_Current]);
 	m_vecDataFiles.erase(m_vecDataFiles.begin() + m_file_Current);
 
-	if (0 < m_file_Current)
-	{
-		--m_file_Current;
-	}
-
 	if (m_vecDataFiles.size() - 1 < m_file_Current)
 	{
-		m_file_Current = m_vecDataFiles.size() - 1;
+		m_file_Current = ::max(0, (_int)m_vecDataFiles.size() - 1);
 	}
 
 	return S_OK;
@@ -1751,7 +1711,12 @@ void CNavMeshView::ObstaclesGroup()
 			auto iter = m_vecObstacles.begin() + m_item_Current;
 			auto iterStr = m_strObstacles.begin() + m_item_Current;
 			m_vecObstacles.erase(iter);
-			m_strObstacles.erase(iterStr);			
+			m_strObstacles.erase(iterStr);
+
+			if (m_vecObstacles.size() - 1 < m_item_Current)
+			{
+				m_item_Current = ::max(0, (_int)m_vecObstacles.size() - 1);
+			}
 		}
 	}
 }
@@ -1789,22 +1754,22 @@ HRESULT CNavMeshView::InitialSetting()
 
 	m_iStaticPointCount = m_vecPoints.size();
 
-	if (FAILED(UpdatePointList()))
+	if (FAILED(UpdatePointList(m_tIn, m_vecPoints)))
 	{
 		return E_FAIL;
 	}
 
-	if (FAILED(UpdateSegmentList()))
+	if (FAILED(UpdateSegmentList(m_tIn, m_vecPoints)))
 	{
 		return E_FAIL;
 	}
 
-	if (FAILED(UpdateHoleList()))
+	if (FAILED(UpdateHoleList(m_tIn)))
 	{
 		return E_FAIL;
 	}
 
-	if (FAILED(UpdateRegionList()))
+	if (FAILED(UpdateRegionList(m_tIn)))
 	{
 		return E_FAIL;
 	}
