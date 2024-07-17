@@ -575,7 +575,7 @@ HRESULT CNavMeshView::UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& 
 HRESULT CNavMeshView::UpdateHoleList(triangulateio& tIn, const Obst* pObst)
 {
 	tIn.numberofholes = ((nullptr == pObst) ? m_vecObstacles.size() : 1);
-	if (0 < m_tIn.numberofholes)
+	if (0 < tIn.numberofholes)
 	{
 		SAFE_REALLOC(TRI_REAL, tIn.holelist, tIn.numberofholes * 2)
 
@@ -594,7 +594,7 @@ HRESULT CNavMeshView::UpdateHoleList(triangulateio& tIn, const Obst* pObst)
 HRESULT CNavMeshView::UpdateRegionList(triangulateio& tIn, const Obst* pObst)
 {
 	tIn.numberofregions = m_vecRegions.size();
-	if (0 < m_tIn.numberofregions)
+	if (0 < tIn.numberofregions)
 	{
 		SAFE_REALLOC(TRI_REAL, tIn.regionlist, tIn.numberofregions * 4)
 
@@ -763,6 +763,9 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		m_vecCells.emplace_back(cell);
 	}
 
+	SafeReleaseTriangle(tIn);
+	SafeReleaseTriangle(tOut);
+
 	return S_OK;
 }
 
@@ -912,6 +915,9 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		m_vecCells.emplace_back(cell);
 	}
 
+	SafeReleaseTriangle(tIn);
+	SafeReleaseTriangle(tOut);
+
 	return S_OK;
 }
 
@@ -934,8 +940,8 @@ HRESULT CNavMeshView::StressTest()
 
 		Safe_Delete(m_pStressObst);
 	}
-	//if (nullptr == m_pStressObst)	// delete 가 프레임 마지막에 이루어지므로 일단 보류. create도 마지막에 몰아서 하도록 하든지 잘 맞춰야 함...
-	else if (nullptr == m_pStressObst)
+	if (nullptr == m_pStressObst)	// delete 가 프레임 마지막에 이루어지므로 일단 보류. create도 마지막에 몰아서 하도록 하든지 잘 맞춰야 함...
+	//else if (nullptr == m_pStressObst)
 	{
 		//m_matStressOffset = XMMatrixRotationY(fTimeDelta);
 
@@ -947,10 +953,10 @@ HRESULT CNavMeshView::StressTest()
 		}
 		else
 		{
-			fStressRadian += 0.1f;
+			fStressRadian += 0.025f;
 		}
 
-		static const _float fSpeed = 4.f;
+		static const _float fSpeed = 1.f;
 
 		if (KEY_PRESSING(KEY::LEFT_ARROW))
 			vStressPosition.x -= fSpeed;
@@ -1233,7 +1239,7 @@ void CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& se
 {
 	for (auto cell : m_vecCells)
 	{
-		if (true == tObst.tAABB.Intersects(cell->vPoints[POINT_A], cell->vPoints[POINT_B], cell->vPoints[POINT_C]))
+		if (false == cell->isDead && true == tObst.tAABB.Intersects(cell->vPoints[POINT_A], cell->vPoints[POINT_B], cell->vPoints[POINT_C]))
 		{
 			setIntersected.emplace(cell);
 		}
