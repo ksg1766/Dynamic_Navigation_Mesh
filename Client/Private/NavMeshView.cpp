@@ -932,7 +932,7 @@ HRESULT CNavMeshView::StressTest()
 			return E_FAIL;
 		}
 
-		m_pStressObst = nullptr;
+		Safe_Delete(m_pStressObst);
 	}
 	//if (nullptr == m_pStressObst)	// delete 가 프레임 마지막에 이루어지므로 일단 보류. create도 마지막에 몰아서 하도록 하든지 잘 맞춰야 함...
 	else if (nullptr == m_pStressObst)
