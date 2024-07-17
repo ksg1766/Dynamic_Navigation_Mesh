@@ -109,6 +109,9 @@ private:
 	vector<CellData*>		m_vecCells;
 	vector<const _char*>	m_strCells;
 
+	// Polygon (stress test)
+	Obst					m_tStressObst;
+
 	// Default
 	CTerrain*				m_pTerrainBuffer = nullptr;
 

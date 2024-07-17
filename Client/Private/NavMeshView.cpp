@@ -1331,7 +1331,6 @@ HRESULT CNavMeshView::SaveFile()
 	document->LinkEndChild(root);
 
 	size_t iNumberofFiles = std::distance(fs::directory_iterator(strPath), fs::directory_iterator{});
-	fs::path finalPath = strPath.generic_string() + "ObstacleData" + to_string(iNumberofFiles) + ".xml";
 
 	tinyxml2::XMLElement* node = nullptr;
 	tinyxml2::XMLElement* element = nullptr;
@@ -1376,9 +1375,15 @@ HRESULT CNavMeshView::SaveFile()
 		}		
 	}
 
+	fs::path finalPath;
+	do 
+	{
+		finalPath = strPath.generic_string() + "ObstacleData" + to_string(iNumberofFiles++) + ".xml";
+	} while (true == fs::directory_entry(finalPath).exists());
+
 	if (tinyxml2::XML_SUCCESS == document->SaveFile(finalPath.generic_string().c_str()))
 	{
-		s2cPushBack(m_vecDataFiles, finalPath.generic_string());
+		s2cPushBack(m_vecDataFiles, finalPath.filename().generic_string());
 	}
 
 	return S_OK;
