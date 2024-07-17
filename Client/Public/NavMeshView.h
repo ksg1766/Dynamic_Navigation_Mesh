@@ -71,8 +71,10 @@ private:
 	void	Input();
 	_bool	Pick(_uint screenX, _uint screenY);
 
-	HRESULT	Save();
-	HRESULT	Load();
+	HRESULT	SaveFile();
+	HRESULT	LoadFile();
+	HRESULT	DeleteFile();
+	HRESULT	RefreshFile();
 
 private:
 	void	InfoView();
@@ -120,7 +122,7 @@ private:
 	_int					m_file_Current = 0;
 	_int					m_item_Current = 0;
 	string					m_strFilePath = "StaticObstacles";
-	//vector<const _char*>	m_vecDataFiles;
+	vector<const _char*>	m_vecDataFiles;
 
 	vector<CellData*>		m_vecCells;
 	vector<const _char*>	m_strCells;

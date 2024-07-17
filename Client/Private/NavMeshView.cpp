@@ -115,6 +115,11 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 		return E_FAIL;
 	}
 
+	if (FAILED(RefreshFile()))
+	{
+		return E_FAIL;
+	}
+
 	return S_OK;
 }
 
@@ -1341,9 +1346,9 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	return true;
 }
 
-HRESULT CNavMeshView::Save()
+HRESULT CNavMeshView::SaveFile()
 {
-	fs::path strPath = fs::path("../Bin/Resources/LevelData/" + m_strFilePath + "/");
+	fs::path strPath("../Bin/Resources/LevelData/" + m_strFilePath + "/");
 
 	if (true == m_vecObstacles.empty())
 	{
@@ -1406,29 +1411,24 @@ HRESULT CNavMeshView::Save()
 		}		
 	}
 
-	document->SaveFile(finalPath.generic_string().c_str());
+	if (tinyxml2::XML_SUCCESS == document->SaveFile(finalPath.generic_string().c_str()))
+	{
+		s2cPushBack(m_vecDataFiles, finalPath.generic_string());
+	}
 
 	return S_OK;
 }
 
-HRESULT CNavMeshView::Load()
+HRESULT CNavMeshView::LoadFile()
 {
-	fs::path strPath = fs::path("../Bin/Resources/LevelData/" + m_strFilePath + "/");
+	fs::path strPath("../Bin/Resources/LevelData/" + m_strFilePath + "/" + m_vecDataFiles[m_file_Current]);
 	
-	fs::directory_entry file;
+	fs::directory_entry file(strPath);
 
-	for (const auto& entry : fs::directory_iterator(strPath))
+	if (false == file.is_regular_file() || ".xml" != file.path().extension())
 	{
-		if (false == entry.is_regular_file() || ".xml" != entry.path().extension())
-		{
-			MSG_BOX("Fail to Load");
-			return E_FAIL;
-		}
-		else
-		{
-			file = entry;
-			break;
-		}
+		MSG_BOX("Failed to Load");
+		return E_FAIL;
 	}
 
 	shared_ptr<tinyxml2::XMLDocument> document = make_shared<tinyxml2::XMLDocument>();
@@ -1519,6 +1519,65 @@ HRESULT CNavMeshView::Load()
 	return S_OK;
 }
 
+HRESULT CNavMeshView::DeleteFile()
+{
+	fs::path strPath("../Bin/Resources/LevelData/" + m_strFilePath + "/");
+	
+	if (true == m_vecDataFiles.empty())
+	{
+		MSG_BOX("Failed : DataFile Empty");
+		return E_FAIL;
+	}
+
+	strPath += m_vecDataFiles[m_file_Current];
+	if (false == fs::remove(strPath))
+	{
+		MSG_BOX("Failed to Delete File");
+		return E_FAIL;
+	}
+		
+	MSG_BOX("Succeeded to Delete File");
+
+	Safe_Delete(m_vecDataFiles[m_file_Current]);
+	m_vecDataFiles.erase(m_vecDataFiles.begin() + m_file_Current);
+
+	if (0 < m_file_Current)
+	{
+		--m_file_Current;
+	}
+
+	if (m_vecDataFiles.size() - 1 < m_file_Current)
+	{
+		m_file_Current = m_vecDataFiles.size() - 1;
+	}
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::RefreshFile()
+{
+	for (auto szFilename : m_vecDataFiles)
+	{
+		Safe_Delete(szFilename);
+	}
+	m_vecDataFiles.clear();
+
+	fs::path strPath = fs::path("../Bin/Resources/LevelData/" + m_strFilePath + "/");
+
+	if (fs::exists(strPath) && fs::is_directory(strPath))
+	{
+		for (const auto& entry : fs::directory_iterator(strPath))
+		{
+			if (entry.is_regular_file())
+			{
+				s2cPushBack(m_vecDataFiles, entry.path().filename().generic_string());
+			}
+		}
+	}
+
+	return S_OK;
+}
+
 void CNavMeshView::InfoView()
 {
 	ImGui::Text("This window has some useful function for Objects in Level.");
@@ -1576,41 +1635,27 @@ void CNavMeshView::InfoView()
 		BakeNavMesh();
 	}
 
-#pragma region DataFiles
-	vector<const _char*> vecDataFiles;
-	fs::path strPath = fs::path("../Bin/Resources/LevelData/" + m_strFilePath + "/");
-
-	if (fs::exists(strPath) && fs::is_directory(strPath))
-	{
-		for (const auto& entry : fs::directory_iterator(strPath))
-		{
-			if (entry.is_regular_file())
-			{
-				s2cPushBack(vecDataFiles, entry.path().filename().generic_string());
-			}
-		}
-	}
-
-	ImGui::ListBox("Data Files", &m_file_Current, vecDataFiles.data(), vecDataFiles.size(), 3);
-
-	for (auto szDatafile : vecDataFiles)
-	{
-		Safe_Delete(szDatafile);
-	}
-	vecDataFiles.clear();
-
-	// TODO : 매프레임 호출되는중... 개선 필요.
-#pragma endregion DataFiles
+	ImGui::ListBox("Data Files", &m_file_Current, m_vecDataFiles.data(), m_vecDataFiles.size(), 3);
 
 	if (ImGui::Button("SaveNav"))
 	{
-		Save();
+		SaveFile();
 	}
 	ImGui::SameLine();
 
 	if (ImGui::Button("LoadNav"))
 	{
-		Load();
+		LoadFile();
+	}ImGui::SameLine();
+
+	if (ImGui::Button("DeleteFile"))
+	{
+		DeleteFile();
+	}ImGui::SameLine();
+
+	if (ImGui::Button("RefreshFile"))
+	{
+		RefreshFile();
 	}
 }
 
