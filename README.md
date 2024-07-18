@@ -1,7 +1,7 @@
 # 📅 2024.07.16
 📋 진행 사항
   * 여러 실험을 거치며 불필요한 코드가 누적돼 16일은 코드를 일부 정리하는 시간을 가졌습니다.
-  * 간단하게 xml 형식으로 obstacle의 데이터를 save, load하는 코드를 추가했습니다. 아래 이미지는 저장된 데이터 파일입니다.
+  * 간단하게 xml 형식으로 obstacle의 데이터를 save, load하는 코드를 추가했습니다.(tinyxml2 사용) 아래 이미지는 저장된 데이터 파일입니다.
     ![image](https://github.com/user-attachments/assets/0e7164e7-34e3-4eaf-9e14-86b736cef24f)
   * Dynamic Obstacle의 Navigation Mesh Update 성능 확인을 위한 작업을 진행 중입니다. 계획 중인 테스트 내용은 아래와 같습니다.
     1. 단일 Obstacle에 대해 각도, 위치등을 변경하며 매 프레임 삭제->재생성의 작업을 반복합니다.
