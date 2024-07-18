@@ -4,11 +4,15 @@ CStructuredBuffer::CStructuredBuffer(ID3D11Device* pDevice, ID3D11DeviceContext*
 	: m_pDevice(pDevice)
 	, m_pContext(pContext)
 {
+	Safe_AddRef(m_pDevice);
+	Safe_AddRef(m_pContext);
 }
 
 CStructuredBuffer::CStructuredBuffer(const CStructuredBuffer& rhs)
 	: Super(rhs)
 {
+	Safe_AddRef(m_pDevice);
+	Safe_AddRef(m_pContext);
 }
 
 HRESULT CStructuredBuffer::Initialize(void* pInputData, _uint iInputStride, _uint iInputCount, _uint iOutputStride, _uint iOutputCount)

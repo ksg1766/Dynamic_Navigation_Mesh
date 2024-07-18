@@ -17,8 +17,8 @@ namespace fs = std::filesystem;
 
 struct CNavMeshView::CellData
 {
-	//array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
-	Vec3 vPoints[POINT_END] = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
+	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
+	//Vec3 vPoints[POINT_END] = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
 	array<CellData*, LINE_END> arrNeighbors = { nullptr, nullptr, nullptr };
 
 	// cache
@@ -791,10 +791,6 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
-	const _float fAABBOffset = 1.1f;
-	const_cast<Obst&>(tObst).tAABB.Extents.x *= fAABBOffset;
-	const_cast<Obst&>(tObst).tAABB.Extents.z *= fAABBOffset;
-
 	GetIntersectedCells(tObst, setIntersected);
 
 	for (auto tCell : setIntersected)
@@ -998,8 +994,10 @@ HRESULT CNavMeshView::StressTest()
 		}
 
 		SetPolygonHoleCenter(*m_pStressObst);
+
+		const _float fAABBOffset = 0.05f;
 		m_pStressObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
-		m_pStressObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f, 10.f, (fMaxZ - fMinZ) * 0.5f);
+		m_pStressObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
 
 		if (FAILED(DynamicCreate(*m_pStressObst)))
 		{
@@ -1273,14 +1271,7 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 	return S_OK;*/
 	//////////
 
-	struct tagTri
-	{
-		Vec3 vTriPoint0;
-		Vec3 vTriPoint1;
-		Vec3 vTriPoint2;
-	};
-
-	vector<tagTri> vecTriangle(m_vecCells.size());
+	vector<array<Vec3, 3>> vecTriangle(m_vecCells.size());
 	CStructuredBuffer* pStructuredBuffer = nullptr;
 
 	for (_int i = 0; i < m_vecCells.size(); ++i)
@@ -1299,17 +1290,16 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 			m_vecCells[i]->isNew = false;
 		}
 
-		vecTriangle[i].vTriPoint0 = m_vecCells[i]->vPoints[POINT_A];	// CellData를 경량화 해서 복사 없이 바로 전달하도록 만들어보자.
-		vecTriangle[i].vTriPoint1 = m_vecCells[i]->vPoints[POINT_B];
-		vecTriangle[i].vTriPoint2 = m_vecCells[i]->vPoints[POINT_C];
+		vecTriangle[i] = m_vecCells[i]->vPoints;	// CellData를 경량화 해서 복사 없이 바로 전달하도록 만들어보자.
 	}
 
 	vecTriangle.shrink_to_fit();
 	vector<BOOL> vecTriTestResult(m_vecCells.size());
 
-	pStructuredBuffer = CStructuredBuffer::Create(m_pDevice, m_pContext, vecTriangle.data(), sizeof(tagTri), m_vecCells.size(), sizeof(BOOL), m_vecCells.size());
+	pStructuredBuffer = CStructuredBuffer::Create(m_pDevice, m_pContext, vecTriangle.data(), 3 * sizeof(Vec3), m_vecCells.size(), sizeof(BOOL), m_vecCells.size());
 
-	if (FAILED(m_pCS_TriTest->Bind_RawValue("gObstacleAABB", &tObst.tAABB, sizeof(tObst.tAABB))))
+	if (FAILED(m_pCS_TriTest->Bind_RawValue("gObstCenter", &tObst.tAABB.Center, sizeof(Vec3))) || 
+		FAILED(m_pCS_TriTest->Bind_RawValue("gObstExtents", &tObst.tAABB.Extents, sizeof(Vec3))))
 	{
 		return E_FAIL;
 	}
@@ -1324,7 +1314,7 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 		return E_FAIL;
 	}
 
-	if(FAILED(m_pCS_TriTest->Dispatch(0, 1, 1, 1)))
+	if(FAILED(m_pCS_TriTest->Dispatch(0, ceil(m_vecCells.size() / 128.0), 1, 1)))
 	{
 		return E_FAIL;
 	}
@@ -1646,9 +1636,9 @@ HRESULT CNavMeshView::LoadFile()
 		pObst->tAABB.Center.z = element->FloatAttribute("Z");
 
 		element = element->NextSiblingElement();
-		pObst->tAABB.Extents.x = element->FloatAttribute("X");
+		pObst->tAABB.Extents.x = element->FloatAttribute("X") + 0.05f;
 		pObst->tAABB.Extents.y = element->FloatAttribute("Y");
-		pObst->tAABB.Extents.z = element->FloatAttribute("Z");
+		pObst->tAABB.Extents.z = element->FloatAttribute("Z") + 0.05f;
 		
 		// Points
 		element = element->NextSiblingElement();
@@ -1883,8 +1873,9 @@ void CNavMeshView::ObstaclesGroup()
 				pObst->vecPoints.push_back(vPoint);
 			}
 
+			const _float fAABBOffset = 0.05f;
 			Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
-			Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f, 10.0f, (fMaxZ - fMinZ) * 0.5f);
+			Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.0f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
 			pObst->tAABB = BoundingBox(vAABBCenter, vAABBExtent);
 
 			SetPolygonHoleCenter(*pObst);
