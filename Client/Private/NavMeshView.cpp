@@ -953,10 +953,10 @@ HRESULT CNavMeshView::StressTest()
 		}
 		else
 		{
-			fStressRadian += 0.025f;
+			fStressRadian += 0.1f;
 		}
 
-		static const _float fSpeed = 1.f;
+		static const _float fSpeed = 3.0f;
 
 		if (KEY_PRESSING(KEY::LEFT_ARROW))
 			vStressPosition.x -= fSpeed;
@@ -1655,6 +1655,9 @@ HRESULT CNavMeshView::RefreshFile()
 void CNavMeshView::InfoView()
 {
 	ImGui::Text("This window has some useful function for Objects in Level.");
+	ImGui::NewLine();
+
+	ImGui::Text("FPS : %1f", 1.0f / ImGui::GetIO().DeltaTime);
 	ImGui::NewLine();
 
 	ImGui::Text("Mouse Picking ");
