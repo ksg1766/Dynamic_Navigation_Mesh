@@ -342,6 +342,7 @@
   <ItemGroup>
     <FxCompile Include="..\Bin\ShaderFiles\Client_Shader_Defines.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Matrix.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_TriangleTest.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_Lighting_Functions.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimInstancing.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh.hlsl" />

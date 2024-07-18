@@ -69,7 +69,7 @@ private:
 
 private:
 	void	SetPolygonHoleCenter(Obst& tObst);
-	void	GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected);
+	HRESULT	GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected);
 
 private:
 	void	Input();
@@ -148,7 +148,7 @@ private:
 
 	wstring					m_strPickedObject;
 	CGameObject*			m_pPickedObject = nullptr;
-	CShader*				m_pShader = nullptr;
+	CShader*				m_pCS_TriTest = nullptr;
 
 public:
 	static class CNavMeshView* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, void* pArg = nullptr);

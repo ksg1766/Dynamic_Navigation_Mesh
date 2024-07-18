@@ -542,5 +542,8 @@
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxTexFetchAnim.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_TriangleTest.hlsl">
+      <Filter>97.ShaderFiles</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

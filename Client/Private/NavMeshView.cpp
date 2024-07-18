@@ -9,6 +9,7 @@
 #include "Layer.h"
 #include "DissolveManager.h"
 #include "DebugDraw.h"
+#include "StructuredBuffer.h"
 #include "Client_Macro.h"
 #include "tinyxml2.h"
 
@@ -16,7 +17,8 @@ namespace fs = std::filesystem;
 
 struct CNavMeshView::CellData
 {
-	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
+	//array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
+	Vec3 vPoints[POINT_END] = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
 	array<CellData*, LINE_END> arrNeighbors = { nullptr, nullptr, nullptr };
 
 	// cache
@@ -119,6 +121,14 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 	{
 		return E_FAIL;
 	}
+
+	m_pCS_TriTest = dynamic_cast<CShader*>(m_pGameInstance->Clone_Component(nullptr, LEVEL_STATIC, TEXT("Prototype_Component_Shader_TriangleTest"), nullptr));
+	if (nullptr == m_pCS_TriTest)
+	{
+		return  E_FAIL;
+	}
+
+	//m_pCS_TriTest = CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_TriangleTest.hlsl"), nullptr, 0);
 
 	return S_OK;
 }
@@ -334,7 +344,9 @@ HRESULT CNavMeshView::BakeNavMesh()
 		};
 
 		CellData* pCellData = new CellData;
-		pCellData->vPoints = { vtx[POINT_A], vtx[POINT_B], vtx[POINT_C] };
+		pCellData->vPoints[POINT_A] = vtx[POINT_A];
+		pCellData->vPoints[POINT_B] = vtx[POINT_B];
+		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
 
 		m_vecCells.push_back(pCellData);
@@ -634,7 +646,10 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
-	GetIntersectedCells(tObst, setIntersected);
+	if (FAILED(GetIntersectedCells(tObst, setIntersected)))
+	{
+		return E_FAIL;
+	}
 
 	for (auto tCell : setIntersected)
 	{
@@ -716,7 +731,9 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		};
 
 		CellData* pCellData = new CellData;
-		pCellData->vPoints = { vtx[POINT_A], vtx[POINT_B], vtx[POINT_C] };
+		pCellData->vPoints[POINT_A] = vtx[POINT_A];
+		pCellData->vPoints[POINT_B] = vtx[POINT_B];
+		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
 
 		vecNewCells.emplace_back(pCellData);
@@ -774,9 +791,9 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
-	const _float fAABBOffset = 0.01f;
-	const_cast<Obst&>(tObst).tAABB.Extents.x += fAABBOffset;
-	const_cast<Obst&>(tObst).tAABB.Extents.z += fAABBOffset;
+	const _float fAABBOffset = 1.1f;
+	const_cast<Obst&>(tObst).tAABB.Extents.x *= fAABBOffset;
+	const_cast<Obst&>(tObst).tAABB.Extents.z *= fAABBOffset;
 
 	GetIntersectedCells(tObst, setIntersected);
 
@@ -868,7 +885,9 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		};
 
 		CellData* pCellData = new CellData;
-		pCellData->vPoints = { vtx[POINT_A], vtx[POINT_B], vtx[POINT_C] };
+		pCellData->vPoints[POINT_A] = vtx[POINT_A];
+		pCellData->vPoints[POINT_B] = vtx[POINT_B];
+		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
 
 		vecNewCells.emplace_back(pCellData);
@@ -923,14 +942,6 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 
 HRESULT CNavMeshView::StressTest()
 {
-	for (auto cell : m_vecCells)
-	{
-		if (true == cell->isNew)
-		{
-			cell->isNew = false;
-		}
-	}
-
 	if (nullptr != m_pStressObst)
 	{
 		if (FAILED(DynamicDelete(*m_pStressObst)))
@@ -940,8 +951,8 @@ HRESULT CNavMeshView::StressTest()
 
 		Safe_Delete(m_pStressObst);
 	}
-	if (nullptr == m_pStressObst)	// delete 가 프레임 마지막에 이루어지므로 일단 보류. create도 마지막에 몰아서 하도록 하든지 잘 맞춰야 함...
-	//else if (nullptr == m_pStressObst)
+
+	if (nullptr == m_pStressObst)
 	{
 		//m_matStressOffset = XMMatrixRotationY(fTimeDelta);
 
@@ -1235,15 +1246,96 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 	}
 }
 
-void CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected)
+HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected)
 {
-	for (auto cell : m_vecCells)
+	/*for (_int i = 0; i < m_vecCells.size(); ++i)
 	{
-		if (false == cell->isDead && true == tObst.tAABB.Intersects(cell->vPoints[POINT_A], cell->vPoints[POINT_B], cell->vPoints[POINT_C]))
+		if (true == m_vecCells[i]->isDead)
 		{
-			setIntersected.emplace(cell);
+			auto iter = m_vecCells.begin() + i;
+			m_vecCells.erase(iter);
+			--i;
+
+			continue;
+		}
+
+		if (true == m_vecCells[i]->isNew)
+		{
+			m_vecCells[i]->isNew = false;
+		}
+
+		if (true == tObst.tAABB.Intersects(m_vecCells[i]->vPoints[POINT_A], m_vecCells[i]->vPoints[POINT_B], m_vecCells[i]->vPoints[POINT_C]))
+		{
+			setIntersected.emplace(m_vecCells[i]);
 		}
 	}
+
+	return S_OK;*/
+	//////////
+
+	vector<Vec3> vecTriangle(3 * m_vecCells.size());
+	CStructuredBuffer* pStructuredBuffer = nullptr;
+
+	for (_int i = 0; i < m_vecCells.size(); ++i)
+	{
+		if (true == m_vecCells[i]->isDead)
+		{
+			auto iter = m_vecCells.begin() + i;
+			m_vecCells.erase(iter);
+			--i;
+
+			continue;
+		}
+
+		if (true == m_vecCells[i]->isNew)
+		{
+			m_vecCells[i]->isNew = false;
+		}
+
+		vecTriangle[3 * i + POINT_A] = m_vecCells[i]->vPoints[POINT_A];	// CellData를 경량화 해서 복사 없이 바로 전달하도록 만들어보자.
+		vecTriangle[3 * i + POINT_B] = m_vecCells[i]->vPoints[POINT_B];
+		vecTriangle[3 * i + POINT_C] = m_vecCells[i]->vPoints[POINT_C];
+	}
+
+	vecTriangle.shrink_to_fit();
+	vector<BOOL> vecTriTestResult(m_vecCells.size());
+
+	pStructuredBuffer = CStructuredBuffer::Create(m_pDevice, m_pContext, vecTriangle.data(), 3 * sizeof(Vec3), m_vecCells.size(), sizeof(BOOL), m_vecCells.size());
+
+	if (FAILED(m_pCS_TriTest->Bind_RawValue("gObstacleAABB", &tObst.tAABB, sizeof(tObst.tAABB))))
+	{
+		return E_FAIL;
+	}
+	
+	if (FAILED(m_pCS_TriTest->Bind_Texture("InputCell", pStructuredBuffer->GetSRV())))
+	{
+		return E_FAIL;
+	}
+	
+	if (FAILED(m_pCS_TriTest->Get_UAV("Output", pStructuredBuffer->GetUAV())))
+	{
+		return E_FAIL;
+	}
+
+	if(FAILED(m_pCS_TriTest->Dispatch(0, 1, 1, 1)))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(pStructuredBuffer->CopyFromOutput(vecTriTestResult.data())))
+	{
+		return E_FAIL;
+	}
+
+	for (_int i = 0; i < vecTriTestResult.size(); ++i)
+	{
+		if (false != vecTriTestResult[i])
+		{
+			setIntersected.emplace(m_vecCells[i]);
+		}
+	}
+
+	Safe_Release(pStructuredBuffer);
 }
 
 void CNavMeshView::Input()
@@ -1793,14 +1885,6 @@ void CNavMeshView::ObstaclesGroup()
 			m_vecObstacles.push_back(pObst);
 			s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back()->vInnerPoint.x) + ", " + to_string(m_vecObstacles.back()->vInnerPoint.z));
 
-			for (auto cell : m_vecCells)
-			{
-				if (true == cell->isNew)
-				{
-					cell->isNew = false;
-				}
-			}
-
 			DynamicCreate(*pObst);
 			
 			for_each(m_strObstaclePoints.begin(), m_strObstaclePoints.end(), [](const _char* szPoint) { delete szPoint; });
@@ -1816,14 +1900,6 @@ void CNavMeshView::ObstaclesGroup()
 		ImGui::NewLine();
 		if (ImGui::Button("DeleteObstacle"))
 		{
-			for (auto cell : m_vecCells)
-			{
-				if (true == cell->isNew)
-				{
-					cell->isNew = false;
-				}
-			}
-
 			DynamicDelete(*m_vecObstacles[m_item_Current]);
 			auto iter = m_vecObstacles.begin() + m_item_Current;
 			auto iterStr = m_strObstacles.begin() + m_item_Current;
