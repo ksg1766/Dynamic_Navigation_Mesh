@@ -1273,7 +1273,14 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 	return S_OK;*/
 	//////////
 
-	vector<Vec3> vecTriangle(3 * m_vecCells.size());
+	struct tagTri
+	{
+		Vec3 vTriPoint0;
+		Vec3 vTriPoint1;
+		Vec3 vTriPoint2;
+	};
+
+	vector<tagTri> vecTriangle(m_vecCells.size());
 	CStructuredBuffer* pStructuredBuffer = nullptr;
 
 	for (_int i = 0; i < m_vecCells.size(); ++i)
@@ -1292,15 +1299,15 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 			m_vecCells[i]->isNew = false;
 		}
 
-		vecTriangle[3 * i + POINT_A] = m_vecCells[i]->vPoints[POINT_A];	// CellData를 경량화 해서 복사 없이 바로 전달하도록 만들어보자.
-		vecTriangle[3 * i + POINT_B] = m_vecCells[i]->vPoints[POINT_B];
-		vecTriangle[3 * i + POINT_C] = m_vecCells[i]->vPoints[POINT_C];
+		vecTriangle[i].vTriPoint0 = m_vecCells[i]->vPoints[POINT_A];	// CellData를 경량화 해서 복사 없이 바로 전달하도록 만들어보자.
+		vecTriangle[i].vTriPoint1 = m_vecCells[i]->vPoints[POINT_B];
+		vecTriangle[i].vTriPoint2 = m_vecCells[i]->vPoints[POINT_C];
 	}
 
 	vecTriangle.shrink_to_fit();
 	vector<BOOL> vecTriTestResult(m_vecCells.size());
 
-	pStructuredBuffer = CStructuredBuffer::Create(m_pDevice, m_pContext, vecTriangle.data(), 3 * sizeof(Vec3), m_vecCells.size(), sizeof(BOOL), m_vecCells.size());
+	pStructuredBuffer = CStructuredBuffer::Create(m_pDevice, m_pContext, vecTriangle.data(), sizeof(tagTri), m_vecCells.size(), sizeof(BOOL), m_vecCells.size());
 
 	if (FAILED(m_pCS_TriTest->Bind_RawValue("gObstacleAABB", &tObst.tAABB, sizeof(tObst.tAABB))))
 	{
