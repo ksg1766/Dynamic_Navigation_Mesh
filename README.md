@@ -1,5 +1,56 @@
 # 📅 2024.07.17
 📋 진행 사항
+  * Dynamic Obstacle 의 생성 및 삭제 시 Cell과의 Intersection을 GPU에서 검출하도록 변경했습니다.
+  * AABB to Triangle Intersection의 HLSL코드를 추가했습니다.
+    ```
+    bool IntersectTriangleAABB(float3 vT0, float3 vT1, float3 vT2, float3 vCenter, float3 vExtents)
+	{
+ 		// ...
+    
+    	// Axis vA00
+    	float3 vA00 = float3(0.0f, -vEdge0.z, vEdge0.y);
+    	float fP0 = dot(vV0, vA00);
+    	float fP1 = dot(vV1, vA00);
+    	float fP2 = dot(vV2, vA00);
+    	float fR = vExtents.y * abs(vEdge0.z) + vExtents.z * abs(vEdge0.y);
+    	if (max(-Max(fP0, fP1, fP2), Min(fP0, fP1, fP2)) > fR)
+     	  return false;
+
+    	// Axis vA01
+    	float3 vA01 = float3(0, -vEdge1.z, vEdge1.y);
+    	fP0 = dot(vV0, vA01);
+    	fP1 = dot(vV1, vA01);
+    	fP2 = dot(vV2, vA01);
+    	fR = vExtents.y * abs(vEdge1.z) + vExtents.z * abs(vEdge1.y);
+    	if (max(-Max(fP0, fP1, fP2), Min(fP0, fP1, fP2)) > fR)
+      	  return false;
+    
+		// Axis vA02
+    	// Axis vA10
+    	// Axis vA11
+    	// Axis vA12
+    
+    	// ...
+    }
+    ```
+  * 아래와 같이 정상적으로 실행되는 것을 확인했습니다.
+
+    ![FPS_2382-RELEASE2024-07-1910-35-41-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/3d1a9a39-c78f-41a2-b8be-d2d89b513a90)
+
+    * 상수 버퍼의 16byte alignment에 실수가 있어 예상보다 많은 시간을 소모했습니다.
+      
+⚠️ 발견된 문제
+  * 문제라기 보단, cell의 갯수가 적은 현재 상황에서는 하드웨어 환경에 instersection을 CPU에서 구하는 것이 더 효율적인것 같습니다.
+    * i9-12900k / RTX3060 OC 에서는 CPU에서, i5-10200H / RTX3060(Laptop) 에서는 GPU에서 더 높은 성능을 보였습니다.
+
+⚽ 이후 계획
+  * 3D Obstacle을 배치해 Map을 구성할 계획입니다.
+  * 경로 탐색 알고리즘 구현을 위한 사전 지식을 학습할 계획입니다.
+  * Map을 Grid로 분할해 Cell Intersection Test 횟수를 더 줄이고 cell의 data를 경량화 할 계획입니다.
+
+---
+# 📅 2024.07.17
+📋 진행 사항
   * 여러 실험을 거치며 불필요한 코드가 누적돼 16일은 코드를 일부 정리하는 시간을 가졌습니다.
   * 간단하게 xml 형식으로 obstacle의 데이터를 save, load하는 코드를 추가했습니다.(tinyxml2 사용) 아래 이미지는 저장된 데이터 파일입니다.
     ![image](https://github.com/user-attachments/assets/0e7164e7-34e3-4eaf-9e14-86b736cef24f)
