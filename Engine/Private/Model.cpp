@@ -227,7 +227,7 @@ HRESULT CModel::Render()
 	//if (TYPE_ANIM == m_eModelType)
 	if (m_pSRV)
 	{
-		if (FAILED(m_pShader->Bind_Texture("g_TransformMap", m_pSRV)))
+		if (FAILED(m_pShader->Bind_Resource("g_TransformMap", m_pSRV)))
 			return E_FAIL;
 
 		/* 본의 최종 트랜스폼 계산 : <오프셋 * 루트 기준 * 사전변환> */
@@ -266,7 +266,7 @@ HRESULT CModel::RenderShadowInstancing(CVIBuffer_Instance*& pInstanceBuffer)
 {
 	if (m_pSRV)
 	{
-		if (FAILED(m_pShader->Bind_Texture("g_TransformMap", m_pSRV)))
+		if (FAILED(m_pShader->Bind_Resource("g_TransformMap", m_pSRV)))
 			return E_FAIL;
 	}
 
@@ -289,7 +289,7 @@ HRESULT CModel::RenderInstancing(CVIBuffer_Instance*& pInstanceBuffer)
 {
 	if (m_pSRV)
 	{
-		if (FAILED(m_pShader->Bind_Texture("g_TransformMap", m_pSRV)))
+		if (FAILED(m_pShader->Bind_Resource("g_TransformMap", m_pSRV)))
 			return E_FAIL;
 	}
 

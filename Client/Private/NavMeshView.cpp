@@ -1309,7 +1309,7 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 		return E_FAIL;
 	}
 	
-	if (FAILED(m_pCS_TriTest->Bind_Texture("InputCell", pStructuredBuffer->GetSRV())))
+	if (FAILED(m_pCS_TriTest->Bind_Resource("InputCell", pStructuredBuffer->GetSRV())))
 	{
 		return E_FAIL;
 	}

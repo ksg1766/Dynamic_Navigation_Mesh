@@ -51,7 +51,7 @@ void CDissolveManager::Tick_Dissolve(const _float& fTimeDelta)
 
 void CDissolveManager::AddDissolve(CGameObject* pDissolveObject, _float fPlayTime)
 {
-	pDissolveObject->GetShader()->Bind_Texture("g_DissolveTexture", m_ppDissolveSRV);
+	pDissolveObject->GetShader()->Bind_Resource("g_DissolveTexture", m_ppDissolveSRV);
 	pDissolveObject->GetShader()->SetPassIndex(2);
 	Safe_AddRef(m_ppDissolveSRV);
 

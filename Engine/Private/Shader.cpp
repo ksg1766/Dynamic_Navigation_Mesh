@@ -129,7 +129,7 @@ HRESULT CShader::Bind_Matrices(const _char * pConstantName, const _float4x4* pMa
 	return pMatrix->SetMatrixArray((_float*)pMatrices, 0, iNumMatrices);
 }
 
-HRESULT CShader::Bind_Texture(const _char * pConstantName, ID3D11ShaderResourceView* pSRV) const
+HRESULT CShader::Bind_Resource(const _char * pConstantName, ID3D11ShaderResourceView* pSRV) const
 {
 	ID3DX11EffectVariable*		pVariable = m_pEffect->GetVariableByName(pConstantName);
 	if (nullptr == pVariable)

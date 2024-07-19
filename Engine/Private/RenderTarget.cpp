@@ -51,7 +51,7 @@ HRESULT CRenderTarget::Clear()
 
 HRESULT CRenderTarget::Bind_SRV(CShader * pShader, const _char * pConstantName)
 {
-	return pShader->Bind_Texture(pConstantName, m_pSRV);	
+	return pShader->Bind_Resource(pConstantName, m_pSRV);
 }
 
 #ifdef _DEBUG
@@ -79,7 +79,7 @@ HRESULT CRenderTarget::Render(CShader * pShader, CVIBuffer_Rect * pBuffer)
 	if (FAILED(pShader->Bind_Matrix("g_WorldMatrix", &m_WorldMatrix)))
 		return E_FAIL;
 
-	if (FAILED(pShader->Bind_Texture("g_Texture", m_pSRV)))
+	if (FAILED(pShader->Bind_Resource("g_Texture", m_pSRV)))
 		return E_FAIL;
 
 	pShader->SetPassIndex(0);
