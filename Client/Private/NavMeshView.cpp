@@ -791,7 +791,10 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
-	GetIntersectedCells(tObst, setIntersected);
+	if (FAILED(GetIntersectedCells(tObst, setIntersected)))
+	{
+		return E_FAIL;
+	}
 
 	for (auto tCell : setIntersected)
 	{
@@ -954,9 +957,9 @@ HRESULT CNavMeshView::StressTest()
 
 		static _float fStressRadian = 0;
 		static Vec3 vStressPosition = Vec3::Zero;
-		if (fStressRadian > 360.0f)
+		if (fStressRadian > XM_PI)
 		{
-			fStressRadian -= 360.f;
+			fStressRadian -= XM_PI;
 		}
 		else
 		{
@@ -1246,6 +1249,7 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 
 HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected)
 {
+#pragma region CPU
 	/*for (_int i = 0; i < m_vecCells.size(); ++i)
 	{
 		if (true == m_vecCells[i]->isDead)
@@ -1269,8 +1273,9 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 	}
 
 	return S_OK;*/
-	//////////
+#pragma endregion CPU
 
+#pragma region GPU
 	vector<array<Vec3, 3>> vecTriangle(m_vecCells.size());
 	CStructuredBuffer* pStructuredBuffer = nullptr;
 
@@ -1333,6 +1338,7 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 	}
 
 	Safe_Release(pStructuredBuffer);
+#pragma region GPU
 }
 
 void CNavMeshView::Input()
