@@ -1,3 +1,15 @@
+# 📅 2024.07.19
+📋 진행 사항
+  * 
+
+---
+* 240719 생각 메모...
+  * 3D Obstacle 배치시, plane terrain에 외곽 Line을 그릴 수 있는 방법을 찾는 중입니다.
+  * 지형을 grid로 분할하고 3D Mesh의 지면 부분에 xz평면에서 raycasting을 해서 mesh와 교차하는 지점을 구한 후, 이를 DFS로 최장거리 탐색을 통해 outline을 계산할 계획입니다.
+  * 계산된 outline을 normal 방향으로 확장하고 Douglas-Peucker 알고리즘을 적용해 외곽선을 근사화해 정점의 갯수를 줄일 계획입니다.
+  * 외곽선 데이터를 파일로 저장한후 obstacle 데이터와 함께 load할 계획입니다.
+
+---
 # 📅 2024.07.18
 📋 진행 사항
   * Dynamic Obstacle 의 생성 및 삭제 시 Cell과의 Intersection을 GPU에서 검출하도록 변경했습니다.
@@ -75,7 +87,7 @@
 # 📅 2024.07.16
 📋 진행 사항
   * 2주차 주간 회의 피드백을 통해 남은 6주간 어떤식으로 과제를 해결해 나가야 할지 고민중입니다.
-    * 우선 진행중인 Dynamic Obstacle에 대한 Update 기능을 마무리한 후에는, 경로 탐색을 구현할 예정입니다. 최대한 안정적인 성능을 유지할 수 있도록 노력해보려합니다.
+    * 우선 진행중인 Dynamic Obstacle에 대한 Update 기능을 마무리한 후에는, 경로 탐색을 구현할 계획입니다. 최대한 안정적인 성능을 유지할 수 있도록 노력해보려합니다.
     * 이후 2D 상에서 작동하고 있는 시스템을 3D에서도 적용할 수 있도록 고민해보려합니다.
 
   * 동적으로 삭제되는 obstacle에 대해 주변의 cell만 update하도록 구현했습니다. obstacle이 삭제된 영역의 subset만을 다시 triangulation하는 과정은 대체로 생성과정과 비슷하지만 추가로 고려할 부분이 있었습니다.
@@ -170,7 +182,7 @@
   * 매우 얇고 긴 obstacle을 생성하려할 때 triangulation을 수행할 수 없습니다. 문제가 될 일은 거의 없을 것 같지만 후에 원인을 파악해보려 합니다.
 
 ⚽ 이후 계획
-  * 동일하게 obstacle 삭제시에도 일부 영역만을 update할 수 있도록 구현할 예정입니다. 얼핏 생각해서 비슷하게 구현할 수 있을 것 같은데, 방심하지 않으려 합니다.
+  * 동일하게 obstacle 삭제시에도 일부 영역만을 update할 수 있도록 구현할 계획입니다. 얼핏 생각해서 비슷하게 구현할 수 있을 것 같은데, 방심하지 않으려 합니다.
   
 ---
 # 📅 2024.07.12
@@ -293,7 +305,7 @@
   * 누락한 부분이 있는지 탐색 중입니다.
 
 ⚽ 이후 계획
-  * obstacle 정점을 하나씩 배치하는 것이 아닌 3D 오브젝트를 배치할 수 있도록 구현 사항을 변경 예정입니다. 따라서 앞서 언급한 문제를 우선 해결해야 합니다.
+  * obstacle 정점을 하나씩 배치하는 것이 아닌 3D 오브젝트를 배치할 수 있도록 구현 사항을 변경 계획입니다. 따라서 앞서 언급한 문제를 우선 해결해야 합니다.
   * 모든 삼각형을 다시 계산하지 않도록 하기 위해, 배치될 obstacle을 포함하는 삼각형만을 계산할 수 있는 방법을 구현해 볼 계획입니다.
 
 ---
@@ -405,7 +417,7 @@
 
 :soccer: 2주차 목표
    * 삼각형 추려내는 작업의 효율이 낮아 목표와 우선 순위를 고려해 Delaunay Triangulation 우선 구현할 계획입니다.
-   * Obstacle 정점 추가, 삭제 시 Cell 재구성 되도록 구현 예정입니다.
+   * Obstacle 정점 추가, 삭제 시 Cell 재구성 되도록 구현 계획입니다.
 
   * 주요 변경 사항
     * CNavMeshView::BakeNavMesh()
@@ -470,7 +482,7 @@
  * 경로 탐색
 
 🔗 자료 수집
- * [A navigation mesh for dynamic environments, Wouter van Toll et al.](https://www.researchgate.net/publication/236903107_A_Navigation_Mesh_for_Dynamic_Environments) (_해당 논문 기반으로 구현할 예정입니다._)
+ * [A navigation mesh for dynamic environments, Wouter van Toll et al.](https://www.researchgate.net/publication/236903107_A_Navigation_Mesh_for_Dynamic_Environments) (_해당 논문 기반으로 구현할 계획입니다._)
  * [(slideshare)A navigation mesh for dynamic environments, Wouter van Toll et al.](https://www.slideshare.net/slideshow/a-navigation-meshfordynamicenvironments/55973757)
  * [Automatic Generated Navigation Mesh Algorithm on 3D Game Scene, Xiang Xu et al.](https://www.researchgate.net/publication/271406656_Automatic_Generated_Navigation_Mesh_Algorithm_on_3D_Game_Scene)
  * [Incremental Delaunay Triangulation, Dani Lischinski et al.](http://www.karlchenofhell.org/cppswp/lischinski.pdf)
