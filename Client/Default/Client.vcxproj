@@ -180,7 +180,7 @@
     <ClInclude Include="..\Public\MainCamera.h" />
     <ClInclude Include="..\Public\MainCameraController.h" />
     <ClInclude Include="..\Public\NavMeshView.h" />
-    <ClInclude Include="..\Public\NShelper.h" />
+    <ClInclude Include="..\Public\NSHelper.h" />
     <ClInclude Include="..\Public\P_Strife.h" />
     <ClInclude Include="..\Public\P_Strife_State_Dash.h" />
     <ClInclude Include="..\Public\P_Strife_State_Idle.h" />

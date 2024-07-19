@@ -348,7 +348,7 @@
     <ClInclude Include="..\Public\tinyxml2.h">
       <Filter>99.Defines</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\NShelper.h">
+    <ClInclude Include="..\Public\NSHelper.h">
       <Filter>99.Defines</Filter>
     </ClInclude>
   </ItemGroup>
