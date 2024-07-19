@@ -72,10 +72,7 @@ private:
 	HRESULT	GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected);
 
 private:
-	HRESULT GetObstacleOutline(CGameObject* const pGameObject);
-
-	_bool	IntersectSegments(const Vec3& vL1, const Vec3& vL2, const Vec3& vR1, const Vec3& vR2, OUT Vec3& vIntersection);
-	vector<Vec3> GetTriangleIntersectionPoints(const Vec3& vL0, const Vec3& vL1, const Vec3& vL2, const Vec3& vR0, const Vec3& vR1, const Vec3& vR2);
+	HRESULT CalculateObstacleOutline(CGameObject* const pGameObject);
 
 private:
 	void	Input();
