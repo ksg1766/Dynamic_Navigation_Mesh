@@ -72,6 +72,12 @@ private:
 	HRESULT	GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected);
 
 private:
+	HRESULT GetObstacleOutline(CGameObject* const pGameObject);
+
+	_bool	IntersectSegments(const Vec3& vL1, const Vec3& vL2, const Vec3& vR1, const Vec3& vR2, OUT Vec3& vIntersection);
+	vector<Vec3> GetTriangleIntersectionPoints(const Vec3& vL0, const Vec3& vL1, const Vec3& vL2, const Vec3& vR0, const Vec3& vR1, const Vec3& vR2);
+
+private:
 	void	Input();
 	_bool	Pick(_uint screenX, _uint screenY);
 
@@ -91,6 +97,13 @@ private:
 	HRESULT Reset();
 
 private:
+	// World Grid Data
+	bitset<1024>			m_WorldGridData;
+
+	// binairze할때 minmax xz 함께 기록?
+
+	// 만약 렌더타겟에  찍는다면?
+
 	// triangulate
 	triangulateio			m_tIn, m_tOut, m_tVD_out;
 	_char					m_szTriswitches[3] = "pz";
@@ -157,5 +170,6 @@ public:
 
 END
 
+// DP
 // https://m.blog.naver.com/dorergiverny/223113215510
 // https://rosettacode.org/wiki/Ramer-Douglas-Peucker_line_simplification

@@ -48,6 +48,7 @@ using namespace SimpleMath;
 #include <algorithm>
 #include <functional>
 #include <random>
+#include <bitset>	
 //
 #include <typeinfo>
 

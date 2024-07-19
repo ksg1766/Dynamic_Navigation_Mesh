@@ -174,7 +174,8 @@ void CLayersView::InfoView()
 	{
 		if (m_pCurPickedObject)	// TODO : DYING State 추가되면 예외처리 해줄 것.
 		{
-			CDissolveManager::GetInstance()->AddDissolve(m_pCurPickedObject);
+			m_pGameInstance->DeleteObject(m_pCurPickedObject);
+			//CDissolveManager::GetInstance()->AddDissolve(m_pCurPickedObject);
 			m_pCurPickedObject = m_pPrePickedObject;
 		}
 	}

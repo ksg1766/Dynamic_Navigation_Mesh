@@ -273,8 +273,6 @@ HRESULT CMainApp::Ready_Prototype_Components()
 		wstring strStaticFilePath = TEXT("../Bin/Resources/Models/Static/");
 		for (const auto& entry : filesystem::directory_iterator(strStaticFilePath))
 		{
-			continue;
-
 			//Matrix matPivot = Matrix::Identity;
 			const wstring& strFileName = entry.path().stem();
 			//SOCKETDESC desc = SOCKETDESC();
@@ -296,7 +294,12 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			}
 			else
 			{
-				XMStoreFloat4x4(&matPivot, XMMatrixScaling(0.1f, 0.1f, 0.1f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
+				if (TEXT("Building_a") != strFileName)
+				{
+				//	continue;
+				}
+
+				XMStoreFloat4x4(&matPivot, XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
 
 				if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model_" + strFileName),
 					CModel::Create(m_pDevice, m_pContext, strStaticFilePath + strFileName, desc, matPivot))))
