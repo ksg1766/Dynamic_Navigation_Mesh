@@ -1340,6 +1340,99 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 #pragma region GPU
 }
 
+_bool CNavMeshView::IntersectSegments(const Vec3& vL1, const Vec3& vL2, const Vec3& vR1, const Vec3& vR2, OUT Vec3& vIntersection)
+{	
+	Vec3 vLineL = vL2 - vL1;
+	Vec3 vLineR = vR2 - vR1;
+	Vec3 vLineLR = vR1 - vL1;
+
+	_float fLR = vLineL.Cross(vLineR).x;
+	_float fLR_L = vLineLR.Cross(vLineL).x;
+	_float fLR_R = vLineLR.Cross(vLineR).x;
+
+	if (fLR == 0.0f && fLR_L == 0.0f)
+	{
+		// Collinear
+		_float fDotL1R1 = vL1.Dot(vR1);
+		_float fDotL2R2 = vL2.Dot(vR2);
+		if (fDotL1R1 <= fDotL2R2)
+		{
+			vIntersection = vR1; // Return one of the endpoints as the intersection
+			return true;
+		}
+		else
+		{
+			vIntersection = vL1;
+			return true;
+		}
+	}
+
+	if (fLR == 0.0f && fLR_L != 0.0f)
+	{
+		return false; // Parallel
+	}
+
+	_float fT = fLR_R / fLR;
+	_float fU = fLR_L / fLR;
+
+	if (fLR != 0.0f && fT >= 0.0f && fT <= 1.0f && fU >= 0.0f && fU <= 1.0f)
+	{
+		vIntersection = vL1 + fT * vLineL;
+		return true;
+	}
+
+	return false;
+}
+
+vector<Vec3> CNavMeshView::GetTriangleIntersectionPoints(const Vec3& vL0, const Vec3& vL1, const Vec3& vL2, const Vec3& vR0, const Vec3& vR1, const Vec3& vR2)
+{
+	vector<Vec3> vecIntersections;
+	Vec3 vIntersection;
+
+	// triL의 edge와 triR의 edge 간 교차점 검사
+	if (IntersectSegments(vL0, vL1, vR0, vR1, vIntersection)) vecIntersections.push_back(vIntersection);
+	if (IntersectSegments(vL0, vL1, vR1, vR2, vIntersection)) vecIntersections.push_back(vIntersection);
+	if (IntersectSegments(vL0, vL1, vR2, vR0, vIntersection)) vecIntersections.push_back(vIntersection);
+
+	if (IntersectSegments(vL1, vL2, vR0, vR1, vIntersection)) vecIntersections.push_back(vIntersection);
+	if (IntersectSegments(vL1, vL2, vR1, vR2, vIntersection)) vecIntersections.push_back(vIntersection);
+	if (IntersectSegments(vL1, vL2, vR2, vR0, vIntersection)) vecIntersections.push_back(vIntersection);
+
+	if (IntersectSegments(vL2, vL0, vR0, vR1, vIntersection)) vecIntersections.push_back(vIntersection);
+	if (IntersectSegments(vL2, vL0, vR1, vR2, vIntersection)) vecIntersections.push_back(vIntersection);
+	if (IntersectSegments(vL2, vL0, vR2, vR0, vIntersection)) vecIntersections.push_back(vIntersection);
+
+	return vecIntersections;
+}
+
+HRESULT CNavMeshView::GetObstacleOutline(CGameObject* const pGameObject)
+{
+	CModel* pModel = pGameObject->GetModel();
+
+	if (nullptr == pModel)
+	{
+		return E_FAIL;
+	}
+
+	vector<Vec3>& vecSurfaceVtx = pModel->GetSurfaceVtx();
+	vector<FACEINDICES32>& vecSurfaceIdx = pModel->GetSurfaceIdx();
+
+	for (auto idx : vecSurfaceIdx)
+	{
+		Vec3 vtx[POINT_END] =
+		{
+			Vec3::Transform(vecSurfaceVtx[idx._0], pGameObject->GetTransform()->WorldMatrix()),
+			Vec3::Transform(vecSurfaceVtx[idx._1], pGameObject->GetTransform()->WorldMatrix()),
+			Vec3::Transform(vecSurfaceVtx[idx._2], pGameObject->GetTransform()->WorldMatrix()),
+		};
+
+		//...
+
+	}
+
+	return S_OK;
+}
+
 void CNavMeshView::Input()
 {
 	if (ImGui::GetIO().WantCaptureMouse)
@@ -1402,7 +1495,7 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	// 아래는 코드 분할 및 정리 무조건 필요!!! //
 	//////////////////////////////////////////
 
-	CGameObject* pObject = nullptr;
+	/*CGameObject* pObject = nullptr;
 
 	if (nullptr == vecGroundObjects)
 	{
@@ -1447,7 +1540,7 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		const Matrix& W = pObject->GetTransform()->WorldMatrix();
 		pickPos = XMVector3TransformCoord(pickPos, W);
 	}
-	else
+	else*/
 	{	// TODO : 여기까지 코드 정리 필요
 	TERRAIN_PICKED:
 		const POINT& p = m_pGameInstance->GetMousePos();
