@@ -1,4 +1,4 @@
-# 📅 2024.07.17
+# 📅 2024.07.18
 📋 진행 사항
   * Dynamic Obstacle 의 생성 및 삭제 시 Cell과의 Intersection을 GPU에서 검출하도록 변경했습니다.
   * AABB to Triangle Intersection의 HLSL코드를 추가했습니다.
