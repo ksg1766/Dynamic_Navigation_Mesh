@@ -98,9 +98,11 @@ private:
 
 private:
 	// World Grid Data
-	bitset<1024>			m_WorldGridData;
+	bitset<2048>			m_bitWorldGrid;	// 외곽선 데이터 따로 저장해두는거면 굳이 bitset은 필요 없음. 굳이 그 용도로는. 길찾기에는 필요할지도..!
+	
+	
 
-	// binairze할때 minmax xz 함께 기록?
+	// binarize할때 minmax xz 함께 기록?
 
 	// 만약 렌더타겟에  찍는다면?
 
