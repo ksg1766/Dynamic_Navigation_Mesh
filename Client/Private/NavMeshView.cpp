@@ -116,7 +116,7 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 		return E_FAIL;
 	}
 
-	if (FAILED(RefreshFile()))
+	if (FAILED(RefreshNvFile()))
 	{
 		return E_FAIL;
 	}
@@ -272,6 +272,16 @@ HRESULT CNavMeshView::DebugRender()
 		m_pBatch->End();
 	}
 
+	if (false == m_vecObstaclePointSpheres.empty())
+	{
+		m_pBatch->Begin();
+		for (auto& iter : m_vecObstaclePointSpheres)
+		{
+			DX::Draw(m_pBatch, iter, Colors::Red);
+		}
+		m_pBatch->End();
+	}
+
 	/*m_pBatch->Begin();
 	DX::Draw(m_pBatch, m_tNavMeshBoundVolume, Colors::Green);
 	m_pBatch->End();*/
@@ -352,6 +362,28 @@ HRESULT CNavMeshView::BakeNavMesh()
 	}
 	
 	SetUpNeighbors(m_vecCells);
+
+	// temp
+	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
+
+	map<LAYERTAG, class CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
+	if (iter == mapLayers.end())
+	{
+		return S_OK;
+	}
+
+	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
+
+	vector<Vec3> vecOutlines;
+	CalculateObstacleOutline(vecObjects[0], vecOutlines);
+
+	for (auto& iter : vecOutlines)
+	{
+		BoundingSphere tOutlineSphere(iter, 0.5f);
+
+		m_vecObstaclePointSpheres.emplace_back(tOutlineSphere);
+	}
+	
 
 	return S_OK;
 }
@@ -1340,7 +1372,7 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 #pragma region GPU
 }
 
-HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject)
+HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline)
 {
 	CModel* pModel = pGameObject->GetModel();
 
@@ -1352,37 +1384,89 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject)
 	vector<Vec3>& vecSurfaceVtx = pModel->GetSurfaceVtx();
 	vector<FACEINDICES32>& vecSurfaceIdx = pModel->GetSurfaceIdx();
 
-	Vec3 vWorldRayOrigin;
-	Vec3 vWorldRayDir;
+	_float fDistance = FLT_MAX;
+	_float fMinDistance = FLT_MAX;
+	Vec3   vPickPosition = -Vec3::One;
 
-	for (_int v = -512; v < 512; ++v)
+	Ray cVerticalRay;
+	Ray cHorizontalRay;
+
+	vector<iVec3> vecIntersected;
+
+	for (_int i = -512; i < 512; ++i)
 	{
-		for (_int h = -512; h < 512; ++h)
+		cVerticalRay.position = Vec3((_float)i, 0.05f, -512.0f);
+		cVerticalRay.direction = Vec3::Backward;
+
+		cHorizontalRay.position = Vec3(-512.0f, 0.05f, (_float)i);
+		cHorizontalRay.direction = Vec3::Right;
+
+		for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
 		{
-			vWorldRayOrigin = Vec3(, , );
-			vWorldRayDir = Vec3(, , );
-
-			Ray cRay(vWorldRayOrigin, vWorldRayDir);
-
-			for (auto idx : vecSurfaceIdx)
+			if (cVerticalRay.Intersects(vecSurfaceVtx[vecSurfaceIdx[j]._0], vecSurfaceVtx[vecSurfaceIdx[j]._1], vecSurfaceVtx[vecSurfaceIdx[j]._2], OUT fDistance))
 			{
-				Vec3 vtx[POINT_END] =
+				Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
+
+				if (isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z) || isnan(fDistance))
 				{
-					Vec3::Transform(vecSurfaceVtx[idx._0], pGameObject->GetTransform()->WorldMatrix()),
-					Vec3::Transform(vecSurfaceVtx[idx._1], pGameObject->GetTransform()->WorldMatrix()),
-					Vec3::Transform(vecSurfaceVtx[idx._2], pGameObject->GetTransform()->WorldMatrix()),
-				};
+					continue;
+				}
 
+				vecIntersected.emplace_back(iVec3(round(vPos.x), round(vPos.y), round(vPos.z)));
+			}
 
-				m_pTerrainBuffer->Pick(p.x, p.y, pickPos, fDistance, m_pTerrainBuffer->GetTransform()->WorldMatrix());
+			if (cHorizontalRay.Intersects(vecSurfaceVtx[vecSurfaceIdx[j]._0], vecSurfaceVtx[vecSurfaceIdx[j]._1], vecSurfaceVtx[vecSurfaceIdx[j]._2], OUT fDistance))
+			{
+				Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
 
-				//...
+				if (isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z) || isnan(fDistance))
+				{
+					continue;
+				}
 
+				vecIntersected.emplace_back(iVec3(round(vPos.x), round(vPos.y), round(vPos.z)));
 			}
 		}
 	}
 
+	iVec3 vStart = *vecIntersected.begin();
+
+	set<iVec3> setPoints(vecIntersected.begin(), vecIntersected.end());
+	set<iVec3> setVisited;
+	vector<Vec3> vecPath;
+
+	Dfs(vStart, setPoints, setVisited, vecPath, vecOutline);
+
 	return S_OK;
+}
+
+void CNavMeshView::Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<Vec3>& vecPath, OUT vector<Vec3>& vecLongest)
+{
+	const vector<pair<_float, _float>> vecDirections =
+	{
+		{1.0f, 0.0f}, {-1.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, -1.0f}, {1.0f, 1.0f}, {-1.0f, -1.0f}, {1.0f, -1.0f}, {-1.0f, 1.0f}
+	};
+
+	setVisited.insert(vCurrent);
+	vecPath.push_back(Vec3(vCurrent.x, vCurrent.y, vCurrent.z));
+
+	for (const auto& vDir : vecDirections)
+	{
+		iVec3 vNeighbor(vCurrent.x + vDir.first, 0, vCurrent.z + vDir.second);
+		if (setPoints.find(vNeighbor) != setPoints.end() &&
+			setVisited.find(vNeighbor) == setVisited.end())
+		{
+			Dfs(vNeighbor, setPoints, setVisited, vecPath, vecLongest);
+		}
+	}
+
+	if (vecPath.size() > vecLongest.size())
+	{
+		vecLongest = vecPath;
+	}
+
+	vecPath.pop_back();
+	setVisited.erase(vCurrent);
 }
 
 void CNavMeshView::Input()
@@ -1559,7 +1643,7 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	return true;
 }
 
-HRESULT CNavMeshView::SaveFile()
+HRESULT CNavMeshView::SaveNvFile()
 {
 	fs::path strPath("../Bin/Resources/LevelData/" + m_strFilePath + "/");
 
@@ -1637,7 +1721,7 @@ HRESULT CNavMeshView::SaveFile()
 	return S_OK;
 }
 
-HRESULT CNavMeshView::LoadFile()
+HRESULT CNavMeshView::LoadNvFile()
 {
 	fs::path strPath("../Bin/Resources/LevelData/" + m_strFilePath + "/" + m_vecDataFiles[m_file_Current]);
 	
@@ -1737,7 +1821,7 @@ HRESULT CNavMeshView::LoadFile()
 	return S_OK;
 }
 
-HRESULT CNavMeshView::DeleteFile()
+HRESULT CNavMeshView::DeleteNvFile()
 {
 	fs::path strPath("../Bin/Resources/LevelData/" + m_strFilePath + "/");
 	
@@ -1767,7 +1851,7 @@ HRESULT CNavMeshView::DeleteFile()
 	return S_OK;
 }
 
-HRESULT CNavMeshView::RefreshFile()
+HRESULT CNavMeshView::RefreshNvFile()
 {
 	for (auto szFilename : m_vecDataFiles)
 	{
@@ -1855,23 +1939,23 @@ void CNavMeshView::InfoView()
 
 	if (ImGui::Button("SaveNav"))
 	{
-		SaveFile();
+		SaveNvFile();
 	}
 	ImGui::SameLine();
 
 	if (ImGui::Button("LoadNav"))
 	{
-		LoadFile();
+		LoadNvFile();
 	}ImGui::SameLine();
 
 	if (ImGui::Button("DeleteFile"))
 	{
-		DeleteFile();
+		DeleteNvFile();
 	}ImGui::SameLine();
 
 	if (ImGui::Button("RefreshFile"))
 	{
-		RefreshFile();
+		RefreshNvFile();
 	}
 }
 

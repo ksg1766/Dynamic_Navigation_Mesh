@@ -11,6 +11,23 @@ END
 
 BEGIN(Client)
 
+struct iVec3
+{
+	_int x;
+	_int y;
+	_int z;
+
+	bool operator<(const iVec3& other) const
+	{
+		if (x == other.x)
+		{
+			return z < other.z;
+		}
+
+		return x < other.x;
+	}
+};
+
 typedef struct tagObstacle
 {
 	Vec3 vInnerPoint = Vec3::Zero;
@@ -72,16 +89,17 @@ private:
 	HRESULT	GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected);
 
 private:
-	HRESULT CalculateObstacleOutline(CGameObject* const pGameObject);
+	HRESULT CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
+	void Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<Vec3>& vecPath, OUT vector<Vec3>& vecLongestPath);
 
 private:
 	void	Input();
 	_bool	Pick(_uint screenX, _uint screenY);
 
-	HRESULT	SaveFile();
-	HRESULT	LoadFile();
-	HRESULT	DeleteFile();
-	HRESULT	RefreshFile();
+	HRESULT	SaveNvFile();
+	HRESULT	LoadNvFile();
+	HRESULT	DeleteNvFile();
+	HRESULT	RefreshNvFile();
 
 private:
 	void	InfoView();
