@@ -1450,12 +1450,9 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	iVec3 vStart = *vecIntersected.begin();
 
 	set<iVec3> setPoints(vecIntersected.begin(), vecIntersected.end());
-	set<iVec3> setVisited;
-	vector<iVec3> vecPath;
 	vector<Vec3> vecExpandedOutline;
-
 	vector<iVec3> vecTightOutline;
-	//Dfs(vStart, setPoints, setVisited, vecPath, vecTightOutline);
+
 	Dfs(vStart, setPoints, vecTightOutline);
 
 	vecExpandedOutline = ExpandOutline(vecTightOutline, 1.f);
