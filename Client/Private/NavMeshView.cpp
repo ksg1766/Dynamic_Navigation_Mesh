@@ -1452,12 +1452,15 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	set<iVec3> setPoints(vecIntersected.begin(), vecIntersected.end());
 	vector<Vec3> vecExpandedOutline;
 	vector<iVec3> vecTightOutline;
+	vector<Vec3> vecClearOutline;
 
 	Dfs(vStart, setPoints, vecTightOutline);
 
-	vecExpandedOutline = ExpandOutline(vecTightOutline, 1.f);
-	vecOutline = ProcessIntersections(vecExpandedOutline);
+	vecExpandedOutline = ExpandOutline(vecTightOutline, 2.f);
+	vecClearOutline = ProcessIntersections(vecExpandedOutline);
 	
+	RamerDouglasPeucker(vecClearOutline, 1.2f, vecOutline);
+
 	return S_OK;
 }
 
@@ -1646,14 +1649,101 @@ vector<Vec3> CNavMeshView::ProcessIntersections(vector<Vec3>& vecExpandedOutline
 	return vecResult;
 }
 
+_float CNavMeshView::PerpendicularDistance(const Vec3& vPoint, const Vec3& vLineStart, const Vec3& vLineEnd)
+{
+	_float fDx = vLineEnd.x - vLineStart.x;
+	_float fDz = vLineEnd.z - vLineStart.z;
+
+	//Normalise
+	_float fMag = pow(pow(fDx, 2.0f) + pow(fDz, 2.0f), 0.5f);
+
+	if (fMag > 0.0f)
+	{
+		fDx /= fMag;
+		fDz /= fMag;
+	}
+
+	_float fPvx = vPoint.x - vLineStart.x;
+	_float fPvz = vPoint.z - vLineStart.z;
+
+	//Get dot product (project pv onto normalized direction)
+	_float fPvdot = fDx * fPvx + fDz * fPvz;
+
+	//Scale line direction vector
+	_float fDsx = fPvdot * fDx;
+	_float fDsz = fPvdot * fDz;
+
+	//Subtract this from pv
+	_float fAx = fPvx - fDsx;
+	_float fAz = fPvz - fDsz;
+
+	return pow(pow(fAx, 2.0) + pow(fAz, 2.0), 0.5);
+}
+
+void CNavMeshView::RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float fEpsilon, vector<Vec3>& OUT vecOut)
+{
+	if (vecPointList.size() < 2)
+	{
+		throw invalid_argument("Not enough points to simplify");
+	}
+
+	// Find the point with the maximum distance from line between start and end
+	_float fDmax = 0.0f;
+	size_t iIndex = 0;
+	size_t iEnd = vecPointList.size() - 1;
+	
+	for (size_t i = 1; i < iEnd; i++)
+	{
+		_float fD = PerpendicularDistance(vecPointList[i], vecPointList[0], vecPointList[iEnd]);
+
+		if (fD > fDmax)
+		{
+			iIndex = i;
+			fDmax = fD;
+		}
+	}
+
+	// If max distance is greater than epsilon, recursively simplify
+	if (fDmax > fEpsilon)
+	{
+		// Recursive call
+		vector<Vec3> vecRecResults1;
+		vector<Vec3> vecRecResults2;
+		vector<Vec3> vecFirstLine(vecPointList.begin(), vecPointList.begin() + iIndex + 1);
+		vector<Vec3> vecLastLine(vecPointList.begin() + iIndex, vecPointList.end());
+		RamerDouglasPeucker(vecFirstLine, fEpsilon, vecRecResults1);
+		RamerDouglasPeucker(vecLastLine, fEpsilon, vecRecResults2);
+
+		// Build the result list
+		vecOut.assign(vecRecResults1.begin(), vecRecResults1.end() - 1);
+		vecOut.insert(vecOut.end(), vecRecResults2.begin(), vecRecResults2.end());
+
+		if (vecOut.size() < 2)
+		{
+			throw runtime_error("Problem assembling output");
+		}
+	}
+	else
+	{
+		//Just return start and end points
+		vecOut.clear();
+		vecOut.push_back(vecPointList[0]);
+		vecOut.push_back(vecPointList[iEnd]);
+	}
+}
+
 void CNavMeshView::Input()
 {
 	if (ImGui::GetIO().WantCaptureMouse)
+	{
 		return;
-	
+	}
+
 	const POINT& p = CGameInstance::GetInstance()->GetMousePos();
 	if (p.x > 1440 || p.x < 0 || p.y > 810 || p.y < 0)
+	{
 		return;
+	}
 
 	if (m_pGameInstance->Mouse_Down(DIM_LB))
 	{

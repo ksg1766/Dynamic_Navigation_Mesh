@@ -99,6 +99,9 @@ private:
 	_bool	IntersectSegments(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, Vec3& vIntersection);
 	vector<Vec3> ProcessIntersections(vector<Vec3>& vecExpandedOutline);
 
+	_float	PerpendicularDistance(const Vec3& vPt, const Vec3& vLineStart, const Vec3& vLineEnd);
+	void	RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float fEpsilon, vector<Vec3>& OUT vecOut);
+
 private:
 	void	Input();
 	_bool	Pick(_uint screenX, _uint screenY);
