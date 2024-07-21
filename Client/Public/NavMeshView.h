@@ -91,7 +91,8 @@ private:
 private:
 	// Obstacle Outline 계산 및 영역 확장
 	HRESULT CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
-	void	Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<iVec3>& vecPath, OUT vector<iVec3>& vecLongestPath);
+	void	Dfs_(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<iVec3>& vecPath, OUT vector<iVec3>& vecLongest);
+	void	Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vector<iVec3>& vecLongest);
 	Vec3	CalculateNormal(const iVec3& vPrev, const iVec3& vCurrent, const iVec3& vNext);
 	_bool	IsClockwise(const vector<iVec3>& vecPoints);
 	vector<Vec3> ExpandOutline(const vector<iVec3>& vecOutline, _float fDistance);

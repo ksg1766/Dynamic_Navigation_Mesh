@@ -377,12 +377,31 @@ HRESULT CNavMeshView::BakeNavMesh()
 	vector<Vec3> vecOutlines;
 	CalculateObstacleOutline(vecObjects[0], vecOutlines);
 
-	for (auto& iter : vecOutlines)
-	{
-		BoundingSphere tOutlineSphere(iter, 0.5f);
+	Obst* pObst = new Obst;
 
-		m_vecObstaclePointSpheres.emplace_back(tOutlineSphere);
+	for (_int i = 0; i < vecOutlines.size(); ++i)
+	{
+		pObst->vecPoints.emplace_back(Vec3::Transform(vecOutlines[i], vecObjects[0]->GetTransform()->WorldMatrix()));
 	}
+
+	TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
+	for (auto vPoint : pObst->vecPoints)
+	{
+		if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+		if (fMinX > vPoint.x) fMinX = vPoint.x;
+
+		if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+		if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+	}
+
+	pObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+	pObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f, 10.f, (fMaxZ - fMinZ) * 0.5f);
+
+	SetPolygonHoleCenter(*pObst);
+	
+	m_vecObstacles.push_back(pObst);
+
+	DynamicCreate(*pObst);
 
 	return S_OK;
 }
@@ -1436,7 +1455,8 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	vector<Vec3> vecExpandedOutline;
 
 	vector<iVec3> vecTightOutline;
-	Dfs(vStart, setPoints, setVisited, vecPath, vecTightOutline);
+	//Dfs(vStart, setPoints, setVisited, vecPath, vecTightOutline);
+	Dfs(vStart, setPoints, vecTightOutline);
 
 	vecExpandedOutline = ExpandOutline(vecTightOutline, 1.f);
 	vecOutline = ProcessIntersections(vecExpandedOutline);
@@ -1444,9 +1464,9 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	return S_OK;
 }
 
-void CNavMeshView::Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<iVec3>& vecPath, OUT vector<iVec3>& vecLongest)
+void CNavMeshView::Dfs_(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<iVec3>& vecPath, OUT vector<iVec3>& vecLongest)
 {
-	const vector<pair<_float, _float>> vecDirections =
+	const vector<pair<_int, _int>> vecDirections =
 	{
 		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
 	};
@@ -1460,7 +1480,7 @@ void CNavMeshView::Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<i
 		if (setPoints.find(vNeighbor) != setPoints.end() &&
 			setVisited.find(vNeighbor) == setVisited.end())
 		{
-			Dfs(vNeighbor, setPoints, setVisited, vecPath, vecLongest);
+			Dfs_(vNeighbor, setPoints, setVisited, vecPath, vecLongest);
 		}
 	}
 
@@ -1471,6 +1491,43 @@ void CNavMeshView::Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<i
 
 	vecPath.pop_back();
 	setVisited.erase(vCurrent);
+}
+
+void CNavMeshView::Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vector<iVec3>& vecLongest)
+{
+	const vector<pair<_int, _int>> vecDirections =
+	{
+		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
+	};
+
+	stack<pair<iVec3, vector<iVec3>>> stkPoint;
+	set<iVec3> setVisited;
+	stkPoint.push({ vStart, {vStart} });
+
+	while (!stkPoint.empty())
+	{
+		auto [vCurrent, vecPath] = stkPoint.top();
+		stkPoint.pop();
+
+		if (vecPath.size() > vecLongest.size())
+		{
+			vecLongest = vecPath;
+		}
+
+		for (const auto& vDir : vecDirections)
+		{
+			iVec3 vNeighbor(vCurrent.x + vDir.first, 0, vCurrent.z + vDir.second);
+			
+			if (setPoints.find(vNeighbor) != setPoints.end() &&
+				setVisited.find(vNeighbor) == setVisited.end())
+			{
+				setVisited.emplace(vNeighbor);
+				vector<iVec3> vecNewPath = vecPath;
+				vecNewPath.push_back(vNeighbor);
+				stkPoint.push({ vNeighbor, vecNewPath });
+			}
+		}
+	}
 }
 
 Vec3 CNavMeshView::CalculateNormal(const iVec3& vPrev, const iVec3& vCurrent, const iVec3& vNext)
