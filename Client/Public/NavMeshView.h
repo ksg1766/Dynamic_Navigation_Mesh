@@ -89,8 +89,14 @@ private:
 	HRESULT	GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected);
 
 private:
+	// Obstacle Outline 계산 및 영역 확장
 	HRESULT CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
-	void Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<Vec3>& vecPath, OUT vector<Vec3>& vecLongestPath);
+	void	Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<iVec3>& vecPath, OUT vector<iVec3>& vecLongestPath);
+	Vec3	CalculateNormal(const iVec3& vPrev, const iVec3& vCurrent, const iVec3& vNext);
+	_bool	IsClockwise(const vector<iVec3>& vecPoints);
+	vector<Vec3> ExpandOutline(const vector<iVec3>& vecOutline, _float fDistance);
+	_bool	IntersectSegments(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, Vec3& vIntersection);
+	vector<Vec3> ProcessIntersections(vector<Vec3>& vecExpandedOutline);
 
 private:
 	void	Input();

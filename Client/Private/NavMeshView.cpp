@@ -275,9 +275,9 @@ HRESULT CNavMeshView::DebugRender()
 	if (false == m_vecObstaclePointSpheres.empty())
 	{
 		m_pBatch->Begin();
-		for (auto& iter : m_vecObstaclePointSpheres)
+		for (_int i = 0; i < m_vecObstaclePointSpheres.size(); ++i)
 		{
-			DX::Draw(m_pBatch, iter, Colors::Red);
+			DX::Draw(m_pBatch, m_vecObstaclePointSpheres[i], Colors::Red);
 		}
 		m_pBatch->End();
 	}
@@ -383,7 +383,6 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 		m_vecObstaclePointSpheres.emplace_back(tOutlineSphere);
 	}
-	
 
 	return S_OK;
 }
@@ -1433,22 +1432,27 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 
 	set<iVec3> setPoints(vecIntersected.begin(), vecIntersected.end());
 	set<iVec3> setVisited;
-	vector<Vec3> vecPath;
+	vector<iVec3> vecPath;
+	vector<Vec3> vecExpandedOutline;
 
-	Dfs(vStart, setPoints, setVisited, vecPath, vecOutline);
+	vector<iVec3> vecTightOutline;
+	Dfs(vStart, setPoints, setVisited, vecPath, vecTightOutline);
 
+	vecExpandedOutline = ExpandOutline(vecTightOutline, 1.f);
+	vecOutline = ProcessIntersections(vecExpandedOutline);
+	
 	return S_OK;
 }
 
-void CNavMeshView::Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<Vec3>& vecPath, OUT vector<Vec3>& vecLongest)
+void CNavMeshView::Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<iVec3>& vecPath, OUT vector<iVec3>& vecLongest)
 {
 	const vector<pair<_float, _float>> vecDirections =
 	{
-		{1.0f, 0.0f}, {-1.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, -1.0f}, {1.0f, 1.0f}, {-1.0f, -1.0f}, {1.0f, -1.0f}, {-1.0f, 1.0f}
+		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
 	};
 
-	setVisited.insert(vCurrent);
-	vecPath.push_back(Vec3(vCurrent.x, vCurrent.y, vCurrent.z));
+	setVisited.emplace(vCurrent);
+	vecPath.push_back(vCurrent);
 
 	for (const auto& vDir : vecDirections)
 	{
@@ -1467,6 +1471,125 @@ void CNavMeshView::Dfs(const iVec3& vCurrent, const set<iVec3>& setPoints, set<i
 
 	vecPath.pop_back();
 	setVisited.erase(vCurrent);
+}
+
+Vec3 CNavMeshView::CalculateNormal(const iVec3& vPrev, const iVec3& vCurrent, const iVec3& vNext)
+{
+	Vec3 vDir1 = { (_float)(vCurrent.x - vPrev.x), 0, (_float)(vCurrent.z - vPrev.z) };
+	Vec3 vDir2 = { (_float)(vNext.x - vCurrent.x), 0, (_float)(vNext.z - vCurrent.z) };
+
+	vDir1.Normalize();
+	vDir2.Normalize();
+
+	Vec3 vNormal = { vDir1.z + vDir2.z, 0.0f, -vDir1.x - vDir2.x };
+	
+	vNormal.Normalize();
+
+	return vNormal;
+}
+
+_bool CNavMeshView::IsClockwise(const vector<iVec3>& vecPoints)
+{
+	_float fSum = 0;
+
+	for (_int i = 0; i < vecPoints.size(); ++i)
+	{
+		const iVec3& p1 = vecPoints[i];
+		const iVec3& p2 = vecPoints[(i + 1) % vecPoints.size()];
+		fSum += (p2.x - p1.x) * (p2.z + p1.z);
+	}
+
+	return fSum < 0;
+}
+
+vector<Vec3> CNavMeshView::ExpandOutline(const vector<iVec3>& vecOutline, _float fDistance)
+{
+	vector<Vec3> vecExpandedOutline;
+	_int iSize = vecOutline.size();
+
+	_bool isClockwise = IsClockwise(vecOutline);
+
+	for (_int i = 0; i < iSize; ++i)
+	{
+		const iVec3& vPrev = vecOutline[(i - 1 + iSize) % iSize];
+		const iVec3& vCurrent = vecOutline[i];
+		const iVec3& vNext = vecOutline[(i + 1) % iSize];
+		Vec3 vNormal = CalculateNormal(vPrev, vCurrent, vNext);
+
+		if (false == isClockwise)
+		{
+			vNormal = { -vNormal.x, 0.0f, -vNormal.z };
+		}
+
+		Vec3 vExpandedPoint = { (_float)vCurrent.x + vNormal.x * fDistance, (_float)(vCurrent.y), (_float)vCurrent.z + vNormal.z * fDistance };
+		vecExpandedOutline.push_back(vExpandedPoint);
+	}
+
+	return vecExpandedOutline;
+}
+
+_bool CNavMeshView::IntersectSegments(const Vec3& vP1, const Vec3& vQ1, const Vec3& vP2, const Vec3& vQ2, Vec3& vIntersection)
+{
+	Vec3 vSour = { vQ1.x - vP1.x, 0.0f, vQ1.z - vP1.z };
+	Vec3 vDest = { vQ2.x - vP2.x, 0.0f, vQ2.z - vP2.z };
+
+	_float fSxD = vSour.x * vDest.z - vSour.z * vDest.x;
+	_float fPQxR = (vP2.x - vP1.x) * vSour.z - (vP2.z - vP1.z) * vSour.x;
+
+	//if (fabs(fSxD) < 1e-5f && fabs(fPQxR) < 1e-5f)
+	//{
+	//	return false; // Collinear
+	//}
+	if (fabs(fSxD) < 1e-5f)
+	{
+		return false; // Parallel
+	}
+
+	_float fT = ((vP2.x - vP1.x) * vDest.z - (vP2.z - vP1.z) * vDest.x) / fSxD;
+	_float fU = fPQxR / fSxD;
+
+	if (fT >= 0.0f && fT <= 1.0f && fU >= 0.0f && fU <= 1.0f)
+	{
+		vIntersection = { vP1.x + fT * vSour.x, 0.0f, vP1.z + fT * vSour.z };
+		return true;
+	}
+
+	return false;
+}
+
+vector<Vec3> CNavMeshView::ProcessIntersections(vector<Vec3>& vecExpandedOutline)
+{
+	vector<Vec3> vecResult;
+	_int iSize = vecExpandedOutline.size();
+
+	for (_int i = 0; i < iSize; ++i)
+	{
+		const Vec3& vP1 = vecExpandedOutline[i];
+		const Vec3& vQ1 = vecExpandedOutline[(i + 1) % iSize];
+
+		_bool isIntersected = false;
+		for (_int j = i + 2; j < iSize - 1; ++j)
+		{
+			const Vec3& vP2 = vecExpandedOutline[j % iSize];
+			const Vec3& vQ2 = vecExpandedOutline[(j + 1) % iSize];
+			Vec3 vIntersection;
+
+			if (true == IntersectSegments(vP1, vQ1, vP2, vQ2, vIntersection))
+			{
+				vecResult.push_back(vIntersection);
+				i = j; // 교차 구간 skip
+				isIntersected = true;
+				break;
+			}
+		}
+
+		if (false == isIntersected)
+		{
+			vecResult.push_back(vP1);
+		}
+	}
+
+	return vecResult;
 }
 
 void CNavMeshView::Input()
