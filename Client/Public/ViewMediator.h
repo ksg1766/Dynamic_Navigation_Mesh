@@ -31,6 +31,7 @@ public:
 	void	OnNotifiedSelected(CGameObject* pGameObject);
 	void	OnNotifiedPickingOn(CView* pSender);
 	void	OnNotifiedPlaceObstacle(CGameObject* const pGameObject);
+	void	OnNotifiedTransformChanged(CGameObject* const pGameObject);
 
 	void	SetPrefabsView(CPrefabsView* pPrefabsView);
 	void	SetLayersView(CLayersView* pLayersView);

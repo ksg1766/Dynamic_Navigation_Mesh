@@ -44,6 +44,11 @@ void CViewMediator::OnNotifiedPlaceObstacle(CGameObject* const pGameObject)
 	m_pNavMeshView->DynamicCreate(pGameObject);
 }
 
+void CViewMediator::OnNotifiedTransformChanged(CGameObject* const pGameObject)
+{
+	m_pNavMeshView->
+}
+
 void CViewMediator::SetPrefabsView(CPrefabsView* pPrefabsView)
 { 
 	m_pPrefabsView = pPrefabsView;
