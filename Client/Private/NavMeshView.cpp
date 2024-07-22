@@ -859,11 +859,12 @@ HRESULT CNavMeshView::DynamicCreate(CGameObject* const pGameObject)
 	if (m_mapObstaclePrefabs.end() != ObstPrefab)
 	{
 		Obst* pObst = new Obst(ObstPrefab->second, pGameObject->GetTransform()->WorldMatrix());
-
 		if (FAILED(DynamicCreate(*pObst)))
 		{
 			return E_FAIL;
 		}
+
+		m_vecObstacles.push_back(pObst);
 	}
 
 	return S_OK;
@@ -1494,7 +1495,7 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	vecExpandedOutline = ExpandOutline(vecTightOutline, 2.0f);
 	vecClearOutline = ProcessIntersections(vecExpandedOutline);
 	
-	RamerDouglasPeucker(vecClearOutline, 1.2f, vecOutline);
+	RamerDouglasPeucker(vecClearOutline, 1.0f, vecOutline);
 
 	return S_OK;
 }
