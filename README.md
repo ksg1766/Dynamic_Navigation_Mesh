@@ -44,8 +44,43 @@
       ![image](https://github.com/user-attachments/assets/34341de1-976f-44db-b2fd-be776b3e4e33)
     
   * 외곽선 영역을 확장했을 때, 교차지점이 생기지 않도록 구현했습니다.
-    * edge의 교차판정을 통해 두 edge가 교차한다면 사이의 정점들을 모두 제거하고 교차점으로 대체했습니다. 점점의 갯수는 71개입니다.
-      
+    * edge의 교차판정을 통해 두 edge가 교차한다면 사이의 정점들을 모두 제거하고 교차점으로 대체했습니다. 정점의 갯수는 71개입니다.
+      ```
+      vector<Vec3> CNavMeshView::ProcessIntersections(vector<Vec3>& vecExpandedOutline)
+	  {
+			vector<Vec3> vecResult;
+			_int iSize = vecExpandedOutline.size();
+
+			for (_int i = 0; i < iSize; ++i)
+			{
+				const Vec3& vP1 = vecExpandedOutline[i];
+				const Vec3& vQ1 = vecExpandedOutline[(i + 1) % iSize];
+
+				_bool isIntersected = false;
+				for (_int j = i + 2; j < iSize - 1; ++j)
+				{
+					const Vec3& vP2 = vecExpandedOutline[j % iSize];
+					const Vec3& vQ2 = vecExpandedOutline[(j + 1) % iSize];
+					Vec3 vIntersection;
+
+					if (true == IntersectSegments(vP1, vQ1, vP2, vQ2, vIntersection))
+					{
+						vecResult.push_back(vIntersection);
+						i = j; // 교차 구간 skip
+						isIntersected = true;
+						break;
+					}
+				}
+
+				if (false == isIntersected)
+				{
+					vecResult.push_back(vP1);
+				}
+			}
+
+			return vecResult;
+	  }
+      ```
       ![image](https://github.com/user-attachments/assets/747fea07-aa21-489e-9d48-cf7bbb7e5c3b)
 
     * 아래는 일부 교차지점이 제거된 모습입니다.
@@ -53,8 +88,51 @@
       ![image](https://github.com/user-attachments/assets/b0c61277-24ac-48e5-a789-dc1c345f3777)
     
   * 외곽선을 형성하는 정점의 갯수를 줄이고 형태를 단순화 하고자 Douglas Peuker 알고리즘을 적용해 형태를 단순화 했습니다. 최종 정점의 갯수는 15개입니다.
-    
-    * ![image](https://github.com/user-attachments/assets/17933064-55e1-4b32-988b-75a9e7f44bdb)
+  
+  	```
+	void CNavMeshView::RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float fEpsilon, OUT vector<Vec3>& vecOut)
+	{
+		// 가장 멀리 떨어진 선분 탐색
+		_float fDmax = 0.0f;
+		size_t iIndex = 0;
+		size_t iEnd = vecPointList.size() - 1;
+	
+		for (size_t i = 1; i < iEnd; i++)
+		{
+			_float fD = PerpendicularDistance(vecPointList[i], vecPointList[0], vecPointList[iEnd]);
+
+			if (fD > fDmax)
+			{
+				iIndex = i;
+				fDmax = fD;
+			}
+		}
+
+		// fEpsilon보다 fDmax가 크다면
+		if (fDmax > fEpsilon)
+		{
+			// 재귀 수행
+			vector<Vec3> vecRecResults1;
+			vector<Vec3> vecRecResults2;
+			vector<Vec3> vecFirstLine(vecPointList.begin(), vecPointList.begin() + iIndex + 1);
+			vector<Vec3> vecLastLine(vecPointList.begin() + iIndex, vecPointList.end());
+			RamerDouglasPeucker(vecFirstLine, fEpsilon, vecRecResults1);
+			RamerDouglasPeucker(vecLastLine, fEpsilon, vecRecResults2);
+
+			// 최종 리스트
+			vecOut.assign(vecRecResults1.begin(), vecRecResults1.end() - 1);
+			vecOut.insert(vecOut.end(), vecRecResults2.begin(), vecRecResults2.end());
+		}
+		else
+		{
+			vecOut.clear();
+			vecOut.push_back(vecPointList[0]);
+			vecOut.push_back(vecPointList[iEnd]);
+		}
+	}
+	```
+
+    ![image](https://github.com/user-attachments/assets/17933064-55e1-4b32-988b-75a9e7f44bdb)
 
   * 최종적으로 삼각형의 갯수를 77개에서 15개로 줄여 생성되는 삼각형의 수와 속도를 향상시킬 수 있었습니다.
 
