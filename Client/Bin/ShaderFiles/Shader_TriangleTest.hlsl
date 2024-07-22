@@ -154,7 +154,7 @@ bool IntersectTriangleAABB(float3 vT0, float3 vT1, float3 vT2, float3 vCenter, f
     return true;
 }
 
-[numthreads(256, 1, 1)]
+[numthreads(1024, 1, 1)]
 void CS_MAIN(uint iId : SV_GroupIndex)
 {
     float3 vP0 = InputCell[iId].vPoint0;

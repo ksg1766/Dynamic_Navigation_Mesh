@@ -237,7 +237,3 @@ public:
 };
 
 END
-
-// DP
-// https://m.blog.naver.com/dorergiverny/223113215510
-// https://rosettacode.org/wiki/Ramer-Douglas-Peucker_line_simplification
