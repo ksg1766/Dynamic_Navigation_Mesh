@@ -403,6 +403,13 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 	DynamicCreate(*pObst);
 
+	for (auto& iter : pObst->vecPoints)
+	{
+		BoundingSphere tSphere(iter, 0.1f);
+
+		m_vecObstaclePointSpheres.emplace_back(tSphere);
+	}
+
 	return S_OK;
 }
 
@@ -1654,7 +1661,7 @@ _float CNavMeshView::PerpendicularDistance(const Vec3& vPoint, const Vec3& vLine
 	_float fDx = vLineEnd.x - vLineStart.x;
 	_float fDz = vLineEnd.z - vLineStart.z;
 
-	//Normalise
+	// Normalize
 	_float fMag = pow(pow(fDx, 2.0f) + pow(fDz, 2.0f), 0.5f);
 
 	if (fMag > 0.0f)
@@ -1666,14 +1673,12 @@ _float CNavMeshView::PerpendicularDistance(const Vec3& vPoint, const Vec3& vLine
 	_float fPvx = vPoint.x - vLineStart.x;
 	_float fPvz = vPoint.z - vLineStart.z;
 
-	//Get dot product (project pv onto normalized direction)
+	// normalized 방향에 대한 pv길이
 	_float fPvdot = fDx * fPvx + fDz * fPvz;
 
-	//Scale line direction vector
 	_float fDsx = fPvdot * fDx;
 	_float fDsz = fPvdot * fDz;
 
-	//Subtract this from pv
 	_float fAx = fPvx - fDsx;
 	_float fAz = fPvz - fDsz;
 
@@ -1682,12 +1687,7 @@ _float CNavMeshView::PerpendicularDistance(const Vec3& vPoint, const Vec3& vLine
 
 void CNavMeshView::RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float fEpsilon, vector<Vec3>& OUT vecOut)
 {
-	if (vecPointList.size() < 2)
-	{
-		throw invalid_argument("Not enough points to simplify");
-	}
-
-	// Find the point with the maximum distance from line between start and end
+	// 가장 멀리 떨어진 선분 탐색
 	_float fDmax = 0.0f;
 	size_t iIndex = 0;
 	size_t iEnd = vecPointList.size() - 1;
@@ -1703,10 +1703,10 @@ void CNavMeshView::RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float 
 		}
 	}
 
-	// If max distance is greater than epsilon, recursively simplify
+	// fEpsilon보다 fDmax가 크다면
 	if (fDmax > fEpsilon)
 	{
-		// Recursive call
+		// 재귀 수행
 		vector<Vec3> vecRecResults1;
 		vector<Vec3> vecRecResults2;
 		vector<Vec3> vecFirstLine(vecPointList.begin(), vecPointList.begin() + iIndex + 1);
@@ -1714,18 +1714,12 @@ void CNavMeshView::RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float 
 		RamerDouglasPeucker(vecFirstLine, fEpsilon, vecRecResults1);
 		RamerDouglasPeucker(vecLastLine, fEpsilon, vecRecResults2);
 
-		// Build the result list
+		// 최종 리스트
 		vecOut.assign(vecRecResults1.begin(), vecRecResults1.end() - 1);
 		vecOut.insert(vecOut.end(), vecRecResults2.begin(), vecRecResults2.end());
-
-		if (vecOut.size() < 2)
-		{
-			throw runtime_error("Problem assembling output");
-		}
 	}
 	else
 	{
-		//Just return start and end points
 		vecOut.clear();
 		vecOut.push_back(vecPointList[0]);
 		vecOut.push_back(vecPointList[iEnd]);
