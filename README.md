@@ -12,6 +12,34 @@
       
   * 외곽선 영역이 Mesh에 너무 가까이 생성되지 않고 약간 확장해 떨어져 생성 될 수 있도록 구현했습니다.
     * 각 정점의 normal을 계산해 외부 방향으로 정점을 확장 이동했습니다. 시계방향 확인을 통해 normal이 영역의 내부를 향한다면 방향을 반대로 뒤집었습니다.
+
+      ```
+		vector<Vec3> CNavMeshView::ExpandOutline(const vector<iVec3>& vecOutline, _float fDistance)
+		{
+			vector<Vec3> vecExpandedOutline;
+			_int iSize = vecOutline.size();
+
+			_bool isClockwise = IsClockwise(vecOutline);
+
+			for (_int i = 0; i < iSize; ++i)
+     		{
+				const iVec3& vPrev = vecOutline[(i - 1 + iSize) % iSize];
+				const iVec3& vCurrent = vecOutline[i];
+				const iVec3& vNext = vecOutline[(i + 1) % iSize];
+				Vec3 vNormal = CalculateNormal(vPrev, vCurrent, vNext);
+
+				if (false == isClockwise)
+				{
+					vNormal = { -vNormal.x, 0.0f, -vNormal.z };
+				}
+
+				Vec3 vExpandedPoint = { (_float)vCurrent.x + vNormal.x * fDistance, (_float)(vCurrent.y), (_float)vCurrent.z + vNormal.z * fDistance };
+				vecExpandedOutline.push_back(vExpandedPoint);
+      	}
+
+      	return vecExpandedOutline;
+      }
+      ```
       
       ![image](https://github.com/user-attachments/assets/34341de1-976f-44db-b2fd-be776b3e4e33)
     
