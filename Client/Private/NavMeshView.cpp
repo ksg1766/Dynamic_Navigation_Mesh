@@ -1673,19 +1673,20 @@ _float CNavMeshView::PerpendicularDistance(const Vec3& vPoint, const Vec3& vLine
 	_float fPvx = vPoint.x - vLineStart.x;
 	_float fPvz = vPoint.z - vLineStart.z;
 
-	// normalized 방향에 대한 pv길이
+	// Normalized 방향에 대한 pv길이(내적)
 	_float fPvdot = fDx * fPvx + fDz * fPvz;
 
+	// 선분 방향 확장 및 최종 거리 계산
 	_float fDsx = fPvdot * fDx;
 	_float fDsz = fPvdot * fDz;
 
 	_float fAx = fPvx - fDsx;
 	_float fAz = fPvz - fDsz;
 
-	return pow(pow(fAx, 2.0) + pow(fAz, 2.0), 0.5);
+	return sqrt(pow(fAx, 2.0f) + pow(fAz, 2.0f));
 }
 
-void CNavMeshView::RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float fEpsilon, vector<Vec3>& OUT vecOut)
+void CNavMeshView::RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float fEpsilon, OUT vector<Vec3>& vecOut)
 {
 	// 가장 멀리 떨어진 선분 탐색
 	_float fDmax = 0.0f;
