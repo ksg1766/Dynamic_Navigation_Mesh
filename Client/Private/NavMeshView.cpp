@@ -106,6 +106,11 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 		return E_FAIL;
 	}
 
+	if (FAILED(LoadObstacleOutlineData()))
+	{
+		return E_FAIL;
+	}
+
 	if (FAILED(InitialSetting()))
 	{
 		return E_FAIL;
@@ -363,53 +368,6 @@ HRESULT CNavMeshView::BakeNavMesh()
 	
 	SetUpNeighbors(m_vecCells);
 
-	// temp
-	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
-
-	map<LAYERTAG, class CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
-	if (iter == mapLayers.end())
-	{
-		return S_OK;
-	}
-
-	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
-
-	vector<Vec3> vecOutlines;
-	CalculateObstacleOutline(vecObjects[0], vecOutlines);
-
-	Obst* pObst = new Obst;
-
-	for (_int i = 0; i < vecOutlines.size(); ++i)
-	{
-		pObst->vecPoints.emplace_back(Vec3::Transform(vecOutlines[i], vecObjects[0]->GetTransform()->WorldMatrix()));
-	}
-
-	TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
-	for (auto vPoint : pObst->vecPoints)
-	{
-		if (fMaxX < vPoint.x) fMaxX = vPoint.x;
-		if (fMinX > vPoint.x) fMinX = vPoint.x;
-
-		if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
-		if (fMinZ > vPoint.z) fMinZ = vPoint.z;
-	}
-
-	pObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
-	pObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f, 10.f, (fMaxZ - fMinZ) * 0.5f);
-
-	SetPolygonHoleCenter(*pObst);
-	
-	m_vecObstacles.push_back(pObst);
-
-	DynamicCreate(*pObst);
-
-	for (auto& iter : pObst->vecPoints)
-	{
-		BoundingSphere tSphere(iter, 0.1f);
-
-		m_vecObstaclePointSpheres.emplace_back(tSphere);
-	}
-
 	return S_OK;
 }
 
@@ -566,6 +524,59 @@ HRESULT CNavMeshView::BakeNavMeshLegacy()
 	}
 
 	return S_OK;
+}
+
+HRESULT CNavMeshView::BakeSingleObstacleData()
+{
+	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
+
+	map<LAYERTAG, class CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
+	if (iter == mapLayers.end())
+	{
+		return E_FAIL;
+	}
+
+	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
+
+	vector<Vec3> vecOutlines;
+
+	vecObjects[0]->GetTransform()->SetPosition(Vec3::Zero);
+	CalculateObstacleOutline(vecObjects[0], vecOutlines);
+
+	Obst* pObst = new Obst;
+
+	for (_int i = 0; i < vecOutlines.size(); ++i)
+	{
+		pObst->vecPoints.emplace_back(vecOutlines[i]);
+	}
+
+	TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
+	for (auto vPoint : pObst->vecPoints)
+	{
+		if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+		if (fMinX > vPoint.x) fMinX = vPoint.x;
+
+		if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+		if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+	}
+
+	const _float fAABBOffset = 0.05f;
+	pObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+	pObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
+
+	SetPolygonHoleCenter(*pObst);
+
+	m_vecObstacles.push_back(pObst);
+	s2cPushBack(m_strObstacles, Utils::ToString(vecObjects[0]->GetObjectTag()));
+
+	DynamicCreate(*pObst);
+
+	for (auto& iter : pObst->vecPoints)
+	{
+		BoundingSphere tSphere(iter, 0.1f);
+
+		m_vecObstaclePointSpheres.emplace_back(tSphere);
+	}
 }
 
 HRESULT CNavMeshView::UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst)
@@ -838,6 +849,22 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 
 	SafeReleaseTriangle(tIn);
 	SafeReleaseTriangle(tOut);
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::DynamicCreate(CGameObject* const pGameObject)
+{
+	auto ObstPrefab = m_mapObstaclePrefabs.find(pGameObject->GetObjectTag());
+	if (m_mapObstaclePrefabs.end() != ObstPrefab)
+	{
+		Obst* pObst = new Obst(ObstPrefab->second, pGameObject->GetTransform()->WorldMatrix());
+
+		if (FAILED(DynamicCreate(*pObst)))
+		{
+			return E_FAIL;
+		}
+	}
 
 	return S_OK;
 }
@@ -1399,15 +1426,15 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 
 HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline)
 {
-	CModel* pModel = pGameObject->GetModel();
+	CModel* const pModel = pGameObject->GetModel();
 
 	if (nullptr == pModel)
 	{
 		return E_FAIL;
 	}
 
-	vector<Vec3>& vecSurfaceVtx = pModel->GetSurfaceVtx();
-	vector<FACEINDICES32>& vecSurfaceIdx = pModel->GetSurfaceIdx();
+	const vector<Vec3>& vecSurfaceVtx = pModel->GetSurfaceVtx();
+	const vector<FACEINDICES32>& vecSurfaceIdx = pModel->GetSurfaceIdx();
 
 	_float fDistance = FLT_MAX;
 	_float fMinDistance = FLT_MAX;
@@ -1418,12 +1445,13 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 
 	vector<iVec3> vecIntersected;
 
-	for (_int i = -512; i < 512; ++i)
+	//for (_int i = -512; i < 512; ++i)
+	for (_int i = -64; i < 64; ++i)
 	{
-		cVerticalRay.position = Vec3((_float)i, 0.05f, -512.0f);
+		cVerticalRay.position = Vec3((_float)i, 0.05f, -64.0f);
 		cVerticalRay.direction = Vec3::Backward;
 
-		cHorizontalRay.position = Vec3(-512.0f, 0.05f, (_float)i);
+		cHorizontalRay.position = Vec3(-64.0f, 0.05f, (_float)i);
 		cHorizontalRay.direction = Vec3::Right;
 
 		for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
@@ -1463,7 +1491,7 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 
 	Dfs(vStart, setPoints, vecTightOutline);
 
-	vecExpandedOutline = ExpandOutline(vecTightOutline, 2.f);
+	vecExpandedOutline = ExpandOutline(vecTightOutline, 2.0f);
 	vecClearOutline = ProcessIntersections(vecExpandedOutline);
 	
 	RamerDouglasPeucker(vecClearOutline, 1.2f, vecOutline);
@@ -1644,6 +1672,19 @@ vector<Vec3> CNavMeshView::ProcessIntersections(vector<Vec3>& vecExpandedOutline
 				i = j; // 교차 구간 skip
 				isIntersected = true;
 				break;
+			}
+		}
+
+		if (false == isIntersected && vecExpandedOutline.size() > 2)
+		{
+			const Vec3& vP2 = vecExpandedOutline[iSize - 1];
+			const Vec3& vQ2 = vecExpandedOutline[1];
+			Vec3 vIntersection;
+
+			if (true == IntersectSegments(vP1, vQ1, vP2, vQ2, vIntersection))
+			{
+				vecResult.push_back(vIntersection);
+				isIntersected = true;
 			}
 		}
 
@@ -2197,13 +2238,43 @@ void CNavMeshView::InfoView()
 		BakeNavMesh();
 	}
 
+	static _bool bBakeSingle = false;
+	if (true == bBakeSingle && 1 == m_vecObstacles.size())
+	{		
+		if (ImGui::Button("SaveSingleObst"))
+		{
+			if (SUCCEEDED(SaveObstacleLocalOutline(m_vecObstacles[0], m_strObstacles[0])))
+			{
+				MSG_BOX("Succeed to Save Single Obstacle");
+			}
+			else
+			{
+				MSG_BOX("Failed to Save Single Obstacle");
+			}
+		}
+	}
+	else if(false == bBakeSingle && 0 == m_vecObstacles.size())
+	{
+		if (ImGui::Button("BakeSingleObst"))
+		{
+			if (SUCCEEDED(BakeSingleObstacleData()))
+			{
+				MSG_BOX("Succeed to Save Single Obstacle");
+				bBakeSingle = true;
+			}
+			else
+			{
+				MSG_BOX("Failed to Save Single Obstacle");
+			}
+		}
+	}ImGui::NewLine();
+
 	ImGui::ListBox("Data Files", &m_file_Current, m_vecDataFiles.data(), m_vecDataFiles.size(), 3);
 
 	if (ImGui::Button("SaveNav"))
 	{
 		SaveNvFile();
-	}
-	ImGui::SameLine();
+	}ImGui::SameLine();
 
 	if (ImGui::Button("LoadNav"))
 	{
@@ -2478,4 +2549,145 @@ void CNavMeshView::Free()
 		Safe_Delete(obst);
 	}
 	m_vecObstacles.clear();
+}
+
+HRESULT Client::CNavMeshView::SaveObstacleLocalOutline(const Obst* const pObst, string strName)
+{
+	fs::path strPath("../Bin/Resources/NavObstacles/");
+
+	fs::create_directories(strPath);
+
+	shared_ptr<tinyxml2::XMLDocument> document = make_shared<tinyxml2::XMLDocument>();
+
+	tinyxml2::XMLDeclaration* decl = document->NewDeclaration();
+	document->LinkEndChild(decl);
+
+	tinyxml2::XMLElement* root = document->NewElement(strName.c_str());
+	document->LinkEndChild(root);
+
+	tinyxml2::XMLElement* node = nullptr;
+	tinyxml2::XMLElement* element = nullptr;
+
+	node = document->NewElement(strName.c_str());
+
+	root->LinkEndChild(node);
+	{
+		element = document->NewElement("InnerPoint");
+		element->SetAttribute("X", pObst->vInnerPoint.x);
+		element->SetAttribute("Y", pObst->vInnerPoint.y);
+		element->SetAttribute("Z", pObst->vInnerPoint.z);
+		node->LinkEndChild(element);
+
+		element = document->NewElement("AABBCenter");
+		element->SetAttribute("X", pObst->tAABB.Center.x);
+		element->SetAttribute("Y", pObst->tAABB.Center.y);
+		element->SetAttribute("Z", pObst->tAABB.Center.z);
+		node->LinkEndChild(element);
+
+		element = document->NewElement("AABBExtents");
+		element->SetAttribute("X", pObst->tAABB.Extents.x);
+		element->SetAttribute("Y", pObst->tAABB.Extents.y);
+		element->SetAttribute("Z", pObst->tAABB.Extents.z);
+		node->LinkEndChild(element);
+
+		element = document->NewElement("Points");
+		tinyxml2::XMLElement* point = nullptr;
+		for (_int j = 0; j < pObst->vecPoints.size(); ++j)
+		{
+			string strName = "Point" + to_string(j);
+			point = document->NewElement(strName.c_str());
+			point->SetAttribute("X", pObst->vecPoints[j].x);
+			point->SetAttribute("Y", pObst->vecPoints[j].y);
+			point->SetAttribute("Z", pObst->vecPoints[j].z);
+			element->LinkEndChild(point);
+		}
+		node->LinkEndChild(element);
+	}
+
+	fs::path finalPath = strPath.generic_string() + strName + ".xml";
+
+	return (tinyxml2::XML_SUCCESS == document->SaveFile(finalPath.generic_string().c_str())) ? S_OK : E_FAIL;
+}
+
+HRESULT CNavMeshView::LoadObstacleOutlineData()
+{
+	fs::path strDirectoryPath("../Bin/Resources/NavObstacles/");
+
+	string strFileName;
+
+	if (false == fs::exists(strDirectoryPath) || false == fs::is_directory(strDirectoryPath))
+	{
+		return E_FAIL;
+	}
+
+	for (const auto& entry : fs::directory_iterator(strDirectoryPath))
+	{
+		if (false == entry.is_regular_file() || ".xml" != entry.path().extension())
+		{
+			MSG_BOX("Failed to Load");
+			return E_FAIL;
+		}
+
+		shared_ptr<tinyxml2::XMLDocument> document = make_shared<tinyxml2::XMLDocument>();
+		tinyxml2::XMLError error = document->LoadFile(entry.path().generic_string().c_str());
+		assert(error == tinyxml2::XML_SUCCESS);
+
+		tinyxml2::XMLElement* root = nullptr;
+		root = document->FirstChildElement();
+		tinyxml2::XMLElement* node = nullptr;
+		node = root->FirstChildElement();
+
+		if (nullptr == node)
+		{
+			MSG_BOX("Fail to Load");
+			return E_FAIL;
+		}
+
+		// Obstacles
+		tinyxml2::XMLElement* element = nullptr;
+		while (nullptr != node)
+		{
+			Obst* pObst = new Obst;
+
+			// InnerPoint
+			element = node->FirstChildElement();
+			pObst->vInnerPoint.x = element->FloatAttribute("X");
+			pObst->vInnerPoint.y = element->FloatAttribute("Y");
+			pObst->vInnerPoint.z = element->FloatAttribute("Z");
+
+			// AABB
+			element = element->NextSiblingElement();
+			pObst->tAABB.Center.x = element->FloatAttribute("X");
+			pObst->tAABB.Center.y = element->FloatAttribute("Y");
+			pObst->tAABB.Center.z = element->FloatAttribute("Z");
+
+			element = element->NextSiblingElement();
+			pObst->tAABB.Extents.x = element->FloatAttribute("X");
+			pObst->tAABB.Extents.y = element->FloatAttribute("Y");
+			pObst->tAABB.Extents.z = element->FloatAttribute("Z");
+
+			// Points
+			element = element->NextSiblingElement();
+			tinyxml2::XMLElement* point = element->FirstChildElement();
+			while (nullptr != point)
+			{
+				Vec3 vPoint;
+				vPoint.x = point->FloatAttribute("X");
+				vPoint.y = point->FloatAttribute("Y");
+				vPoint.z = point->FloatAttribute("Z");
+
+				pObst->vecPoints.push_back(vPoint);
+
+				point = point->NextSiblingElement();
+			}
+
+			m_mapObstaclePrefabs.emplace(entry.path().filename().stem().generic_wstring(), *pObst);
+
+			Safe_Delete(pObst);
+
+			node = node->NextSiblingElement();
+		}
+	}
+	
+	return S_OK;
 }

@@ -30,6 +30,22 @@ struct iVec3
 
 typedef struct tagObstacle
 {
+	explicit tagObstacle() = default;
+	explicit tagObstacle(const tagObstacle& rhs) = default;
+	tagObstacle(const tagObstacle& rhs, const Matrix& matWorld)
+	{
+		vInnerPoint = Vec3::Transform(rhs.vInnerPoint, matWorld);
+		tAABB.Center = Vec3::Transform(rhs.tAABB.Center, matWorld);
+		tAABB.Extents = rhs.tAABB.Extents;
+
+		vecPoints.reserve(rhs.vecPoints.size());
+
+		for (_int i = 0; i < rhs.vecPoints.size(); ++i)
+		{
+			vecPoints.emplace_back(Vec3::Transform(rhs.vecPoints[i], matWorld));
+		}
+	}
+	
 	Vec3 vInnerPoint = Vec3::Zero;
 	BoundingBox tAABB;
 
@@ -57,6 +73,9 @@ public:
 	virtual HRESULT LateTick()				override;
 	virtual HRESULT	DebugRender()			override;
 
+public:
+	HRESULT DynamicCreate(CGameObject* const pGameObject);
+
 private:
 	void	ClearNeighbors(vector<CellData*>& vecCells);
 	void	SetUpNeighbors(vector<CellData*>& vecCells);
@@ -64,6 +83,7 @@ private:
 
 	HRESULT	BakeNavMesh();
 	HRESULT	BakeNavMeshLegacy();
+	HRESULT	BakeSingleObstacleData();
 
 	HRESULT	UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
 	HRESULT	UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
@@ -100,7 +120,7 @@ private:
 	vector<Vec3> ProcessIntersections(vector<Vec3>& vecExpandedOutline);
 
 	_float	PerpendicularDistance(const Vec3& vPt, const Vec3& vLineStart, const Vec3& vLineEnd);
-	void	RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float fEpsilon, vector<Vec3>& OUT vecOut);
+	void	RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float fEpsilon, OUT vector<Vec3>& vecOut);
 
 private:
 	void	Input();
@@ -110,6 +130,9 @@ private:
 	HRESULT	LoadNvFile();
 	HRESULT	DeleteNvFile();
 	HRESULT	RefreshNvFile();
+
+	HRESULT	SaveObstacleLocalOutline(const Obst* const pObst, string strName);
+	HRESULT	LoadObstacleOutlineData();
 
 private:
 	void	InfoView();
@@ -177,6 +200,8 @@ private:
 	_int					m_item_Current = 0;
 	string					m_strFilePath = "StaticObstacles";
 	vector<const _char*>	m_vecDataFiles;
+
+	map<wstring, Obst>	m_mapObstaclePrefabs;
 
 	// Legacy
 	_bool					m_isNavMeshOn = false;

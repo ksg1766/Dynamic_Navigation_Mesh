@@ -81,7 +81,7 @@ HRESULT CBasicTerrain::Ready_FixedComponents(void* pArg)
 
 	if (nullptr == pArg)
 	{
-		if (FAILED(static_cast<CTerrain*>(GetFixedComponent(ComponentType::Terrain))->InitializeJustGrid(1024U, 1024U, 1U, 1U)))
+		if (FAILED(static_cast<CTerrain*>(GetFixedComponent(ComponentType::Terrain))->InitializeJustGrid(1024U, 1024U, 64U, 64U)))
 			return E_FAIL;
 
 		if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Shader, TEXT("Prototype_Component_Shader_VtxDebug"))))

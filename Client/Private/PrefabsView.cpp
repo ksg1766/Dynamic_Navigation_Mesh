@@ -169,6 +169,7 @@ void CPrefabsView::PlaceObject(const LAYERTAG& eLayerTag, const wstring& strObje
 	CGameObject* pGameObject = m_pGameInstance->CreateObject(strPrototypeTag, eLayerTag);
 
 	pGameObject->GetTransform()->Translate(vPickPosition);
+	m_pMediator->OnNotifiedPlaceObstacle(pGameObject);
 }
 
 CPrefabsView* CPrefabsView::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, CTerrain* m_pTerrainBf)

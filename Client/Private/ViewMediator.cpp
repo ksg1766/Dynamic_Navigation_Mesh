@@ -39,6 +39,11 @@ void CViewMediator::OnNotifiedPickingOn(CView* pSender)
 	}
 }
 
+void CViewMediator::OnNotifiedPlaceObstacle(CGameObject* const pGameObject)
+{
+	m_pNavMeshView->DynamicCreate(pGameObject);
+}
+
 void CViewMediator::SetPrefabsView(CPrefabsView* pPrefabsView)
 { 
 	m_pPrefabsView = pPrefabsView;
