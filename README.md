@@ -1,14 +1,38 @@
 # 📅 2024.07.19
 📋 진행 사항
-  * 3D Obstacle 배치할 때, 지형에 외곽선이 그려지도록 구현했습니다.
-    * 아래와 같은 형태로 Ray Casting해 충돌 지점을 검출해 외곽선의 정점을 구성했습니다.
+  * 3D Obstacle 배치할 때, 지형에 외곽선이 그려지도록 구현했습니다. 다음과 같은 작업들을 통해 정점의 갯수를 줄여 생성되는 삼각형의 수를 줄일 수 있었습니다.
+    * 아래와 같은 형태로 Mesh의 하단부에 Ray Casting해 충돌 지점을 검출해 외곽선의 정점을 구성했습니다.
+    * 길이 1단위로 Ray와 교차하는 지점을 구한 후, DFS를 이용해 외곽선을 구성했습니다.
+      
+      ![image](https://github.com/user-attachments/assets/555caf8a-e3f4-4413-96d4-8d57e84d33a2)
+      
+    * 결과는 아래와 같습니다. 아래 사진에서 outline의 총 점점의 갯수는 77개입니다.
+      
+      ![image](https://github.com/user-attachments/assets/ccd18e59-8bcb-45ca-a7e9-864516c0ee13)
       
   * 외곽선 영역이 Mesh에 너무 가까이 생성되지 않고 약간 확장해 떨어져 생성 될 수 있도록 구현했습니다.
-    * 
+    * 각 정점의 normal을 계산해 외부 방향으로 정점을 확장 이동했습니다. 시계방향 확인을 통해 normal이 영역의 내부를 향한다면 방향을 반대로 뒤집었습니다.
+      
+      ![image](https://github.com/user-attachments/assets/34341de1-976f-44db-b2fd-be776b3e4e33)
+    
   * 외곽선 영역을 확장했을 때, 교차지점이 생기지 않도록 구현했습니다.
-    * 
-  * 외곽선을 형성하는 정점의 갯수를 줄이고 형태를 단순화 하고자 Douglas Peuker 알고리즘을 적용해 형태를 단순화 했습니다.
-    * 
+    * edge의 교차판정을 통해 두 edge가 교차한다면 사이의 정점들을 모두 제거하고 교차점으로 대체했습니다. 점점의 갯수는 71개입니다.
+      
+      ![image](https://github.com/user-attachments/assets/747fea07-aa21-489e-9d48-cf7bbb7e5c3b)
+
+    * 아래는 일부 교차지점이 제거된 모습입니다.
+      
+      ![image](https://github.com/user-attachments/assets/b0c61277-24ac-48e5-a789-dc1c345f3777)
+    
+  * 외곽선을 형성하는 정점의 갯수를 줄이고 형태를 단순화 하고자 Douglas Peuker 알고리즘을 적용해 형태를 단순화 했습니다. 최종 정점의 갯수는 15개입니다.
+    
+    * ![image](https://github.com/user-attachments/assets/17933064-55e1-4b32-988b-75a9e7f44bdb)
+
+  * 최종적으로 삼각형의 갯수를 77개에서 15개로 줄여 생성되는 삼각형의 수와 속도를 향상시킬 수 있었습니다.
+
+⚽ 이후 계획
+  * 최종 정점 데이터를 데이터 파일에 포함할 계획입니다.
+  * 삼각형 네비게이션 메쉬에서 경로 탐색을 구현하기 위한 알고리즘 공부중입니다.
 
 ---
 * ~~240719 생각 메모...~~
