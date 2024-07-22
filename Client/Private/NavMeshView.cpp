@@ -721,7 +721,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	for (auto tCell : setIntersected)
 	{
 		for (uint8 i = 0; i < LINE_END; ++i)
-		{	// neighbor가 유효한 edge 추출 
+		{	// neighbor가 유효한 edge 추출
 			if (setIntersected.end() == setIntersected.find(tCell->arrNeighbors[i]))
 			{	// 해당 edge는 outline
 				if (mapOutlineCells.end() != mapOutlineCells.find(tCell->vPoints[i]))
@@ -864,7 +864,38 @@ HRESULT CNavMeshView::DynamicCreate(CGameObject* const pGameObject)
 			return E_FAIL;
 		}
 
+		m_hmapObstacleIndex[pGameObject] = m_vecObstacles.size();	// 불편하지만 트랜스촘 변환을 위해... 일단은 이렇게 해두자.
 		m_vecObstacles.push_back(pObst);
+	}
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::UpdateObstacleTransform(CGameObject* const pGameObject)
+{
+	auto Obst = m_hmapObstacleIndex.find(pGameObject);
+
+	if (m_hmapObstacleIndex.end() == Obst)
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(DynamicDelete(*m_vecObstacles[Obst->second])))
+	{
+		return E_FAIL;
+	}
+
+	Safe_Delete(m_vecObstacles[Obst->second]);
+	//Safe_Delete(m_strObstacles[Obst->second]);
+
+	auto iter = m_vecObstacles.begin() + Obst->second;
+	//auto iterStr = m_strObstacles.begin() + Obst->second;
+	m_vecObstacles.erase(iter);
+	//m_strObstacles.erase(iterStr);
+
+	if (FAILED(DynamicCreate(pGameObject)))
+	{
+		return E_FAIL;
 	}
 
 	return S_OK;

@@ -38,6 +38,7 @@ private:
 	string				m_strPickedObject;
 	//CTransform*			m_pTransform;
 	CGameObject*		m_pGameObject = nullptr;
+	_bool				m_bObjectChanged = false;
 
 	_int				m_Item_Current = 0;
 

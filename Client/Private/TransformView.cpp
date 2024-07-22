@@ -5,6 +5,7 @@
 #include "Transform.h"
 #include "Terrain.h"
 #include "Utils.h"
+#include "ViewMediator.h"
 //
 #include "StaticBase.h"
 
@@ -123,6 +124,8 @@ void CTransformView::TransformController()
 		pTransform->SetScale(vScale);
 		pTransform->Rotate(vRotation);
 		pTransform->SetPosition(vPosition);
+
+		m_pMediator->OnNotifiedTransformChanged(m_pGameObject);
 	}
 }
 

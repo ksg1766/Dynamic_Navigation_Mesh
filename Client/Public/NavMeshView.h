@@ -44,6 +44,20 @@ typedef struct tagObstacle
 		{
 			vecPoints.emplace_back(Vec3::Transform(rhs.vecPoints[i], matWorld));
 		}
+
+		TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
+		for (auto vPoint : vecPoints)
+		{
+			if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+			if (fMinX > vPoint.x) fMinX = vPoint.x;
+
+			if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+			if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+		}
+
+		const _float fAABBOffset = 0.05f;
+		tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+		tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
 	}
 	
 	Vec3 vInnerPoint = Vec3::Zero;
@@ -75,6 +89,7 @@ public:
 
 public:
 	HRESULT DynamicCreate(CGameObject* const pGameObject);
+	HRESULT UpdateObstacleTransform(CGameObject* const pGameObject);
 
 private:
 	void	ClearNeighbors(vector<CellData*>& vecCells);
@@ -165,6 +180,7 @@ private:
 	vector<const _char*>	m_strPoints;
 
 	vector<Obst*>			m_vecObstacles;
+	unordered_map<CGameObject*, _short>	m_hmapObstacleIndex;
 	vector<const _char*>	m_strObstacles;
 	vector<Vec3>			m_vecObstaclePoints;
 	vector<const _char*>	m_strObstaclePoints;
@@ -201,7 +217,7 @@ private:
 	string					m_strFilePath = "StaticObstacles";
 	vector<const _char*>	m_vecDataFiles;
 
-	map<wstring, Obst>	m_mapObstaclePrefabs;
+	map<wstring, Obst>		m_mapObstaclePrefabs;
 
 	// Legacy
 	_bool					m_isNavMeshOn = false;
