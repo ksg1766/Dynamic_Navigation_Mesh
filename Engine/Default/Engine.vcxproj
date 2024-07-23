@@ -185,13 +185,7 @@ call Copy.bat</Command>
     </FxCompile>
     <ClInclude Include="..\Public\Animation.h" />
     <ClInclude Include="..\public\Base.h" />
-    <ClInclude Include="..\Public\BehaviorTree.h" />
     <ClInclude Include="..\Public\Bone.h" />
-    <ClInclude Include="..\Public\BT_Action.h" />
-    <ClInclude Include="..\Public\BT_Composite.h" />
-    <ClInclude Include="..\Public\BT_Abort.h" />
-    <ClInclude Include="..\Public\BT_Decorator.h" />
-    <ClInclude Include="..\Public\BT_Node.h" />
     <ClInclude Include="..\Public\Camera.h" />
     <ClInclude Include="..\Public\CameraManager.h" />
     <ClInclude Include="..\Public\Cell.h" />
@@ -267,32 +261,16 @@ call Copy.bat</Command>
     <ClInclude Include="..\public\VIBuffer.h" />
     <ClInclude Include="..\Public\VIBuffer_Cell.h" />
     <ClInclude Include="..\Public\VIBuffer_Cube.h" />
-    <ClInclude Include="..\Public\VIBuffer_Dot.h" />
     <ClInclude Include="..\Public\VIBuffer_Grid.h" />
     <ClInclude Include="..\Public\VIBuffer_Instance.h" />
     <ClInclude Include="..\Public\VIBuffer_ParticleSystem.h" />
     <ClInclude Include="..\Public\VIBuffer_Point.h" />
     <ClInclude Include="..\public\VIBuffer_Rect.h" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_PostProcess.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../Bin/ShaderFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </AdditionalIncludeDirectories>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Animation.cpp" />
     <ClCompile Include="..\private\Base.cpp" />
-    <ClCompile Include="..\Private\BehaviorTree.cpp" />
     <ClCompile Include="..\Private\Bone.cpp" />
-    <ClCompile Include="..\Private\BT_Action.cpp" />
-    <ClCompile Include="..\Private\BT_Composite.cpp" />
-    <ClCompile Include="..\Private\BT_Abort.cpp" />
-    <ClCompile Include="..\Private\BT_Decorator.cpp" />
-    <ClCompile Include="..\Private\BT_Node.cpp" />
     <ClCompile Include="..\Private\Camera.cpp" />
     <ClCompile Include="..\Private\CameraManager.cpp" />
     <ClCompile Include="..\Private\Cell.cpp" />
@@ -355,7 +333,6 @@ call Copy.bat</Command>
     <ClCompile Include="..\private\VIBuffer.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Cell.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Cube.cpp" />
-    <ClCompile Include="..\Private\VIBuffer_Dot.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Grid.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Instance.cpp" />
     <ClCompile Include="..\Private\VIBuffer_ParticleSystem.cpp" />

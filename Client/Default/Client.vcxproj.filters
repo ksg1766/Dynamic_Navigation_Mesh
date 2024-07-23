@@ -115,12 +115,6 @@
     <Filter Include="03.GameObjects\01.Playable\TempCube\00.GameObject">
       <UniqueIdentifier>{19ba0693-056c-4617-a870-a8b73617aef6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife">
-      <UniqueIdentifier>{0fbf463f-1bb6-4749-a99e-32622afe4f0e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Script">
-      <UniqueIdentifier>{cc513126-8d06-4a05-86f2-19b84d62430f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\99.BackGround">
       <UniqueIdentifier>{327a42a0-45f0-4b4d-b8cd-bb209baedc94}</UniqueIdentifier>
     </Filter>
@@ -145,27 +139,6 @@
     <Filter Include="03.GameObjects\98.Camera\01.MainCamera\Script">
       <UniqueIdentifier>{5c7e68d7-8b95-4ea2-868c-2f65d5a1612c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\State">
-      <UniqueIdentifier>{70859d86-9931-4177-b022-ff101db9f0c0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\State\00.Idle">
-      <UniqueIdentifier>{39b34663-ef83-4fe2-9eb2-132c783c9e32}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\State\01.Run">
-      <UniqueIdentifier>{9c0cd635-02f3-42c6-9316-ebd23f49ee80}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\State\03.Jump">
-      <UniqueIdentifier>{5ed3e432-9bcf-4a33-9d14-5527d4bd1864}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\State\04.Dash">
-      <UniqueIdentifier>{c6c83032-262d-4c93-9e18-2f36a6b15849}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Ammo">
-      <UniqueIdentifier>{44d0eb6d-1b6d-4731-8770-291a16644535}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\Ammo\Base">
-      <UniqueIdentifier>{254b5cf2-ca93-45d5-b979-bc4eb8e8c205}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Levels\02.GameTool\View\NavMeshView">
       <UniqueIdentifier>{c6dc7fa4-a266-4b6f-98b6-de967c3ebeea}</UniqueIdentifier>
     </Filter>
@@ -178,9 +151,6 @@
     <Filter Include="03.GameObjects\05.Particle\Script">
       <UniqueIdentifier>{235fcff1-0585-4907-82ad-8450231857f3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.P_Strife\MotionTrail">
-      <UniqueIdentifier>{c9d6acb2-b31e-4b9c-9e63-eea59647ce87}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\00.Static\SkyBox">
       <UniqueIdentifier>{f4a2fcae-ca40-4f7a-bed8-a4f0c9f40e69}</UniqueIdentifier>
     </Filter>
@@ -189,6 +159,12 @@
     </Filter>
     <Filter Include="03.GameObjects\00.Static\StaticScene">
       <UniqueIdentifier>{29654f1c-3463-4ee1-a341-7d0cc73610ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.GameObjects\01.Playable\00.Agent">
+      <UniqueIdentifier>{0fbf463f-1bb6-4749-a99e-32622afe4f0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.GameObjects\01.Playable\00.Agent\Script">
+      <UniqueIdentifier>{cc513126-8d06-4a05-86f2-19b84d62430f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -306,8 +282,8 @@
     <ClInclude Include="..\Public\AnimationView.h">
       <Filter>01.Levels\02.GameTool\View\AnimationView</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\P_Strife.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife</Filter>
+    <ClInclude Include="..\Public\Agent.h">
+      <Filter>03.GameObjects\01.Playable\00.Agent</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\MainCamera.h">
       <Filter>03.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
@@ -315,20 +291,8 @@
     <ClInclude Include="..\Public\MainCameraController.h">
       <Filter>03.GameObjects\98.Camera\01.MainCamera\Script</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\PlayerController.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\P_Strife_State_Idle.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\00.Idle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\P_Strife_State_Run.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\01.Run</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\P_Strife_State_Dash.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\04.Dash</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\P_Strife_State_Jump.h">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\03.Jump</Filter>
+    <ClInclude Include="..\Public\AgentController.h">
+      <Filter>03.GameObjects\01.Playable\00.Agent\Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\NavMeshView.h">
       <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
@@ -452,8 +416,8 @@
     <ClCompile Include="..\Private\AnimationView.cpp">
       <Filter>01.Levels\02.GameTool\View\AnimationView</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\P_Strife.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife</Filter>
+    <ClCompile Include="..\Private\Agent.cpp">
+      <Filter>03.GameObjects\01.Playable\00.Agent</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\MainCamera.cpp">
       <Filter>03.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
@@ -461,20 +425,8 @@
     <ClCompile Include="..\Private\MainCameraController.cpp">
       <Filter>03.GameObjects\98.Camera\01.MainCamera\Script</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\PlayerController.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\P_Strife_State_Idle.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\00.Idle</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\P_Strife_State_Run.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\01.Run</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\P_Strife_State_Dash.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\04.Dash</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\P_Strife_State_Jump.cpp">
-      <Filter>03.GameObjects\01.Playable\00.P_Strife\State\03.Jump</Filter>
+    <ClCompile Include="..\Private\AgentController.cpp">
+      <Filter>03.GameObjects\01.Playable\00.Agent\Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\NavMeshView.cpp">
       <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
@@ -533,7 +485,7 @@
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMesh.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNonAnimInstancing.hlsl">
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMeshInstancing.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl">

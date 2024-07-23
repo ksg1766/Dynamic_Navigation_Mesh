@@ -75,7 +75,6 @@ private:
 	enum LINES	: uint8	{ LINE_AB, LINE_BC, LINE_CA, LINE_END };
 
 	enum class TRIMODE : uint8 { DEFAULT, OBSTACLE, REGION, MODE_END };
-	enum class STRESSMODE : uint8 { SINGLERECT, MULTIRECT, STRESS_END };
 
 private:
 	CNavMeshView(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -160,18 +159,11 @@ private:
 	HRESULT Reset();
 
 private:
-	// World Grid Data
-	bitset<2048>			m_bitWorldGrid;	// 외곽선 데이터 따로 저장해두는거면 굳이 bitset은 필요 없음. 굳이 그 용도로는. 길찾기에는 필요할지도..!
-	
-	
+	// 
 
-	// binarize할때 minmax xz 함께 기록?
 
-	// 만약 렌더타겟에  찍는다면?
+	// Path Finding (A*)
 
-	// triangulate
-	triangulateio			m_tIn, m_tOut, m_tVD_out;
-	_char					m_szTriswitches[3] = "pz";
 
 	// Cell Data
 	_int					m_iStaticPointCount = 0;
@@ -195,6 +187,10 @@ private:
 	_bool					m_bStressTest = false;
 	Obst*					m_pStressObst = nullptr;
 	Matrix					m_matStressOffset = Matrix::Identity;
+
+	// triangulate
+	triangulateio			m_tIn, m_tOut, m_tVD_out;
+	_char					m_szTriswitches[3] = "pz";
 
 	// Default
 	CTerrain*				m_pTerrainBuffer = nullptr;

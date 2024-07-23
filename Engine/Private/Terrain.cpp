@@ -478,7 +478,7 @@ void CTerrain::DebugRender()
 #endif // DEBUG
 }
 
-_bool CTerrain::Pick(_uint screenX, _uint screenY, Vec3& pickPos, OUT _float& distance, const Matrix& matWorld)
+_bool CTerrain::Pick(_uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float& distance, const Matrix& matWorld)
 {
 	//Matrix W = m_pGameObject->GetTransform()->WorldMatrix();
 	CPipeLine* pPipeLine = GET_INSTANCE(CPipeLine);

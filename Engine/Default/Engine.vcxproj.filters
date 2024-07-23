@@ -142,9 +142,6 @@
     <Filter Include="01.Utiltiy\04.Component\12.StateMachine">
       <UniqueIdentifier>{73b7215a-e731-4b18-9915-043f905ec4cb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Utiltiy\04.Component\13.BehaviorTree">
-      <UniqueIdentifier>{344a011b-a510-4b32-a4ec-9c33ab51fbb7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Utiltiy\04.Component\12.StateMachine\States">
       <UniqueIdentifier>{50ac689e-a2f2-402e-a3d3-b04becd36484}</UniqueIdentifier>
     </Filter>
@@ -156,24 +153,6 @@
     </Filter>
     <Filter Include="01.Utiltiy\04.Component\14.NavMeshAgent\Cell">
       <UniqueIdentifier>{63aca66b-9f37-4d0a-95c8-02be847199b3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\13.BehaviorTree\BT_Node">
-      <UniqueIdentifier>{c24df5a1-c167-4e9c-b1d0-67c20480fb85}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\04.BT_Action">
-      <UniqueIdentifier>{7a647226-167f-4324-8506-09b32818b590}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\02.BT_Decorator">
-      <UniqueIdentifier>{afaa03ea-1661-4c80-9479-aa88452deb0a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\01.BT_Composite">
-      <UniqueIdentifier>{1fc7bb9e-a199-4805-ba88-09dbb71b5535}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\00.BT_Base">
-      <UniqueIdentifier>{e391db15-ba98-4381-be2a-6c6bc30c4bf1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\03.BT_Abort">
-      <UniqueIdentifier>{c30807fb-6864-4876-999b-14ef7895452e}</UniqueIdentifier>
     </Filter>
     <Filter Include="01.Utiltiy\01.Managers\10.ShaderManager">
       <UniqueIdentifier>{91e43967-acbd-4c97-bd1e-0976f90d7976}</UniqueIdentifier>
@@ -222,9 +201,6 @@
     </Filter>
     <Filter Include="01.Utiltiy\04.Component\11.Model\01.Mesh">
       <UniqueIdentifier>{ca11ab3f-e0c9-44a0-9e86-9f5eafa4d113}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\05.Buffer\Dot">
-      <UniqueIdentifier>{a93a80fa-3480-4062-abb7-bcdcd928afd1}</UniqueIdentifier>
     </Filter>
     <Filter Include="01.Utiltiy\04.Component\05.Buffer\ParticleSystem">
       <UniqueIdentifier>{e0f2570e-850f-4cbe-bfff-561a47893bd3}</UniqueIdentifier>
@@ -438,24 +414,6 @@
     <ClInclude Include="..\Public\Cell.h">
       <Filter>01.Utiltiy\04.Component\14.NavMeshAgent\Cell</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\BehaviorTree.h">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\BT_Action.h">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\04.BT_Action</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\BT_Composite.h">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\01.BT_Composite</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\BT_Abort.h">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\03.BT_Abort</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\BT_Decorator.h">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\02.BT_Decorator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\BT_Node.h">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\00.BT_Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\ShaderManager.h">
       <Filter>01.Utiltiy\01.Managers\10.ShaderManager</Filter>
     </ClInclude>
@@ -476,9 +434,6 @@
     </ClInclude>
     <ClInclude Include="..\Public\Light.h">
       <Filter>01.Utiltiy\04.Component\15.Light</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\VIBuffer_Dot.h">
-      <Filter>01.Utiltiy\04.Component\05.Buffer\Dot</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\VIBuffer_ParticleSystem.h">
       <Filter>01.Utiltiy\04.Component\05.Buffer\ParticleSystem</Filter>
@@ -695,24 +650,6 @@
     <ClCompile Include="..\Private\Cell.cpp">
       <Filter>01.Utiltiy\04.Component\14.NavMeshAgent\Cell</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\BehaviorTree.cpp">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\BT_Action.cpp">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\04.BT_Action</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\BT_Composite.cpp">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\01.BT_Composite</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\BT_Abort.cpp">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\03.BT_Abort</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\BT_Decorator.cpp">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\02.BT_Decorator</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\BT_Node.cpp">
-      <Filter>01.Utiltiy\04.Component\13.BehaviorTree\BT_Node\00.BT_Base</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\ShaderManager.cpp">
       <Filter>01.Utiltiy\01.Managers\10.ShaderManager</Filter>
     </ClCompile>
@@ -733,9 +670,6 @@
     </ClCompile>
     <ClCompile Include="..\Private\Light.cpp">
       <Filter>01.Utiltiy\04.Component\15.Light</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\VIBuffer_Dot.cpp">
-      <Filter>01.Utiltiy\04.Component\05.Buffer\Dot</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\VIBuffer_ParticleSystem.cpp">
       <Filter>01.Utiltiy\04.Component\05.Buffer\ParticleSystem</Filter>
@@ -763,9 +697,6 @@
       <Filter>01.Utiltiy\04.Component\06.Shader\ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Engine_Shader_Defines.hlsl">
-      <Filter>01.Utiltiy\04.Component\06.Shader\ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_PostProcess.hlsl">
       <Filter>01.Utiltiy\04.Component\06.Shader\ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>

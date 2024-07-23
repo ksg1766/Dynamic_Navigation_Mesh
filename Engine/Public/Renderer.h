@@ -13,7 +13,7 @@ class ENGINE_DLL CRenderer final : public CComponent
 public:
 	/* RG_NONBLEND : 이후 그려지는 Blend오브젝트들의 섞는 연산을 위해 반드시 불투명한 애들을 먼저 그려야한다. */
 	/* RG_BLEND : 반투명하게 그려지는 객체들도 반드시 멀리있는 놈부터 그린다. */
-	enum RENDERGROUP { RG_PRIORITY, RG_NONLIGHT, RG_SHADOW, RG_SHADOW_INSTANCE, RG_NONBLEND_INSTANCE, RG_NONBLEND, RG_PARTICLE_INSTANCE, RG_WATER, RG_DISTORTION, RG_BLEND, RG_BLEND_INSTANCE, RG_UI, RG_END };
+	enum RENDERGROUP { RG_PRIORITY, RG_NONLIGHT, RG_SHADOW_INSTANCE, RG_NONBLEND_INSTANCE, RG_NONBLEND, RG_BLEND, RG_BLEND_INSTANCE, RG_UI, RG_END };
 private:
 	CRenderer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);	
 	CRenderer(const CRenderer& rhs) = delete;
@@ -56,7 +56,6 @@ private:
 	_int										m_iMaxWaterCaptureCount = 1;
 
 	_float4x4									m_LightView, m_LightProj;
-	_float										m_fShadowTargetSizeRatio = 8.f;
 
 #ifdef _DEBUG
 private:
@@ -69,18 +68,9 @@ private:
 	HRESULT Render_NonLight();
 	HRESULT Render_NonBlend();
 	HRESULT Render_NonBlend_Instance();
-	HRESULT Render_Particle_Instance();
 
 	HRESULT Render_LightAcc();
 	HRESULT Render_Deferred();
-
-	HRESULT Render_Water();
-
-	HRESULT Render_Shadow();
-	HRESULT Render_GodRay();
-	HRESULT Render_Blur();
-	HRESULT Render_Distortion();
-	HRESULT Render_PostProcess();
 
 	HRESULT Render_Blend();
 	HRESULT Render_Blend_Instance();

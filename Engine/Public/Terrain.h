@@ -21,7 +21,7 @@ public:
 	void			DebugRender()	override;
 
 public:
-	_bool			Pick(_uint screenX, _uint screenY, Vec3& pickPos, OUT _float& distance, const Matrix& matWorld);
+	_bool			Pick(_uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float& distance, const Matrix& matWorld);
 
 private:
 	_ulong				m_iNumVerticesX = { 0 };

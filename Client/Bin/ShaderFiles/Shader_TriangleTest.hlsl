@@ -39,39 +39,12 @@ bool IntersectTriangleAABB(float3 vT0, float3 vT1, float3 vT2, float3 vCenter, f
 
     //// region Test axes vA00..vA22 (category 3)
 
-    // Axis vA00
-    float3 vA00 = float3(0.0f, -vEdge0.z, vEdge0.y);
-    float fP0 = dot(vV0, vA00);
-    float fP1 = dot(vV1, vA00);
-    float fP2 = dot(vV2, vA00);
-    float fR = vExtents.y * abs(vEdge0.z) + vExtents.z * abs(vEdge0.y);
-    if (max(-Max(fP0, fP1, fP2), Min(fP0, fP1, fP2)) > fR)
-       return false;
-
-    // Axis vA01
-    float3 vA01 = float3(0, -vEdge1.z, vEdge1.y);
-    fP0 = dot(vV0, vA01);
-    fP1 = dot(vV1, vA01);
-    fP2 = dot(vV2, vA01);
-    fR = vExtents.y * abs(vEdge1.z) + vExtents.z * abs(vEdge1.y);
-    if (max(-Max(fP0, fP1, fP2), Min(fP0, fP1, fP2)) > fR)
-        return false;
-
-    // Axis vA02
-    float3 vA02 = float3(0.0f, -vEdge2.z, vEdge2.y);
-    fP0 = dot(vV0, vA02);
-    fP1 = dot(vV1, vA02);
-    fP2 = dot(vV2, vA02);
-    fR = vExtents.y * abs(vEdge2.z) + vExtents.z * abs(vEdge2.y);
-    if (max(-Max(fP0, fP1, fP2), Min(fP0, fP1, fP2)) > fR)
-        return false;
-
     // Axis vA10
     float3 vA10 = float3(vEdge0.z, 0.0f, -vEdge0.x);
-    fP0 = dot(vV0, vA10);
-    fP1 = dot(vV1, vA10);
-    fP2 = dot(vV2, vA10);
-    fR = vExtents.x * abs(vEdge0.z) + vExtents.z * abs(vEdge0.x);
+    float fP0 = dot(vV0, vA10);
+    float fP1 = dot(vV1, vA10);
+    float fP2 = dot(vV2, vA10);
+    float fR = vExtents.x * abs(vEdge0.z) + vExtents.z * abs(vEdge0.x);
     if (max(-Max(fP0, fP1, fP2), Min(fP0, fP1, fP2)) > fR)
         return false;
 
@@ -90,6 +63,33 @@ bool IntersectTriangleAABB(float3 vT0, float3 vT1, float3 vT2, float3 vCenter, f
     fP1 = dot(vV1, vA12);
     fP2 = dot(vV2, vA12);
     fR = vExtents.x * abs(vEdge2.z) + vExtents.z * abs(vEdge2.x);
+    if (max(-Max(fP0, fP1, fP2), Min(fP0, fP1, fP2)) > fR)
+        return false;
+
+    // Axis vA00
+    float3 vA00 = float3(0.0f, -vEdge0.z, vEdge0.y);
+   fP0 = dot(vV0, vA00);
+   fP1 = dot(vV1, vA00);
+   fP2 = dot(vV2, vA00);
+   fR = vExtents.y * abs(vEdge0.z) + vExtents.z * abs(vEdge0.y);
+    if (max(-Max(fP0, fP1, fP2), Min(fP0, fP1, fP2)) > fR)
+       return false;
+
+    // Axis vA01
+    float3 vA01 = float3(0, -vEdge1.z, vEdge1.y);
+    fP0 = dot(vV0, vA01);
+    fP1 = dot(vV1, vA01);
+    fP2 = dot(vV2, vA01);
+    fR = vExtents.y * abs(vEdge1.z) + vExtents.z * abs(vEdge1.y);
+    if (max(-Max(fP0, fP1, fP2), Min(fP0, fP1, fP2)) > fR)
+        return false;
+
+    // Axis vA02
+    float3 vA02 = float3(0.0f, -vEdge2.z, vEdge2.y);
+    fP0 = dot(vV0, vA02);
+    fP1 = dot(vV1, vA02);
+    fP2 = dot(vV2, vA02);
+    fR = vExtents.y * abs(vEdge2.z) + vExtents.z * abs(vEdge2.y);
     if (max(-Max(fP0, fP1, fP2), Min(fP0, fP1, fP2)) > fR)
         return false;
 
@@ -129,14 +129,15 @@ bool IntersectTriangleAABB(float3 vT0, float3 vT1, float3 vT2, float3 vCenter, f
     if (Max(vV0.x, vV1.x, vV2.x) < -vExtents.x || Min(vV0.x, vV1.x, vV2.x) > vExtents.x)
         return false;
 
+     // ... [-vExtents.z, vExtents.z] and [Min(vV0.z,vV1.z,vV2.z), Max(vV0.z,vV1.z,vV2.z)] do not overlap
+    if (Max(vV0.z, vV1.z, vV2.z) < -vExtents.z || Min(vV0.z, vV1.z, vV2.z) > vExtents.z)
+        return false;
+
     // ... [-vExtents.y, vExtents.y] and [Min(vV0.y,vV1.y,vV2.y), Max(vV0.y,vV1.y,vV2.y)] do not overlap
     if (Max(vV0.y, vV1.y, vV2.y) < -vExtents.y || Min(vV0.y, vV1.y, vV2.y) > vExtents.y)
         return false;
 
-    // ... [-vExtents.z, vExtents.z] and [Min(vV0.z,vV1.z,vV2.z), Max(vV0.z,vV1.z,vV2.z)] do not overlap
-    if (Max(vV0.z, vV1.z, vV2.z) < -vExtents.z || Min(vV0.z, vV1.z, vV2.z) > vExtents.z)
-        return false;
-
+   
     //// endregion
 
     //// region Test separating axis corresponding to triangle face normal (category 2)

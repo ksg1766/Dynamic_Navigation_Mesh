@@ -22,7 +22,6 @@
 #include "VIBuffer_Cube.h"
 #include "VIBuffer_Grid.h"
 #include "VIBuffer_Instance.h"
-#include "VIBuffer_Dot.h"
 #include "VIBuffer_ParticleSystem.h"
 
 /* 컴포넌트들의 원형을 보관한다. */

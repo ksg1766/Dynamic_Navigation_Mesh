@@ -1078,10 +1078,10 @@ HRESULT CNavMeshView::StressTest()
 		}
 		else
 		{
-			fStressRadian += 0.1f;
+			fStressRadian += 0.03f;
 		}
 
-		static const _float fSpeed = 3.0f;
+		static const _float fSpeed = 0.03f;
 
 		if (KEY_PRESSING(KEY::LEFT_ARROW))
 			vStressPosition.x -= fSpeed;
@@ -1096,10 +1096,10 @@ HRESULT CNavMeshView::StressTest()
 
 		m_pStressObst = new Obst;
 
-		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(-12.0f, 0.0f, -12.0f), matOffset));
-		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(-12.0f, 0.0f, +12.0f), matOffset));
-		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(+12.0f, 0.0f, +12.0f), matOffset));
-		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(+12.0f, 0.0f, -12.0f), matOffset));
+		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(-10.0f, 0.0f, -10.0f), matOffset));
+		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(-10.0f, 0.0f, +10.0f), matOffset));
+		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(+10.0f, 0.0f, +10.0f), matOffset));
+		m_pStressObst->vecPoints.emplace_back(Vec3::Transform(Vec3(+10.0f, 0.0f, -10.0f), matOffset));
 
 		TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
 		for (auto vPoint : m_pStressObst->vecPoints)
@@ -1365,7 +1365,7 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected)
 {
 #pragma region CPU
-	/*for (_int i = 0; i < m_vecCells.size(); ++i)
+	for (_int i = 0; i < m_vecCells.size(); ++i)
 	{
 		if (true == m_vecCells[i]->isDead)
 		{
@@ -1387,73 +1387,73 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 		}
 	}
 
-	return S_OK;*/
+	return S_OK;
 #pragma endregion CPU
 
 #pragma region GPU
-	vector<array<Vec3, 3>> vecTriangle(m_vecCells.size());
-	CStructuredBuffer* pStructuredBuffer = nullptr;
+	//vector<array<Vec3, 3>> vecTriangle(m_vecCells.size());
+	//CStructuredBuffer* pStructuredBuffer = nullptr;
 
-	for (_int i = 0; i < m_vecCells.size(); ++i)
-	{
-		if (true == m_vecCells[i]->isDead)
-		{
-			auto iter = m_vecCells.begin() + i;
-			m_vecCells.erase(iter);
-			--i;
+	//for (_int i = 0; i < m_vecCells.size(); ++i)
+	//{
+	//	if (true == m_vecCells[i]->isDead)
+	//	{
+	//		auto iter = m_vecCells.begin() + i;
+	//		m_vecCells.erase(iter);
+	//		--i;
 
-			continue;
-		}
+	//		continue;
+	//	}
 
-		if (true == m_vecCells[i]->isNew)
-		{
-			m_vecCells[i]->isNew = false;
-		}
+	//	if (true == m_vecCells[i]->isNew)
+	//	{
+	//		m_vecCells[i]->isNew = false;
+	//	}
 
-		vecTriangle[i] = m_vecCells[i]->vPoints;	// CellData를 경량화 해서 복사 없이 바로 전달하도록 만들어보자.
-	}
+	//	vecTriangle[i] = m_vecCells[i]->vPoints;	// CellData를 경량화 해서 복사 없이 바로 전달하도록 만들어보자.
+	//}
 
-	vecTriangle.shrink_to_fit();
-	vector<BOOL> vecTriTestResult(m_vecCells.size());
+	//vecTriangle.shrink_to_fit();
+	//vector<BOOL> vecTriTestResult(m_vecCells.size());
 
-	pStructuredBuffer = CStructuredBuffer::Create(m_pDevice, m_pContext, vecTriangle.data(), 3 * sizeof(Vec3), m_vecCells.size(), sizeof(BOOL), m_vecCells.size());
+	//pStructuredBuffer = CStructuredBuffer::Create(m_pDevice, m_pContext, vecTriangle.data(), 3 * sizeof(Vec3), m_vecCells.size(), sizeof(BOOL), m_vecCells.size());
 
-	if (FAILED(m_pCS_TriTest->Bind_RawValue("gObstCenter", &tObst.tAABB.Center, sizeof(Vec3))) || 
-		FAILED(m_pCS_TriTest->Bind_RawValue("gObstExtents", &tObst.tAABB.Extents, sizeof(Vec3))))
-	{
-		return E_FAIL;
-	}
-	
-	if (FAILED(m_pCS_TriTest->Bind_Resource("InputCell", pStructuredBuffer->GetSRV())))
-	{
-		return E_FAIL;
-	}
-	
-	if (FAILED(m_pCS_TriTest->Get_UAV("Output", pStructuredBuffer->GetUAV())))
-	{
-		return E_FAIL;
-	}
+	//if (FAILED(m_pCS_TriTest->Bind_RawValue("gObstCenter", &tObst.tAABB.Center, sizeof(Vec3))) || 
+	//	FAILED(m_pCS_TriTest->Bind_RawValue("gObstExtents", &tObst.tAABB.Extents, sizeof(Vec3))))
+	//{
+	//	return E_FAIL;
+	//}
+	//
+	//if (FAILED(m_pCS_TriTest->Bind_Resource("InputCell", pStructuredBuffer->GetSRV())))
+	//{
+	//	return E_FAIL;
+	//}
+	//
+	//if (FAILED(m_pCS_TriTest->Get_UAV("Output", pStructuredBuffer->GetUAV())))
+	//{
+	//	return E_FAIL;
+	//}
 
-	if(FAILED(m_pCS_TriTest->Dispatch(0, ceil(m_vecCells.size() / 128.0), 1, 1)))
-	{
-		return E_FAIL;
-	}
+	//if(FAILED(m_pCS_TriTest->Dispatch(0, ceil(m_vecCells.size() / 128.0), 1, 1)))
+	//{
+	//	return E_FAIL;
+	//}
 
-	if (FAILED(pStructuredBuffer->CopyFromOutput(vecTriTestResult.data())))
-	{
-		return E_FAIL;
-	}
+	//if (FAILED(pStructuredBuffer->CopyFromOutput(vecTriTestResult.data())))
+	//{
+	//	return E_FAIL;
+	//}
 
-	for (_int i = 0; i < vecTriTestResult.size(); ++i)
-	{
-		if (false != vecTriTestResult[i])
-		{
-			setIntersected.emplace(m_vecCells[i]);
-		}
-	}
+	//for (_int i = 0; i < vecTriTestResult.size(); ++i)
+	//{
+	//	if (false != vecTriTestResult[i])
+	//	{
+	//		setIntersected.emplace(m_vecCells[i]);
+	//	}
+	//}
 
-	Safe_Release(pStructuredBuffer);
-#pragma region GPU
+	//Safe_Release(pStructuredBuffer);
+#pragma endregion GPU
 }
 
 HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline)
@@ -1605,7 +1605,7 @@ Vec3 CNavMeshView::CalculateNormal(const iVec3& vPrev, const iVec3& vCurrent, co
 	vDir1.Normalize();
 	vDir2.Normalize();
 
-	Vec3 vNormal = { vDir1.z + vDir2.z, 0.0f, -vDir1.x - vDir2.x };
+	Vec3 vNormal = { -vDir1.z - vDir2.z, 0.0f, vDir1.x + vDir2.x };
 	
 	vNormal.Normalize();
 
@@ -1623,7 +1623,8 @@ _bool CNavMeshView::IsClockwise(const vector<iVec3>& vecPoints)
 		fSum += (p2.x - p1.x) * (p2.z + p1.z);
 	}
 
-	return fSum < 0;
+	//return fSum < 0;
+	return fSum > 0;
 }
 
 vector<Vec3> CNavMeshView::ExpandOutline(const vector<iVec3>& vecOutline, _float fDistance)
@@ -1735,6 +1736,7 @@ _float CNavMeshView::PerpendicularDistance(const Vec3& vPoint, const Vec3& vLine
 	_float fDz = vLineEnd.z - vLineStart.z;
 
 	// Normalize
+	// (vLineEnd - vLineStart).Normalize()
 	_float fMag = pow(pow(fDx, 2.0f) + pow(fDz, 2.0f), 0.5f);
 
 	if (fMag > 0.0f)
@@ -2723,3 +2725,64 @@ HRESULT CNavMeshView::LoadObstacleOutlineData()
 	
 	return S_OK;
 }
+
+// Returns a list representing the optimal path between startNode and endNode or null if such a path does not exist
+// If the path exists, the order is such that elements can be popped off the path
+// Note: if you use this code in Javascript, make sure that the toString function of each node returns a unique value
+
+/*
+FindRoute = function (startNode, goalNode)
+{
+	var frontier = PriorityQueue({low: true});
+	// what have we not explored?
+
+	var explored = new Set();
+	// what have we explored?
+
+	var pathTo = {};
+	// A dictionary mapping from nodes to nodes,
+	// used to keep track of the path
+	// The node that is the key
+
+	var gCost = {};
+	// A dictionary mapping from nodes to floats,
+	// used to keep track of the "G cost" associated with traveling to each node from startNode
+
+	pathTo[startNode] = null;
+	gCost[startNode] = 0.0;
+	frontier.push(startNode, 0.0 + HeuristicCostEstimate(startNode, goalNode));
+
+	while (!frontier.empty())
+	{
+		// While the frontier remains unexplored
+		var leafNode = frontier.Values[0];
+		if (leafNode == goalNode)
+		{ // We found the solution! Reconstruct it.
+			var path = [];
+			var pointer = goalNode;
+			while (pointer != null)
+			{
+				path.push(pointer);
+				pointer = pathTo[pointer];
+			}
+
+			return path;
+		}
+
+		frontier.pop();
+		explored.add(leafNode);
+		for (var i = 0; i < leafNode.linkedTo.length; i++)
+		{
+			var connectedNode = leafNode.linkedTo[i];
+			if (!explored.contains(connectedNode) && !frontier.includes(connectedNode))
+			{
+				gCost[connectedNode] = gCost[leafNode] + CostBetween(leafNode, connectedNode);
+				pathTo[connectedNode] = leafNode;
+				frontier.push(connectedNode, gCost[connectedNode] + HeuristicCostEstimate(connectedNode, goalNode));
+			}
+		}
+	}
+
+	return null; // No path could be found
+}
+*/

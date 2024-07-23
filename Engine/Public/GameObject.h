@@ -35,23 +35,16 @@ public:
 	virtual void			DebugRender();
 	virtual HRESULT			Render();
 	virtual HRESULT			RenderInstance();
-	virtual HRESULT			RenderShadow(const Matrix& matLightView, const Matrix& matLightProj) { return S_OK; }
 	virtual HRESULT			AddRenderGroup() { return S_OK; }
 
 	CComponent*				GetFixedComponent(const ComponentType& type);
 	CTransform*				GetTransform();
 	CVIBuffer* const		GetBuffer();
 	CRigidBody*				GetRigidBody();
-	//CCamera*				GetCamera();
-	//CMeshRenderer*		GetMeshRenderer();
-	//CModelRenderer*		GetModelRenderer();
-	//CModelAnimator*		GetModelAnimator();
 	CModel*					GetModel();
 	CRenderer*				GetRenderer();
 	CShader*				GetShader();
 	CTexture*				GetTexture();
-	//CLight*				GetLight();
-	//CTerrain*				GetTerrain();
 	CNavMeshAgent*			GetNavMeshAgent();
 
 
@@ -70,9 +63,6 @@ public:
 	void					SetInstance(_bool bInstance)				{ m_IsInstance = bInstance; }
 
 	HRESULT					AddComponent(_uint iLevelIndex, const ComponentType& type, const wstring& strPrototypeTag, void* pArg = nullptr);
-
-	/*void					SetLayerIndex(uint8 layer) { m_i8LayerIndex = layer; }
-	uint8					GetLayerIndex() { return m_i8LayerIndex; }*/
 
 	virtual	void			OnCollisionEnter(CGameObject* pOther)		{};
 	virtual	void			OnCollisionStay(CGameObject* pOther)		{};

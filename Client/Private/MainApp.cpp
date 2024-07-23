@@ -162,9 +162,9 @@ HRESULT CMainApp::Ready_Prototype_Components()
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxTexFetchAnim.hlsl"), VTXANIMMESH::Elements, VTXANIMMESH::iNumElements))))
 		return E_FAIL;
 	
-	/* For.Prototype_Component_Shader_VtxNonAnimInstancing */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxNonAnimInstancing"),
-		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxNonAnimInstancing.hlsl"), VTXMESH::Elements, VTXMESH::iNumElements))))
+	/* For.Prototype_Component_Shader_VtxMeshInstancing */
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxMeshInstancing"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxMeshInstancing.hlsl"), VTXMESH::Elements, VTXMESH::iNumElements))))
 		return E_FAIL;
 
 	/* For.Prototype_Component_Shader_VtxAnimInstancing */
@@ -215,11 +215,6 @@ HRESULT CMainApp::Ready_Prototype_Components()
 	/* For.Prototype_Component_VIBuffer_Point */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Point"),
 		CVIBuffer_Point::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	
-	/* For.Prototype_Component_VIBuffer_Dot */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Dot"),
-		CVIBuffer_Dot::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_Component_Terrain */

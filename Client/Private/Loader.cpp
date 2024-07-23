@@ -8,17 +8,16 @@
 #include "BasicTerrain.h"
 #include "TempCube.h"
 #include "CollisionTest.h"
-#include "PlayerController.h"
+#include "AgentController.h"
 #include "MainCameraController.h"
 #include "StateMachine.h"
-#include "BehaviorTree.h"
 #include "TestAIController.h"
 #include "FlyingCamera.h"
 #include "MainCamera.h"
 #include "StaticTest.h"
 #include "StaticBase.h"
 #include "StaticScene.h"
-#include "P_Strife.h"
+#include "Agent.h"
 #include "SkyBox.h"
 
 CLoader::CLoader(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
@@ -178,11 +177,6 @@ HRESULT CLoader::Loading_Components_For_Level_GamePlay()
 		CStateMachine::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* For.Prototype_Component_BehaviorTree */
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_BehaviorTree"),
-		CBehaviorTree::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
 	/* For.Prototype_Component_NavMeshAgent */
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_NavMeshAgent"),
 		CNavMeshAgent::Create(m_pDevice, m_pContext, TEXT("../Bin/LevelData/NavMesh/MainStageNavMesh.dat")))))
@@ -197,9 +191,9 @@ HRESULT CLoader::Loading_Scripts_For_Level_GamePlay()
 {
 	CGameInstance* pGameInstance = GET_INSTANCE(CGameInstance);
 
-	/* For.Prototype_Component_PlayerController*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_PlayerController"),
-		CPlayerController::Create(m_pDevice, m_pContext))))
+	/* For.Prototype_Component_AgentController*/
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_AgentController"),
+		CAgentController::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_Component_MainCameraController*/
@@ -245,8 +239,8 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GamePlay()
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_StaticTest"), CStaticTest::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* For.Prototype_GameObject_P_Strife */
-  	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_P_Strife"), CP_Strife::Create(m_pDevice, m_pContext))))
+	/* For.Prototype_GameObject_Agent */
+  	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_P_Strife"), CAgent::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_GameObject_SkyBox */

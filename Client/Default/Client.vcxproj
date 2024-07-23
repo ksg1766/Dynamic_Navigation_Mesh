@@ -181,11 +181,7 @@
     <ClInclude Include="..\Public\MainCameraController.h" />
     <ClInclude Include="..\Public\NavMeshView.h" />
     <ClInclude Include="..\Public\NSHelper.h" />
-    <ClInclude Include="..\Public\P_Strife.h" />
-    <ClInclude Include="..\Public\P_Strife_State_Dash.h" />
-    <ClInclude Include="..\Public\P_Strife_State_Idle.h" />
-    <ClInclude Include="..\Public\P_Strife_State_Jump.h" />
-    <ClInclude Include="..\Public\P_Strife_State_Run.h" />
+    <ClInclude Include="..\Public\Agent.h" />
     <ClInclude Include="..\Public\SaveLoadView.h" />
     <ClInclude Include="..\Public\DebugTerrainGrid.h" />
     <ClInclude Include="..\Public\FlyingCameraController.h" />
@@ -208,7 +204,7 @@
     <ClInclude Include="..\public\Loader.h" />
     <ClInclude Include="..\public\MainApp.h" />
     <ClInclude Include="..\Public\PrefabsView.h" />
-    <ClInclude Include="..\Public\PlayerController.h" />
+    <ClInclude Include="..\Public\AgentController.h" />
     <ClInclude Include="..\Public\SkyBox.h" />
     <ClInclude Include="..\Public\StaticBase.h" />
     <ClInclude Include="..\Public\StaticScene.h" />
@@ -238,11 +234,7 @@
     <ClCompile Include="..\Private\NavMeshView.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\Private\P_Strife.cpp" />
-    <ClCompile Include="..\Private\P_Strife_State_Dash.cpp" />
-    <ClCompile Include="..\Private\P_Strife_State_Idle.cpp" />
-    <ClCompile Include="..\Private\P_Strife_State_Jump.cpp" />
-    <ClCompile Include="..\Private\P_Strife_State_Run.cpp" />
+    <ClCompile Include="..\Private\Agent.cpp" />
     <ClCompile Include="..\Private\SaveLoadView.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
@@ -265,7 +257,7 @@
     <ClCompile Include="..\Private\PrefabsView.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\Private\PlayerController.cpp" />
+    <ClCompile Include="..\Private\AgentController.cpp" />
     <ClCompile Include="..\Private\SkyBox.cpp" />
     <ClCompile Include="..\Private\StaticBase.cpp" />
     <ClCompile Include="..\Private\StaticScene.cpp" />
@@ -351,7 +343,7 @@
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeTex.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxDebug.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMesh.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNonAnimInstancing.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMeshInstancing.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxTexFetchAnim.hlsl" />
