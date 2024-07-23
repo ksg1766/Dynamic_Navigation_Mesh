@@ -1,5 +1,5 @@
 ---
-[https://www.notion.so/3-ce15dfe28bc74c5fac609bf0340a0c8f?pvs=4](https://equal-paw-e8f.notion.site/3-ce15dfe28bc74c5fac609bf0340a0c8f?pvs=4)
+https://equal-paw-e8f.notion.site/3-ce15dfe28bc74c5fac609bf0340a0c8f?pvs=4
 
 ---
 # 📅 2024.07.22
