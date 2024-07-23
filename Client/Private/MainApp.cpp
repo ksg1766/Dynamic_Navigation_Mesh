@@ -201,6 +201,11 @@ HRESULT CMainApp::Ready_Prototype_Components()
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Rect"),
 		CVIBuffer_Rect::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	
+	/* For.Prototype_Component_VIBuffer_Sphere */
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Sphere"),
+		CVIBuffer_Sphere::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 
 	/* For.Prototype_Component_VIBuffer_Cube */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Cube"),
@@ -253,6 +258,14 @@ HRESULT CMainApp::Ready_Prototype_Components()
 		CCamera::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 	
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_FlatBlue"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Colors/FlatBlue.png")))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_FlatNormal"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Colors/FlatNormal.png")))))
+		return E_FAIL;
+
 	/* For.Prototype_Component_Texture_SkyBox */
 	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_SkyBox"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SkyBox/SkyBox1.dds")))))
@@ -289,6 +302,8 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			}
 			else if (TEXT("Sphere") == strFileName)
 			{
+				XMStoreFloat4x4(&matPivot, XMMatrixScaling(0.05f, 0.05f, 0.05f));
+
 				if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model_" + strFileName),
 					CModel::Create(m_pDevice, m_pContext, strStaticFilePath + strFileName, desc, matPivot))))
 					return E_FAIL;

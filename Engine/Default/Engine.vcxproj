@@ -173,6 +173,7 @@ call Copy.bat</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\Downloads\Framework\Engine\Public\RenderTarget.h" />
+    <ClInclude Include="..\Public\VIBuffer_Sphere.h" />
     <FxCompile Include="..\Bin\ShaderFiles\Engine_Shader_Defines.hlsl">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -338,6 +339,7 @@ call Copy.bat</Command>
     <ClCompile Include="..\Private\VIBuffer_ParticleSystem.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Point.cpp" />
     <ClCompile Include="..\private\VIBuffer_Rect.cpp" />
+    <ClCompile Include="..\Private\VIBuffer_Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Public\FMOD\fmod.cs" />

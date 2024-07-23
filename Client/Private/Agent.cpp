@@ -28,6 +28,8 @@ HRESULT CAgent::Initialize(void* pArg)
 	if (FAILED(Ready_Scripts(pArg)))
 		return E_FAIL;
 
+	GetTransform()->SetScale(Vec3(20.0f, 20.0f, 20.0f));
+
 	return S_OK;
 }
 
@@ -51,13 +53,19 @@ void CAgent::DebugRender()
 
 HRESULT CAgent::Render()
 {
-	if (nullptr == GetModel() || nullptr == GetShader())
+	if (nullptr == GetBuffer() || nullptr == GetShader())
 		return E_FAIL;
 
 	if (FAILED(Bind_ShaderResources()))
 		return E_FAIL;
 
-	if (FAILED(GetModel()->Render()))
+	if (FAILED(GetTexture()->Bind_ShaderResource(GetShader(), "g_Diffuse2DTexture", 0)))
+			return E_FAIL;
+
+	if (FAILED(GetShader()->Begin()))
+		return E_FAIL;
+
+	if (FAILED(GetBuffer()->Render()))
 		return E_FAIL;
 
 #ifdef _DEBUG
@@ -78,12 +86,11 @@ HRESULT CAgent::AddRenderGroup()
 HRESULT CAgent::Ready_FixedComponents()
 {
 	/* Com_Shader */
-	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Shader, TEXT("Prototype_Component_Shader_VtxMesh"))))
+	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Shader, TEXT("Prototype_Component_Shader_VtxCubeNom"))))
 		return E_FAIL;
-	GetShader()->SetPassIndex(0);
 
-	/* Com_Model */
-	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Model, TEXT("Prototype_Component_Model_Sphere"))))
+	/* Com_Buffer */
+	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Buffer, TEXT("Prototype_Component_VIBuffer_Sphere"))))
 		return E_FAIL;
 
 	/* Com_Transform */
@@ -94,15 +101,17 @@ HRESULT CAgent::Ready_FixedComponents()
 	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Renderer, TEXT("Prototype_Component_Renderer"))))
 		return E_FAIL;
 
-	if (LEVEL_GAMEPLAY == m_pGameInstance->GetCurrentLevelIndex())
-	{
-		/* Com_NavMeshAgent */
-		CNavMeshAgent::NAVIGATION_DESC pNaviDesc;
-		pNaviDesc.iCurrentIndex = 0;
+	//if (LEVEL_GAMEPLAY == m_pGameInstance->GetCurrentLevelIndex())
+	//{
+	//	/* Com_NavMeshAgent */
+	//	CNavMeshAgent::NAVIGATION_DESC pNaviDesc;
+	//	pNaviDesc.iCurrentIndex = 0;
+	//	if (FAILED(Super::AddComponent(LEVEL_GAMEPLAY, ComponentType::NavMeshAgent, TEXT("Prototype_Component_NavMeshAgent"), &pNaviDesc)))
+	//		return E_FAIL;
+	//}
 
-		if (FAILED(Super::AddComponent(LEVEL_GAMEPLAY, ComponentType::NavMeshAgent, TEXT("Prototype_Component_NavMeshAgent"), &pNaviDesc)))
-			return E_FAIL;
-	}
+	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Texture, TEXT("Prototype_Component_Texture_FlatBlue"))))
+		return E_FAIL;
 
 	return S_OK;
 }
@@ -128,7 +137,7 @@ HRESULT CAgent::Bind_ShaderResources()
 		return E_FAIL;
 	}
 	
-	GetShader()->SetPassIndex(4);
+	GetShader()->SetPassIndex(3);
 
 	return S_OK;
 }

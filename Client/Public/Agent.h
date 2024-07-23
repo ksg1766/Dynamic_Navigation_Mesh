@@ -33,6 +33,7 @@ private:
 
 private:
 	CAgentController* m_pController = nullptr;
+	CTexture*		m_pNormalTexture = nullptr;
 
 public:
 	static	CAgent* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

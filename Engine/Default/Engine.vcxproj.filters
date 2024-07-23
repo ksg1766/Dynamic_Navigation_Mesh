@@ -211,6 +211,9 @@
     <Filter Include="00.System\01.Device\02.Sound\FMOD">
       <UniqueIdentifier>{a31d6a5c-9820-429d-98db-05acf5c33729}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utiltiy\04.Component\05.Buffer\Sphere">
+      <UniqueIdentifier>{4fcfa6cd-9d60-4254-9304-db33e4cc3c13}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h">
@@ -465,6 +468,9 @@
     <ClInclude Include="..\Public\FMOD\fmod_output.h">
       <Filter>00.System\01.Device\02.Sound\FMOD</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\VIBuffer_Sphere.h">
+      <Filter>01.Utiltiy\04.Component\05.Buffer\Sphere</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">
@@ -676,6 +682,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\SoundManager.cpp">
       <Filter>01.Utiltiy\01.Managers\11.SoundManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VIBuffer_Sphere.cpp">
+      <Filter>01.Utiltiy\04.Component\05.Buffer\Sphere</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
