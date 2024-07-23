@@ -1,15 +1,16 @@
 # 📅 2024.07.22
 📋 진행 사항
-  * Obstacle이 될 수 있는 일부 3D mesh의 obstacle data를 xml로 저장하도록 했습니다.
+  * obstacle이 될 수 있는 일부 3D mesh의 obstacle data를 xml로 저장하도록 했습니다.
     * 크기가 너무 작은 obstacle의 경우 그냥 outline을 자동 생성하지 않고 직접 값을 설정했습니다.(정밀도를 높여 생성하는 것은 쉽지만 크기가 너무 작다면 비슷한 크기의 aabb로 충분하다고 생각했습니다.)
-    * 이제 obstacle에 대한 data file을 가지고 있는 mesh인 경우, 생성과 동시에 자동으로 네비게이션 메쉬를 Update합니다.
-    * (진행중)Obstacle의 Tranform을 조작할 시, obstacle 영역도 함께 재조정됩니다.
+    * obstacle에 대한 data file을 가지고 있는 mesh인 경우, 생성과 동시에 자동으로 네비게이션 메쉬를 Update합니다.
+    * obstacle의 tranform을 조작할 시, obstacle 영역도 함께 재조정됩니다.
 
 ⚠️ 발견된 문제
   * obstacle의 크기가 너무 작은 경우, outline이 정교하게 생성되지 않습니다. 수치만 조절하면 해결할 수 있는 문제이지만, 그냥 간단한 형태의 aabb로 대체하기로 했습니다.
+  * transform을 조작할 obstacle을 변경할시 프로그램이 중단됩니다. 사이클 문제이므로 코드를 정리하며 수정할 계획입니다.
 
 ⚽ 이후 계획
-  * 작성중...
+  * obstacle이 다수 배치된 환경에서 경로 탐색을 구현할 예정입니다.
 
 ---
 # 📅 2024.07.19
