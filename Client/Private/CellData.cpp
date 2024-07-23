@@ -65,7 +65,7 @@ _bool CellData::ComparePoints(const Vec3& pSour, const Vec3& pDest)
 	return false;
 }
 
-_bool CellData::IsOut(Vec3 vPoint, OUT CellData* pNeighbor)
+_bool CellData::IsOut(Vec3 vPoint, OUT CellData*& pNeighbor)
 {
 	for (size_t i = 0; i < LINE_END; i++)
 	{

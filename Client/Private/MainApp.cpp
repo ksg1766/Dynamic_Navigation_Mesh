@@ -356,6 +356,11 @@ HRESULT CMainApp::Ready_Prototype_Scripts()
 		CDebugTerrainGrid::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	/* For.Prototype_Component_AgentController*/
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_AgentController"),
+		CAgentController::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	return S_OK;
 }
 

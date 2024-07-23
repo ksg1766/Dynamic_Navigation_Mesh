@@ -37,7 +37,7 @@ public:
 	_float	GetHeightOffset();
 	_bool	CanMove(_fvector vPoint);
 
-	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float& distance);
+	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
 
 private:
 	void	Input(_float fTimeDelta);
@@ -46,7 +46,9 @@ private:
 private:
 	CTransform*		m_pTransform = nullptr;
 	Vec3			m_vPrePos;
+	Vec3			m_vDestPos;
 
+	_bool			m_isMoving = false;
 	Vec3			m_vNetMove;
 
 	Vec3			m_vMaxLinearSpeed;

@@ -3,6 +3,12 @@
 #include "Client_Defines.h"
 #include "GameObject.h"
 
+BEGIN(Engine)
+
+class CTerrain;
+
+END
+
 BEGIN(Client)
 
 class CAgentController;
@@ -25,6 +31,9 @@ public:
 	virtual void	DebugRender()				override;
 	virtual HRESULT Render()					override;
 	virtual HRESULT AddRenderGroup()			override;
+
+public:
+	_bool			Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
 
 private:
 	HRESULT			Ready_FixedComponents();

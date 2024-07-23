@@ -827,7 +827,7 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 		m_vecCells[i];
 	}
 
-	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER));
+	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER, *m_vecCells.begin()));
 	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
 
 	return S_OK;
@@ -1396,6 +1396,14 @@ void CNavMeshView::Input()
 		{
 			const POINT& p = m_pGameInstance->GetMousePos();
 			Pick(p.x, p.y);
+		}
+		else
+		{
+			if (nullptr != m_pAgent)
+			{
+				const POINT& p = m_pGameInstance->GetMousePos();
+				m_pAgent->Pick(m_pTerrainBuffer, p.x, p.y);
+			}
 		}
 	}
 }

@@ -22,7 +22,7 @@ struct CellData
 	void	SetUpNormals();
 
 	_bool	ComparePoints(const Vec3& pSour, const Vec3& pDest);
-	_bool	IsOut(Vec3 vPoint, OUT CellData* pNeighbor);
+	_bool	IsOut(Vec3 vPoint, OUT CellData*& pNeighbor);
 	Vec3	GetPassedEdgeNormal(Vec3 vPoint);
 
 	// cache

@@ -2,14 +2,15 @@
 #include "AgentController.h"
 #include "GameInstance.h"
 #include "GameObject.h"
+#include "Terrain.h"
 #include "CellData.h"
 
 constexpr auto EPSILON = 0.001f;
 
 CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	:Super(pDevice, pContext)
-	, m_vLinearSpeed(Vec3(6.3f, 6.3f, 6.3f))
-	, m_vMaxLinearSpeed(Vec3(20.f, 20.f, 20.f))
+	, m_vLinearSpeed(Vec3(10.0f, 10.0f, 10.0f))
+	, m_vMaxLinearSpeed(Vec3(20.0f, 20.0f, 20.0f))
 {
 }
 
@@ -38,11 +39,10 @@ HRESULT CAgentController::Initialize(void* pArg)
 }
 
 void CAgentController::Tick(_float fTimeDelta)
-{
-	if (m_vNetMove.Length() > EPSILON)
-		Move(fTimeDelta);
+{	
+	Move(fTimeDelta);
 
-	if (CanMove(m_pTransform->GetPosition()))
+	if (false == CanMove(m_pTransform->GetPosition()))
 	{
 		m_pTransform->SetPosition(m_vPrePos);
 		// sliding = move - (move · 충돌 edge normal) * 충돌 edge normal
@@ -64,21 +64,12 @@ void CAgentController::DebugRender()
 
 _bool CAgentController::IsIdle()
 {
-	if (!IsMoving())
-	{
-		return true;
-	}
+	return !IsMoving();
 }
 
 _bool CAgentController::IsMoving()
 {
-	if (KEY_PRESSING(KEY::W) || KEY_DOWN(KEY::W) || KEY_PRESSING(KEY::A) || KEY_DOWN(KEY::A) ||
-		KEY_PRESSING(KEY::S) || KEY_DOWN(KEY::S) || KEY_PRESSING(KEY::D) || KEY_DOWN(KEY::D))
-	{
-		return true;
-	}
-
-	return false;
+	return m_isMoving;
 }
 
 void CAgentController::ForceHeight()
@@ -107,7 +98,7 @@ _bool CAgentController::CanMove(_fvector vPoint)
 		{
 			while (true)
 			{
-				if (nullptr != pNeighbor)
+				if (nullptr == pNeighbor)
 					return false;
 
 				if (false == pNeighbor->IsOut(vPoint, pNeighbor))
@@ -127,16 +118,36 @@ _bool CAgentController::CanMove(_fvector vPoint)
 
 void CAgentController::Move(_float fTimeDelta)
 {
-	m_vNetMove.Normalize();
-	Vec3 vSpeed = fTimeDelta * m_vLinearSpeed * m_vNetMove;
+	if (false == IsMoving())
+	{
+		return;
+	}
+
+	Vec3 vDistance = m_vDestPos - m_pTransform->GetPosition();
+	vDistance.Normalize();
+
+	Vec3 vSpeed = fTimeDelta * m_vLinearSpeed * vDistance;
 	m_pTransform->Translate(vSpeed);
 
-	m_vNetMove = Vec3::Zero;
+	if (0.5f > vDistance.LengthSquared())
+	{
+		m_vDestPos = m_pTransform->GetPosition();
+		m_isMoving = false;
+		return;
+	}
 }
 
-_bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float& distance)
+_bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 {
-	return pTerrain->Pick(screenX, screenY, pickPos, distance, Matrix::Identity);
+	_float fDistance = 0.0f;
+	if (false == pTerrain->Pick(screenX, screenY, m_vDestPos, fDistance, pTerrain->GetTransform()->WorldMatrix()))
+	{
+		return false;
+	}
+
+	m_isMoving = true;
+
+	return true;
 }
 
 void CAgentController::Input(_float fTimeDelta)

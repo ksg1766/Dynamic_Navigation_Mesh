@@ -191,11 +191,6 @@ HRESULT CLoader::Loading_Scripts_For_Level_GamePlay()
 {
 	CGameInstance* pGameInstance = GET_INSTANCE(CGameInstance);
 
-	/* For.Prototype_Component_AgentController*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_AgentController"),
-		CAgentController::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
 	/* For.Prototype_Component_MainCameraController*/
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_MainCameraController"),
 		CMainCameraController::Create(m_pDevice, m_pContext))))
@@ -336,6 +331,10 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GameTool()
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_StaticTest"), CStaticTest::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	/* For.Prototype_GameObject_Agent */
+	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Agent"), CAgent::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	/* For.Prototype_GameObject_Static */
 	wstring strStaticFilePath = TEXT("../Bin/Resources/Models/Static/");
 	for (const auto& entry : filesystem::directory_iterator(strStaticFilePath))
@@ -345,10 +344,6 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GameTool()
 		if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_") + strFileName, CStaticBase::Create(m_pDevice, m_pContext))))
 			return E_FAIL;
 	}	
-
-	/* For.Prototype_GameObject_Agent */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Agent"), CAgent::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
 
 	RELEASE_INSTANCE(CGameInstance);
 

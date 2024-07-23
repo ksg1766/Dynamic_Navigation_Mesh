@@ -83,6 +83,11 @@ HRESULT CAgent::AddRenderGroup()
 	return S_OK;
 }
 
+_bool CAgent::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
+{
+	return m_pController->Pick(pTerrain, screenX, screenY);
+}
+
 HRESULT CAgent::Ready_FixedComponents()
 {
 	/* Com_Shader */
@@ -118,11 +123,13 @@ HRESULT CAgent::Ready_FixedComponents()
 
 HRESULT CAgent::Ready_Scripts(void* pArg)
 {
-	if (LEVEL_GAMEPLAY == m_pGameInstance->GetCurrentLevelIndex())
+	//if (LEVEL_GAMEPLAY == m_pGameInstance->GetCurrentLevelIndex())
 	{
 		/* Com_AgentController */
-		if (FAILED(Super::AddComponent(LEVEL_GAMEPLAY, ComponentType::Script, TEXT("Prototype_Component_AgentController"), pArg)))
+		if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Script, TEXT("Prototype_Component_AgentController"), pArg)))
 			return E_FAIL;
+
+		m_pController = static_cast<CAgentController*>(m_vecScripts[0]);
 	}
 
 	return S_OK;
