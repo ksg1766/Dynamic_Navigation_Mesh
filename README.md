@@ -1,3 +1,7 @@
+---
+[https://www.notion.so/3-ce15dfe28bc74c5fac609bf0340a0c8f?pvs=4](https://equal-paw-e8f.notion.site/3-ce15dfe28bc74c5fac609bf0340a0c8f?pvs=4)
+
+---
 # 📅 2024.07.22
 📋 진행 사항
   * obstacle이 될 수 있는 일부 3D mesh의 obstacle data를 xml로 저장하도록 했습니다.
