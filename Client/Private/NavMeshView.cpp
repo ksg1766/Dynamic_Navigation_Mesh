@@ -11,72 +11,11 @@
 #include "StructuredBuffer.h"
 #include "Client_Macro.h"
 #include "tinyxml2.h"
+#include "Agent.h"
+#include "CellData.h"
+#include "Obstacle.h"
 
 namespace fs = std::filesystem;
-
-struct CNavMeshView::CellData
-{
-	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
-	//Vec3 vPoints[POINT_END] = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
-	array<CellData*, LINE_END> arrNeighbors = { nullptr, nullptr, nullptr };
-
-	// cache
-	_bool	isDead = false;
-	_bool	isNew = false;
-		
-	// Dummy
-	_bool	isOverSlope = false;
-	_int	iSlope = -1;
-
-	void CW()
-	{
-		Vec3 vA(vPoints[POINT_A].x, 0.f, vPoints[POINT_A].z);
-		Vec3 vB(vPoints[POINT_B].x, 0.f, vPoints[POINT_B].z);
-		Vec3 vC(vPoints[POINT_C].x, 0.f, vPoints[POINT_C].z);
-
-		Vec3 vFlatAB = vB - vA;
-		Vec3 vFlatBC = vC - vB;
-		Vec3 vResult;
-		vFlatAB.Cross(vFlatBC, vResult);
-
-		if (vResult.y < 0.f)
-		{
-			::swap(vPoints[POINT_B], vPoints[POINT_C]);
-		}
-	}
-
-	_bool ComparePoints(const Vec3& pSour, const Vec3& pDest)
-	{
-		if (pSour == vPoints[POINT_A])
-		{
-			if (pDest == vPoints[POINT_B])
-				return true;
-
-			if (pDest == vPoints[POINT_C])
-				return true;
-		}
-
-		if (pSour == vPoints[POINT_B])
-		{
-			if (pDest == vPoints[POINT_A])
-				return true;
-
-			if (pDest == vPoints[POINT_C])
-				return true;
-		}
-
-		if (pSour == vPoints[POINT_C])
-		{
-			if (pDest == vPoints[POINT_A])
-				return true;
-
-			if (pDest == vPoints[POINT_B])
-				return true;
-		}
-
-		return false;
-	}
-};
 
 CNavMeshView::CNavMeshView(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	:Super(pDevice, pContext)
@@ -107,30 +46,20 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 	}
 
 	if (FAILED(LoadObstacleOutlineData()))
-	{
 		return E_FAIL;
-	}
 
 	if (FAILED(InitialSetting()))
-	{
 		return E_FAIL;
-	}
 
 	if (FAILED(BakeNavMesh()))
-	{
 		return E_FAIL;
-	}
 
 	if (FAILED(RefreshNvFile()))
-	{
 		return E_FAIL;
-	}
 
 	m_pCS_TriTest = dynamic_cast<CShader*>(m_pGameInstance->Clone_Component(nullptr, LEVEL_STATIC, TEXT("Prototype_Component_Shader_TriangleTest"), nullptr));
 	if (nullptr == m_pCS_TriTest)
-	{
 		return  E_FAIL;
-	}
 
 	//m_pCS_TriTest = CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_TriangleTest.hlsl"), nullptr, 0);
 
@@ -157,7 +86,18 @@ HRESULT CNavMeshView::Tick()
 		break;
 	}
 	ImGui::NewLine();
-	// CellGroup();
+
+	if (ImGui::Button("CreateAgent"))
+	{
+		if (nullptr == m_pAgent)
+		{
+			if (FAILED(CreateAgent(Vec3::Zero)))
+			{
+				return E_FAIL;
+			}
+		}
+	}
+	ImGui::NewLine();
 
 	// stress test
 	const _char* szStressButon = (true == m_bStressTest) ? "Stop Stress Test" : "Start Stress Test";
@@ -178,9 +118,7 @@ HRESULT CNavMeshView::Tick()
 	if (true == m_bStressTest)
 	{
 		if (FAILED(StressTest()))
-		{
 			return E_FAIL;
-		}
 	}
 
 	ImGui::End();
@@ -195,8 +133,6 @@ HRESULT CNavMeshView::LateTick()
 
 HRESULT CNavMeshView::DebugRender()
 {
-	//DebugRenderLegacy();
-
 	m_pEffect->SetWorld(XMMatrixIdentity());
 
 	m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
@@ -204,7 +140,8 @@ HRESULT CNavMeshView::DebugRender()
 
 	m_pEffect->Apply(m_pContext);
 	m_pContext->IASetInputLayout(m_pInputLayout);
-
+	
+	m_pBatch->Begin();
 	if (!m_vecCells.empty())
 	{
 		for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
@@ -220,7 +157,6 @@ HRESULT CNavMeshView::DebugRender()
 			Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
 			Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
-			m_pBatch->Begin();
 			if (true == (*cell)->isNew)
 			{
 				DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Blue);
@@ -229,7 +165,6 @@ HRESULT CNavMeshView::DebugRender()
 			{
 				DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
 			}
-			m_pBatch->End();
 
 			++cell;
 		}
@@ -237,7 +172,6 @@ HRESULT CNavMeshView::DebugRender()
 
 	if (false == m_vecObstacles.empty())
 	{
-		m_pBatch->Begin();
 		for (_int i = 0; i < m_vecObstacles.size(); ++i)
 		{
 			for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size() - 1; ++j)
@@ -274,22 +208,16 @@ HRESULT CNavMeshView::DebugRender()
 
 			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
 		}
-		m_pBatch->End();
 	}
 
 	if (false == m_vecObstaclePointSpheres.empty())
 	{
-		m_pBatch->Begin();
 		for (_int i = 0; i < m_vecObstaclePointSpheres.size(); ++i)
 		{
 			DX::Draw(m_pBatch, m_vecObstaclePointSpheres[i], Colors::Red);
 		}
-		m_pBatch->End();
 	}
-
-	/*m_pBatch->Begin();
-	DX::Draw(m_pBatch, m_tNavMeshBoundVolume, Colors::Green);
-	m_pBatch->End();*/
+	m_pBatch->End();
 
 	return S_OK;
 }
@@ -300,7 +228,7 @@ void CNavMeshView::ClearNeighbors(vector<CellData*>& vecCells)
 	{
 		for (_int i = LINE_AB; i < LINE_END; ++i)
 		{
-			cell->arrNeighbors[i] = nullptr;
+			cell->pNeighbors[i] = nullptr;
 		}
 	}
 }
@@ -318,15 +246,15 @@ void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
 
 			if (true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_A], vecCells[sour]->vPoints[POINT_B]))
 			{
-				vecCells[sour]->arrNeighbors[LINE_AB] = vecCells[dest];
+				vecCells[sour]->pNeighbors[LINE_AB] = vecCells[dest];
 			}
 			else if (true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_B], vecCells[sour]->vPoints[POINT_C]))
 			{
-				vecCells[sour]->arrNeighbors[LINE_BC] = vecCells[dest];
+				vecCells[sour]->pNeighbors[LINE_BC] = vecCells[dest];
 			}
 			else if (true == vecCells[dest]->ComparePoints(vecCells[sour]->vPoints[POINT_C], vecCells[sour]->vPoints[POINT_A]))
 			{
-				vecCells[sour]->arrNeighbors[LINE_CA] = vecCells[dest];
+				vecCells[sour]->pNeighbors[LINE_CA] = vecCells[dest];
 			}
 		}
 	}
@@ -362,166 +290,12 @@ HRESULT CNavMeshView::BakeNavMesh()
 		pCellData->vPoints[POINT_B] = vtx[POINT_B];
 		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
+		pCellData->SetUpNormals();
 
 		m_vecCells.push_back(pCellData);
 	}
 	
 	SetUpNeighbors(m_vecCells);
-
-	return S_OK;
-}
-
-HRESULT CNavMeshView::BakeNavMeshLegacy()
-{
-	if (false == m_vecCells.empty())
-	{
-		for (auto iter : m_vecCells)
-		{
-			Safe_Delete(iter);
-		}
-
-		m_vecCells.clear();
-	}
-
-	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
-
-	map<LAYERTAG, class CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
-	if (iter == mapLayers.end())
-	{
-		return S_OK;
-	}
-
-	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
-
-	vector<CellData*> vecCellCache;
-
-	//vecCellCache
-	for (auto iter : vecObjects)
-	{
-		CModel* pModel = iter->GetModel();
-
-		if (nullptr == pModel)
-		{
-			continue;
-		}
-
-		vector<Vec3>& vecSurfaceVtx = pModel->GetSurfaceVtx();
-		vector<FACEINDICES32>& vecSurfaceIdx = pModel->GetSurfaceIdx();
-
-		for (auto idx : vecSurfaceIdx)
-		{
-			Vec3 vtx[POINT_END] =
-			{
-				Vec3::Transform(vecSurfaceVtx[idx._0], iter->GetTransform()->WorldMatrix()),
-				Vec3::Transform(vecSurfaceVtx[idx._1], iter->GetTransform()->WorldMatrix()),
-				Vec3::Transform(vecSurfaceVtx[idx._2], iter->GetTransform()->WorldMatrix()),
-			};
-
-			// Check Bounding Volume
-			_bool isOut = false;
-
-			for (_int i = POINT_A; i < POINT_END; ++i)
-			{
-				if (ContainmentType::DISJOINT == m_tNavMeshBoundVolume.Contains(vtx[i]))
-				{
-					isOut = true;
-					break;
-				}
-			}
-
-			if (true == isOut)
-			{
-				continue;
-			}
-
-			CellData* pCellData = new CellData;
-			pCellData->vPoints[POINT_A] = vtx[0];
-			pCellData->vPoints[POINT_B] = vtx[1];
-			pCellData->vPoints[POINT_C] = vtx[2];
-
-			Vec3 vtxAB = vtx[POINT_B] - vtx[POINT_A];
-			Vec3 vtxBC = vtx[POINT_C] - vtx[POINT_B];
-			Vec3 vResult = vtxAB.Cross(vtxBC);
-
-			vResult.Normalize();
-
-			Vec3 vFloor(vResult.x, 0.0f, vResult.z);
-			vFloor.Normalize();
-
-			_float fDegree = XMConvertToDegrees(acosf(vResult.Dot(vFloor)));
-
-			if (0.0f > vResult.y)
-			{
-				fDegree *= -1.0f;
-
-				pCellData->iSlope = (_int)fDegree;
-				pCellData->isOverSlope = true;
-			}
-			else if (90.f - m_fSlopeDegree >= (_int)fDegree)
-			{	// Slope 이하인 Cell 기록.
-				pCellData->iSlope = (_int)fDegree;
-				pCellData->isOverSlope = true;
-			}			
-
-			vecCellCache.push_back(pCellData);
-		}
-	}
-
-	SetUpNeighbors(vecCellCache);
-
-	// Max Climb
-	// for (auto cell : vecCellCache)
-	for (_int k = 0; k < vecCellCache.size(); ++k)
-	{
-		if (true == vecCellCache[k]->isOverSlope)
-		{	// Slope 초과인 경우
-			for (_int i = LINE_AB; i < LINE_END; ++i)
-			{
-				if (nullptr != vecCellCache[k]->arrNeighbors[i] && false == vecCellCache[k]->arrNeighbors[i]->isOverSlope)
-				{	// Neighbor 중에 Slope 이하인 Mesh 있다면 높이 계산 후 Max Climb이하면 vecCells에 저장.
-					Vec3 vSharedLine = vecCellCache[k]->vPoints[(i + 1) % 3] - vecCellCache[k]->vPoints[i];
-					Vec3 vAnotherLine = vecCellCache[k]->vPoints[(i + 2) % 3] - vecCellCache[k]->vPoints[i];
-
-					_float fSlopeLength = vAnotherLine.Cross(vSharedLine).Length() / vSharedLine.Length();
-					_float fSlopeHeight = fabs(fSlopeLength * sinf(XMConvertToRadians(vecCellCache[k]->iSlope)));
-
-					if (fSlopeHeight + m_fEpsilon <= m_fMaxClimb)
-					{
-						m_vecCells.push_back(vecCellCache[k]);
-						break;
-					}
-				}
-			}
-		}
-		else
-		{
-			m_vecCells.push_back(vecCellCache[k]);
-		}
-	}
-
-	ClearNeighbors(m_vecCells);
-	SetUpNeighbors(m_vecCells);
-	::swap(vecCellCache, m_vecCells);
-	m_vecCells.clear();
-
-	//for (auto cell : vecCellCache)
-	for (_int k = 0; k < vecCellCache.size(); ++k)
-	{
-		_int iNumNeighbor = 0;
-
-		for (_int i = LINE_AB; i < LINE_END; ++i)
-		{
-			if (nullptr != vecCellCache[k]->arrNeighbors[i])
-			{
-				++iNumNeighbor;
-			}
-		}
-
-		if (true != vecCellCache[k]->isOverSlope || 1 != iNumNeighbor)
-		{
-			m_vecCells.push_back(vecCellCache[k]);
-		}
-	}
 
 	return S_OK;
 }
@@ -532,9 +306,7 @@ HRESULT CNavMeshView::BakeSingleObstacleData()
 
 	map<LAYERTAG, class CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
 	if (iter == mapLayers.end())
-	{
 		return E_FAIL;
-	}
 
 	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
 
@@ -722,7 +494,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	{
 		for (uint8 i = 0; i < LINE_END; ++i)
 		{	// neighbor가 유효한 edge 추출
-			if (setIntersected.end() == setIntersected.find(tCell->arrNeighbors[i]))
+			if (setIntersected.end() == setIntersected.find(tCell->pNeighbors[i]))
 			{	// 해당 edge는 outline
 				if (mapOutlineCells.end() != mapOutlineCells.find(tCell->vPoints[i]))
 				{
@@ -730,7 +502,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 				}
 				else
 				{
-					mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->arrNeighbors[i]));
+					mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->pNeighbors[i]));
 				}
 			}
 		}
@@ -760,24 +532,16 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	triangulateio tIn = { 0 }, tOut = { 0 };
 
 	if (FAILED(UpdatePointList(tIn, vecOutlineCW, &tObst)))
-	{
 		return E_FAIL;
-	}
 
 	if (FAILED(UpdateSegmentList(tIn, vecOutlineCW, &tObst)))
-	{
 		return E_FAIL;
-	}
 
 	if (FAILED(UpdateHoleList(tIn, &tObst)))
-	{
 		return E_FAIL;
-	}
 
 	if (FAILED(UpdateRegionList(tIn, &tObst)))
-	{
 		return E_FAIL;
-	}
 
 	triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
 
@@ -802,6 +566,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		pCellData->vPoints[POINT_B] = vtx[POINT_B];
 		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
+		pCellData->SetUpNormals();
 
 		vecNewCells.emplace_back(pCellData);
 	}
@@ -812,14 +577,14 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	{	// 재구성된 데이터를 다시 전체 맵에 연결.
 		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
-			if (nullptr == cell->arrNeighbors[i])
+			if (nullptr == cell->pNeighbors[i])
 			{	// new cell의 outline은 neighbor가 없음.
 				auto OutCell = mapOutlineCells.find(cell->vPoints[i]);
 				if (mapOutlineCells.end() != OutCell)
 				{
 					if (cell->vPoints[(i + 1) % POINT_END] == OutCell->second.first)
 					{	// mapOutlineCells에서 outline 찾았다면 상호 연결
-						cell->arrNeighbors[i] = OutCell->second.second;
+						cell->pNeighbors[i] = OutCell->second.second;
 
 						if (nullptr == OutCell->second.second || OutCell->second.second == cell)
 						{
@@ -828,15 +593,15 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 
 						if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_A], OutCell->second.second->vPoints[POINT_B]))
 						{
-							OutCell->second.second->arrNeighbors[LINE_AB] = cell;
+							OutCell->second.second->pNeighbors[LINE_AB] = cell;
 						}
 						else if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_B], OutCell->second.second->vPoints[POINT_C]))
 						{
-							OutCell->second.second->arrNeighbors[LINE_BC] = cell;
+							OutCell->second.second->pNeighbors[LINE_BC] = cell;
 						}
 						else if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_C], OutCell->second.second->vPoints[POINT_A]))
 						{
-							OutCell->second.second->arrNeighbors[LINE_CA] = cell;
+							OutCell->second.second->pNeighbors[LINE_CA] = cell;
 						}						
 					}
 				}
@@ -915,7 +680,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	{
 		for (uint8 i = 0; i < LINE_END; ++i)
 		{	// neighbor가 유효한 edge 추출
-			if (setIntersected.end() == setIntersected.find(tCell->arrNeighbors[i]))
+			if (setIntersected.end() == setIntersected.find(tCell->pNeighbors[i]))
 			{	// 해당 edge는 outline
 				if (mapOutlineCells.end() != mapOutlineCells.find(tCell->vPoints[i]))
 				{
@@ -923,7 +688,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 				}
 				else
 				{
-					mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->arrNeighbors[i]));
+					mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->pNeighbors[i]));
 				}
 			}
 		}
@@ -1003,6 +768,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		pCellData->vPoints[POINT_B] = vtx[POINT_B];
 		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
+		pCellData->SetUpNormals();
 
 		vecNewCells.emplace_back(pCellData);
 	}
@@ -1013,14 +779,14 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	{	// 재구성된 데이터를 다시 전체 맵에 연결.
 		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
-			if (nullptr == cell->arrNeighbors[i])
+			if (nullptr == cell->pNeighbors[i])
 			{	// new cell의 outline은 neighbor가 없음.
 				auto OutCell = mapOutlineCells.find(cell->vPoints[i]);
 				if (mapOutlineCells.end() != OutCell)
 				{
 					if (cell->vPoints[(i + 1) % POINT_END] == OutCell->second.first)
 					{	// mapOutlineCells에서 outline 찾았다면 상호 연결
-						cell->arrNeighbors[i] = OutCell->second.second;
+						cell->pNeighbors[i] = OutCell->second.second;
 
 						if (nullptr == OutCell->second.second || OutCell->second.second == cell)
 						{
@@ -1029,15 +795,15 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 
 						if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_A], OutCell->second.second->vPoints[POINT_B]))
 						{
-							OutCell->second.second->arrNeighbors[LINE_AB] = cell;
+							OutCell->second.second->pNeighbors[LINE_AB] = cell;
 						}
 						else if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_B], OutCell->second.second->vPoints[POINT_C]))
 						{
-							OutCell->second.second->arrNeighbors[LINE_BC] = cell;
+							OutCell->second.second->pNeighbors[LINE_BC] = cell;
 						}
 						else if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_C], OutCell->second.second->vPoints[POINT_A]))
 						{
-							OutCell->second.second->arrNeighbors[LINE_CA] = cell;
+							OutCell->second.second->pNeighbors[LINE_CA] = cell;
 						}
 					}
 				}
@@ -1050,6 +816,34 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 
 	SafeReleaseTriangle(tIn);
 	SafeReleaseTriangle(tOut);
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
+{
+	for (_int i = 0; i < m_vecCells.size(); ++i)
+	{		
+		m_vecCells[i];
+	}
+
+	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER));
+	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
+{
+	Vec3 vSpawnPosition = Vec3::Zero;
+
+	for (auto& point : m_vecCells[iSpawnIndex]->vPoints)
+	{
+		vSpawnPosition += point;
+	}
+
+	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER, m_vecCells[iSpawnIndex]));
+	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
 
 	return S_OK;
 }
@@ -1121,196 +915,6 @@ HRESULT CNavMeshView::StressTest()
 		{
 			return E_FAIL;
 		}
-	}
-
-	return S_OK;
-}
-
-HRESULT CNavMeshView::DebugRenderLegacy()
-{
-	m_pEffect->SetWorld(Matrix::Identity);
-
-	m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
-	m_pEffect->SetProjection(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_PROJ));
-
-	m_pEffect->Apply(m_pContext);
-	m_pContext->IASetInputLayout(m_pInputLayout);
-
-	m_pBatch->Begin();
-
-	if (false == m_vecPointSpheres.empty())
-	{
-		for (auto& iter : m_vecPointSpheres)
-		{
-			BoundingSphere tS(iter.Center + 0.05f * Vec3::UnitY, 0.5f);
-			DX::Draw(m_pBatch, tS, Colors::LimeGreen);
-		}
-	}
-
-	if (false == m_vecObstaclePointSpheres.empty())
-	{
-		for (auto& iter : m_vecObstaclePointSpheres)
-		{
-			BoundingSphere tS(iter.Center + 0.05f * Vec3::UnitY, 0.5f);
-			DX::Draw(m_pBatch, tS, Colors::Red);
-		}
-	}
-
-	if (false == m_vecRegionSpheres.empty())
-	{
-		for (auto& iter : m_vecRegionSpheres)
-		{
-			BoundingSphere tS(iter.Center + 0.05f * Vec3::UnitY, 0.5f);
-			DX::Draw(m_pBatch, tS, Colors::Blue);
-		}
-	}
-
-	m_pBatch->End();
-
-	// triangle::DT
-	if (FAILED(RenderDT()))
-		return E_FAIL;
-
-	// triangle::VD
-	//if (FAILED(RenderVD()))
-	//	return E_FAIL;
-
-	/*if (2 == m_vecPoints.size())
-	{
-		VertexPositionColor verts[2];
-
-		_float3 vP0 = m_vecPoints[0] + Vec3(0.f, 0.05f, 0.f);
-		_float3 vP1 = m_vecPoints[1] + Vec3(0.f, 0.05f, 0.f);
-
-		XMStoreFloat3(&verts[0].position, XMLoadFloat3(&vP0));
-		XMStoreFloat3(&verts[1].position, XMLoadFloat3(&vP1));
-
-		XMStoreFloat4(&verts[0].color, Colors::Cyan);
-		XMStoreFloat4(&verts[1].color, Colors::Cyan);
-
-		m_pBatch->Begin();
-		m_pBatch->Draw(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, verts, 2);
-		m_pBatch->End();
-	}
-
-	if (!m_vecCells.empty())
-	{
-		for (_int i = 0; i < m_vecCells.size(); ++i)
-		{
-			Vec3 vP0 = m_vecCells[i]->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
-			Vec3 vP1 = m_vecCells[i]->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
-			Vec3 vP2 = m_vecCells[i]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
-
-			m_pBatch->Begin();
-			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Cyan);
-			m_pBatch->End();
-		}
-
-		Vec3 vP0 = m_vecCells[m_Item_Current]->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
-		Vec3 vP1 = m_vecCells[m_Item_Current]->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
-		Vec3 vP2 = m_vecCells[m_Item_Current]->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
-
-		m_pBatch->Begin();
-		DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Coral);
-		m_pBatch->End();
-	}*/
-
-	/*if (1 < m_vecPoints.size())
-	{
-		for (_int i = 0; i < m_vecPoints.size() - 1; ++i)
-		{
-			m_pBatch->Begin();
-			m_pBatch->DrawLine(VertexPositionColor(m_vecPoints[i], Colors::Lime), VertexPositionColor(m_vecPoints[i + 1], Colors::Lime));
-			m_pBatch->End();
-		}
-	}*/
-
-	return S_OK;
-}
-
-HRESULT CNavMeshView::RenderDT()
-{
-	if (0 < m_tOut.numberoftriangles)
-	{
-		m_pBatch->Begin();
-		for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
-		{
-			_int iIdx1 = m_tOut.trianglelist[i * 3 + POINT_A];
-			_int iIdx2 = m_tOut.trianglelist[i * 3 + POINT_B];
-			_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
-
-			Vec3 vTri1 = { m_tOut.pointlist[iIdx1 * 2], 0.f, m_tOut.pointlist[iIdx1 * 2 + 1] };
-			Vec3 vTri2 = { m_tOut.pointlist[iIdx2 * 2], 0.f, m_tOut.pointlist[iIdx2 * 2 + 1] };
-			Vec3 vTri3 = { m_tOut.pointlist[iIdx3 * 2], 0.f, m_tOut.pointlist[iIdx3 * 2 + 1] };
-
-			DX::DrawTriangle(m_pBatch, vTri1, vTri2, vTri3, Colors::LimeGreen);
-		}
-		m_pBatch->End();
-	}
-	
-	if (false == m_vecObstacles.empty())
-	{
-		m_pBatch->Begin();
-		for (_int i = 0; i < m_vecObstacles.size(); ++i)
-		{
-			for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size() - 1; ++j)
-			{
-				Vec3 vLine1 =
-				{
-					m_vecObstacles[i]->vecPoints[j].x,
-					0.0f,
-					m_vecObstacles[i]->vecPoints[j].z,
-				};
-				Vec3 vLine2 =
-				{
-					m_vecObstacles[i]->vecPoints[j + 1].x,
-					0.0f,
-					m_vecObstacles[i]->vecPoints[j + 1].z,
-				};
-
-				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
-			}
-
-			Vec3 vLine1 =
-			{
-				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].x,
-				0.0f,
-				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].z
-			};
-			Vec3 vLine2 =
-			{
-				m_vecObstacles[i]->vecPoints[0].x,
-				0.0f,
-				m_vecObstacles[i]->vecPoints[0].z,
-			};
-
-			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
-		}
-		m_pBatch->End();
-	}
-
-	return S_OK;
-}
-
-HRESULT CNavMeshView::RenderVD()
-{
-	if (0 < m_tVD_out.numberofedges)
-	{
-		m_pBatch->Begin();
-		for (_int i = 0; i < m_tVD_out.numberofedges; ++i)
-		{
-			_int iIdx1 = m_tVD_out.edgelist[i * 2 + POINT_A];
-			_int iIdx2 = m_tVD_out.edgelist[i * 2 + POINT_B];
-
-			if (0 <= iIdx1 && 0 <= iIdx2)
-			{
-				Vec4 vLine1 = { m_tVD_out.pointlist[iIdx1 * 2], 0.f, m_tVD_out.pointlist[iIdx1 * 2 + 1], 1.f };
-				Vec4 vLine2 = { m_tVD_out.pointlist[iIdx2 * 2], 0.f, m_tVD_out.pointlist[iIdx2 * 2 + 1], 1.f };
-
-				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Cyan), VertexPositionColor(vLine2, Colors::Cyan));
-			}
-		}
-		m_pBatch->End();
 	}
 
 	return S_OK;
@@ -1529,35 +1133,6 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	RamerDouglasPeucker(vecClearOutline, 1.0f, vecOutline);
 
 	return S_OK;
-}
-
-void CNavMeshView::Dfs_(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<iVec3>& vecPath, OUT vector<iVec3>& vecLongest)
-{
-	const vector<pair<_int, _int>> vecDirections =
-	{
-		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
-	};
-
-	setVisited.emplace(vCurrent);
-	vecPath.push_back(vCurrent);
-
-	for (const auto& vDir : vecDirections)
-	{
-		iVec3 vNeighbor(vCurrent.x + vDir.first, 0, vCurrent.z + vDir.second);
-		if (setPoints.find(vNeighbor) != setPoints.end() &&
-			setVisited.find(vNeighbor) == setVisited.end())
-		{
-			Dfs_(vNeighbor, setPoints, setVisited, vecPath, vecLongest);
-		}
-	}
-
-	if (vecPath.size() > vecLongest.size())
-	{
-		vecLongest = vecPath;
-	}
-
-	vecPath.pop_back();
-	setVisited.erase(vCurrent);
 }
 
 void CNavMeshView::Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vector<iVec3>& vecLongest)
@@ -1852,73 +1427,8 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	_float fWidth = vp.width;
 	_float fHeight = vp.height;
 
-	/*_float viewX = (+2.0f * screenX / fWidth - 1.0f) / P(0, 0);
-	_float viewY = (-2.0f * screenY / fHeight + 1.0f) / P(1, 1);
-
-	const Matrix& VI = m_pGameInstance->Get_Transform_float4x4_Inverse(CPipeLine::D3DTS_VIEW);
-
-	Vec4 vRayOrigin = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	Vec4 vRayDir = Vec4(viewX, viewY, 1.0f, 0.0f);
-
-	Vec3 vWorldRayOrigin = XMVector3TransformCoord(vRayOrigin, VI);
-	Vec3 vWorldRayDir = XMVector3TransformNormal(vRayDir, VI);
-	vWorldRayDir.Normalize();*/
-
-	//////////////////////////////////////////
-	// 아래는 코드 분할 및 정리 무조건 필요!!! //
-	//////////////////////////////////////////
-
-	/*CGameObject* pObject = nullptr;
-
-	if (nullptr == vecGroundObjects)
-	{
-		goto TERRAIN_PICKED;
-	}
-
-	for (auto& iter : *vecGroundObjects)
-	{
-		vector<Vec3>& vecSurfaceVtx = iter->GetModel()->GetSurfaceVtx();
-		vector<FACEINDICES32>& vecSurfaceIdx = iter->GetModel()->GetSurfaceIdx();
-
-		const Matrix& W = iter->GetTransform()->WorldMatrix();
-		Vec3 n = vp.Unproject(Vec3(screenX, screenY, 0), P, V, W);
-		Vec3 f = vp.Unproject(Vec3(screenX, screenY, 1), P, V, W);
-
-		Vec3 start = n;
-		Vec3 direction = f - n;
-		direction.Normalize();
-
-		Ray cRay(start, direction);
-
-		for (_int i = 0; i < vecSurfaceIdx.size(); i++)
-		{
-			if (cRay.Intersects(vecSurfaceVtx[vecSurfaceIdx[i]._0], vecSurfaceVtx[vecSurfaceIdx[i]._1], vecSurfaceVtx[vecSurfaceIdx[i]._2], OUT fDistance))
-			{
-				Vec3 vPickedPos = cRay.position + cRay.direction * fDistance;
-				if (isnan(vPickedPos.x) || isnan(vPickedPos.y) || isnan(vPickedPos.z) || isnan(fDistance))
-					continue;
-
-				if (fDistance < fMinDistance)
-				{
-					fMinDistance = fDistance;
-					pickPos = vPickedPos;
-					pObject = iter;
-				}
-			}
-		}
-	}
-
-	if (nullptr == pObject)
-	{
-		const Matrix& W = pObject->GetTransform()->WorldMatrix();
-		pickPos = XMVector3TransformCoord(pickPos, W);
-	}
-	else*/
-	{	// TODO : 여기까지 코드 정리 필요
-	TERRAIN_PICKED:
-		const POINT& p = m_pGameInstance->GetMousePos();
-		m_pTerrainBuffer->Pick(p.x, p.y, pickPos, fDistance, m_pTerrainBuffer->GetTransform()->WorldMatrix());
-	}
+	const POINT& p = m_pGameInstance->GetMousePos();
+	m_pTerrainBuffer->Pick(p.x, p.y, pickPos, fDistance, m_pTerrainBuffer->GetTransform()->WorldMatrix());
 	
 	BoundingSphere tSphere;
 	tSphere.Center = pickPos;
@@ -1956,26 +1466,6 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 		m_vecRegionSpheres.push_back(tSphere);
 		//s2cPushBack(m_strRegions, to_string(pickPos.x) + " " + to_string(pickPos.y) + " " + to_string(pickPos.z));
 	}
-
-
-
-	// 삼각형 만드는게 아니라 점만 찍도록.
-	//if (3 == m_vecPoints.size())
-	/*{
-		CellData* tCellData = new CellData;
-		tCellData->vPoints[0] = m_vecPoints[0];
-		tCellData->vPoints[1] = m_vecPoints[1];
-		tCellData->vPoints[2] = m_vecPoints[2];
-		tCellData->CW();
-		m_vecCells.push_back(tCellData);
-
-		m_vecPoints.clear();
-		m_strPoints.clear();
-
-		s2cPushBack(m_strCells, to_string(m_vecCells.size() - 1));
-	}
-	else
-		s2cPushBack(m_strPoints, to_string(pickPos.x) + " " + to_string(pickPos.y) + " " + to_string(pickPos.z));*/
 
 	return true;
 }
@@ -2447,24 +1937,16 @@ HRESULT CNavMeshView::InitialSetting()
 	m_iStaticPointCount = m_vecPoints.size();
 
 	if (FAILED(UpdatePointList(m_tIn, m_vecPoints)))
-	{
 		return E_FAIL;
-	}
 
 	if (FAILED(UpdateSegmentList(m_tIn, m_vecPoints)))
-	{
 		return E_FAIL;
-	}
 
 	if (FAILED(UpdateHoleList(m_tIn)))
-	{
 		return E_FAIL;
-	}
 
 	if (FAILED(UpdateRegionList(m_tIn)))
-	{
 		return E_FAIL;
-	}
 
 	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 
@@ -2570,7 +2052,6 @@ void CNavMeshView::Free()
 
 	SafeReleaseTriangle(m_tIn);
 	SafeReleaseTriangle(m_tOut);
-	//SafeReleaseTriangle(m_tVD_out);
 
 	for (auto cell : m_vecCells)
 	{
@@ -2585,7 +2066,7 @@ void CNavMeshView::Free()
 	m_vecObstacles.clear();
 }
 
-HRESULT Client::CNavMeshView::SaveObstacleLocalOutline(const Obst* const pObst, string strName)
+HRESULT CNavMeshView::SaveObstacleLocalOutline(const Obst* const pObst, string strName)
 {
 	fs::path strPath("../Bin/Resources/NavObstacles/");
 

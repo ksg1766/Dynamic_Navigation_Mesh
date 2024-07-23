@@ -312,8 +312,14 @@
     <ClInclude Include="..\Public\tinyxml2.h">
       <Filter>99.Defines</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\CellData.h">
+      <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Obstacle.h">
+      <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
+    </ClInclude>
     <ClInclude Include="..\Public\NSHelper.h">
-      <Filter>99.Defines</Filter>
+      <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -442,6 +448,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\tinyxml2.cpp">
       <Filter>99.Defines</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CellData.cpp">
+      <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

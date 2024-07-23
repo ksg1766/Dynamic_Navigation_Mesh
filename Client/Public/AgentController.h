@@ -7,6 +7,7 @@
 BEGIN(Engine)
 
 class CTransform;
+class CTerrain;
 
 END
 
@@ -32,11 +33,11 @@ public:
 	_bool	IsIdle();
 	_bool	IsMoving();
 
-	void	ForceHeight()				{ m_pNavMeshAgent->ForceHeight(); }
-	_float	GetHeightOffset()			{ return m_pNavMeshAgent->GetHeightOffset(); }
-	_bool	Walkable(_fvector vPoint)	{ return m_pNavMeshAgent->Walkable(vPoint); }
+	void	ForceHeight();
+	_float	GetHeightOffset();
+	_bool	CanMove(_fvector vPoint);
 
-	_bool	Pick(_uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float& distance);
+	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float& distance);
 
 private:
 	void	Input(_float fTimeDelta);
@@ -44,13 +45,14 @@ private:
 
 private:
 	CTransform*		m_pTransform = nullptr;
-	CNavMeshAgent*	m_pNavMeshAgent = nullptr;
 	Vec3			m_vPrePos;
 
 	Vec3			m_vNetMove;
 
 	Vec3			m_vMaxLinearSpeed;
 	Vec3			m_vLinearSpeed;
+
+	struct CellData* m_pCurrentCell = nullptr;
 
 public:
 	static	CAgentController* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

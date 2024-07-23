@@ -2,6 +2,7 @@
 #include "AgentController.h"
 #include "GameInstance.h"
 #include "GameObject.h"
+#include "CellData.h"
 
 constexpr auto EPSILON = 0.001f;
 
@@ -27,7 +28,11 @@ HRESULT CAgentController::Initialize_Prototype()
 HRESULT CAgentController::Initialize(void* pArg)
 {
 	m_pTransform = GetTransform();
-	m_pNavMeshAgent = m_pGameObject->GetNavMeshAgent();
+
+	if (nullptr != pArg)
+	{
+		m_pCurrentCell = static_cast<CellData*>(pArg);
+	}
 
 	return S_OK;
 }
@@ -37,13 +42,13 @@ void CAgentController::Tick(_float fTimeDelta)
 	if (m_vNetMove.Length() > EPSILON)
 		Move(fTimeDelta);
 
-	if (!m_pNavMeshAgent->Walkable(m_pTransform->GetPosition()))
+	if (CanMove(m_pTransform->GetPosition()))
 	{
 		m_pTransform->SetPosition(m_vPrePos);
 		// sliding = move - (move · 충돌 edge normal) * 충돌 edge normal
 		/*Vec3 vDir = m_pTransform->GetPosition() - m_vPrePos;
 		Vec3 vPassedLine = m_pNavMeshAgent->GetPassedEdgeNormal(m_pTransform->GetPosition());
-		
+
 		m_pTransform->SetPosition(m_vPrePos + vDir - vDir.Dot(vPassedLine) * vPassedLine);*/
 	}
 }
@@ -76,6 +81,50 @@ _bool CAgentController::IsMoving()
 	return false;
 }
 
+void CAgentController::ForceHeight()
+{
+	m_pTransform->Translate(Vec3(0.f, GetHeightOffset(), 0.f));
+}
+
+_float CAgentController::GetHeightOffset()
+{
+	Vec3 vPos(m_pTransform->GetPosition());
+
+	const array<Vec3, POINT_END>* vPoints = &m_pCurrentCell->vPoints;
+
+	Plane vPlane = Plane(m_pCurrentCell->vPoints[POINT_A], m_pCurrentCell->vPoints[POINT_B], m_pCurrentCell->vPoints[POINT_C]);
+
+	return -((vPlane.x * vPos.x + vPlane.z * vPos.z + vPlane.w) / vPlane.y + vPos.y);
+}
+
+_bool CAgentController::CanMove(_fvector vPoint)
+{
+	CellData* pNeighbor = nullptr;
+
+	if (true == m_pCurrentCell->IsOut(vPoint, pNeighbor))
+	{
+		if (nullptr != pNeighbor)
+		{
+			while (true)
+			{
+				if (nullptr != pNeighbor)
+					return false;
+
+				if (false == pNeighbor->IsOut(vPoint, pNeighbor))
+				{
+					m_pCurrentCell = pNeighbor;
+					break;
+				}
+			}
+			return true;
+		}
+		else
+			return false;
+	}
+	else
+		return true;
+}
+
 void CAgentController::Move(_float fTimeDelta)
 {
 	m_vNetMove.Normalize();
@@ -85,13 +134,9 @@ void CAgentController::Move(_float fTimeDelta)
 	m_vNetMove = Vec3::Zero;
 }
 
-_bool CAgentController::Pick(_uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float& distance)
+_bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float& distance)
 {
-	Matrix matBoard(1.f, 0, 0, 0,
-					0, 1.f, 0, 0,
-					0, 0, 1.f, 0,
-					0, m_pTransform->GetPosition().y, 0, 1.f);
-	return static_cast<CTerrain*>(m_pGameObject->GetFixedComponent(ComponentType::Terrain))->Pick(screenX, screenY, pickPos, distance, matBoard);
+	return pTerrain->Pick(screenX, screenY, pickPos, distance, Matrix::Identity);
 }
 
 void CAgentController::Input(_float fTimeDelta)

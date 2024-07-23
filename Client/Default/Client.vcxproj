@@ -175,6 +175,7 @@
     <ClInclude Include="..\Public\AnimationView.h" />
     <ClInclude Include="..\public\BackGround.h" />
     <ClInclude Include="..\Public\BasicTerrain.h" />
+    <ClInclude Include="..\Public\CellData.h" />
     <ClInclude Include="..\Public\DebugDraw.h" />
     <ClInclude Include="..\Public\DissolveManager.h" />
     <ClInclude Include="..\Public\MainCamera.h" />
@@ -182,6 +183,7 @@
     <ClInclude Include="..\Public\NavMeshView.h" />
     <ClInclude Include="..\Public\NSHelper.h" />
     <ClInclude Include="..\Public\Agent.h" />
+    <ClInclude Include="..\Public\Obstacle.h" />
     <ClInclude Include="..\Public\SaveLoadView.h" />
     <ClInclude Include="..\Public\DebugTerrainGrid.h" />
     <ClInclude Include="..\Public\FlyingCameraController.h" />
@@ -227,6 +229,7 @@
     </ClCompile>
     <ClCompile Include="..\private\BackGround.cpp" />
     <ClCompile Include="..\Private\BasicTerrain.cpp" />
+    <ClCompile Include="..\Private\CellData.cpp" />
     <ClCompile Include="..\Private\DebugDraw.cpp" />
     <ClCompile Include="..\Private\DissolveManager.cpp" />
     <ClCompile Include="..\Private\MainCamera.cpp" />

@@ -24,7 +24,7 @@ public:
 	virtual void		DebugRender()				override;
 	
 public:
-	_bool	Walkable(_fvector vPoint);
+	_bool	CanMove(_fvector vPoint);
 	void	ForceHeight();
 	_float	GetHeightOffset();
 	_float3	GetPassedEdgeNormal(_fvector vPos);

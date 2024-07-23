@@ -240,7 +240,7 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GamePlay()
 		return E_FAIL;
 
 	/* For.Prototype_GameObject_Agent */
-  	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_P_Strife"), CAgent::Create(m_pDevice, m_pContext))))
+  	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Agent"), CAgent::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_GameObject_SkyBox */
@@ -345,6 +345,10 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GameTool()
 		if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_") + strFileName, CStaticBase::Create(m_pDevice, m_pContext))))
 			return E_FAIL;
 	}	
+
+	/* For.Prototype_GameObject_Agent */
+	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Agent"), CAgent::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 
 	RELEASE_INSTANCE(CGameInstance);
 

@@ -25,7 +25,7 @@ HRESULT CAgent::Initialize(void* pArg)
 	if (FAILED(Ready_FixedComponents()))
 		return E_FAIL;
 
-	if (FAILED(Ready_Scripts()))
+	if (FAILED(Ready_Scripts(pArg)))
 		return E_FAIL;
 
 	return S_OK;
@@ -39,6 +39,9 @@ void CAgent::Tick(_float fTimeDelta)
 void CAgent::LateTick(_float fTimeDelta)
 {
 	Super::LateTick(fTimeDelta);
+
+	if (FAILED(AddRenderGroup()))
+		__debugbreak();
 }
 
 void CAgent::DebugRender()
@@ -54,7 +57,8 @@ HRESULT CAgent::Render()
 	if (FAILED(Bind_ShaderResources()))
 		return E_FAIL;
 
-	GetModel()->Render();
+	if (FAILED(GetModel()->Render()))
+		return E_FAIL;
 
 #ifdef _DEBUG
 	//DebugRender();
@@ -65,7 +69,8 @@ HRESULT CAgent::Render()
 
 HRESULT CAgent::AddRenderGroup()
 {
-	GetRenderer()->Add_RenderGroup(CRenderer::RG_NONBLEND, this);
+	if (FAILED(GetRenderer()->Add_RenderGroup(CRenderer::RG_NONBLEND, this)))
+		return E_FAIL;
 
 	return S_OK;
 }
@@ -73,12 +78,12 @@ HRESULT CAgent::AddRenderGroup()
 HRESULT CAgent::Ready_FixedComponents()
 {
 	/* Com_Shader */
-	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Shader, TEXT("Prototype_Component_Shader_VtxTexFetchAnim"))))
+	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Shader, TEXT("Prototype_Component_Shader_VtxMesh"))))
 		return E_FAIL;
-	GetShader()->SetPassIndex(4);
+	GetShader()->SetPassIndex(0);
 
 	/* Com_Model */
-	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Model, TEXT("Prototype_Component_Model_") + GetObjectTag())))
+	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Model, TEXT("Prototype_Component_Model_Sphere"))))
 		return E_FAIL;
 
 	/* Com_Transform */
@@ -99,20 +104,15 @@ HRESULT CAgent::Ready_FixedComponents()
 			return E_FAIL;
 	}
 
-	/* Com_Terrain */
-	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Terrain, TEXT("Prototype_Component_Terrain"))) ||
-		FAILED(static_cast<CTerrain*>(GetFixedComponent(ComponentType::Terrain))->InitializeJustGrid(1024, 1024, 1024, 1024)))
-		return E_FAIL;
-
 	return S_OK;
 }
 
-HRESULT CAgent::Ready_Scripts()
+HRESULT CAgent::Ready_Scripts(void* pArg)
 {
 	if (LEVEL_GAMEPLAY == m_pGameInstance->GetCurrentLevelIndex())
 	{
 		/* Com_AgentController */
-		if (FAILED(Super::AddComponent(LEVEL_GAMEPLAY, ComponentType::Script, TEXT("Prototype_Component_AgentController"))))
+		if (FAILED(Super::AddComponent(LEVEL_GAMEPLAY, ComponentType::Script, TEXT("Prototype_Component_AgentController"), pArg)))
 			return E_FAIL;
 	}
 
@@ -121,11 +121,9 @@ HRESULT CAgent::Ready_Scripts()
 
 HRESULT CAgent::Bind_ShaderResources()
 {
-	/* 셰이더 전역변수로 던져야 할 값들을 던지자. */
 	if (FAILED(GetTransform()->Bind_ShaderResources(GetShader(), "g_WorldMatrix")) ||
 		FAILED(m_pGameInstance->Bind_TransformToShader(GetShader(), "g_ViewMatrix", CPipeLine::D3DTS_VIEW)) ||
-		FAILED(m_pGameInstance->Bind_TransformToShader(GetShader(), "g_ProjMatrix", CPipeLine::D3DTS_PROJ)) ||
-		FAILED(GetShader()->Bind_RawValue("g_vCamPosition", &static_cast<const _float4&>(m_pGameInstance->Get_CamPosition_Float4()), sizeof(_float4))))
+		FAILED(m_pGameInstance->Bind_TransformToShader(GetShader(), "g_ProjMatrix", CPipeLine::D3DTS_PROJ)))
 	{
 		return E_FAIL;
 	}

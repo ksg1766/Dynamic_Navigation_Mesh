@@ -143,13 +143,12 @@ void CNavMeshAgent::DebugRender()
 #endif
 }
 
-_bool CNavMeshAgent::Walkable(_fvector vPoint)
+_bool CNavMeshAgent::CanMove(_fvector vPoint)
 {
 	_int		iNeighborIndex = 0;
 
 	if (true == m_Cells[m_iCurrentIndex]->isOut(vPoint, &iNeighborIndex))
 	{
-		/* 나간 방향에 이웃셀이 있으면 움직여야해! */
 		if (-1 != iNeighborIndex)
 		{
 			while (true)

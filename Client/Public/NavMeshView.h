@@ -13,67 +13,17 @@ BEGIN(Client)
 
 struct iVec3
 {
-	_int x;
-	_int y;
-	_int z;
+	_int x, y, z;
 
-	bool operator<(const iVec3& other) const
-	{
-		if (x == other.x)
-		{
-			return z < other.z;
-		}
-
-		return x < other.x;
-	}
+	_bool operator<(const iVec3& other) const { return (x == other.x) ? z < other.z : x < other.x; }
 };
 
-typedef struct tagObstacle
-{
-	explicit tagObstacle() = default;
-	explicit tagObstacle(const tagObstacle& rhs) = default;
-	tagObstacle(const tagObstacle& rhs, const Matrix& matWorld)
-	{
-		vInnerPoint = Vec3::Transform(rhs.vInnerPoint, matWorld);
-		tAABB.Center = Vec3::Transform(rhs.tAABB.Center, matWorld);
-		tAABB.Extents = rhs.tAABB.Extents;
-
-		vecPoints.reserve(rhs.vecPoints.size());
-
-		for (_int i = 0; i < rhs.vecPoints.size(); ++i)
-		{
-			vecPoints.emplace_back(Vec3::Transform(rhs.vecPoints[i], matWorld));
-		}
-
-		TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
-		for (auto vPoint : vecPoints)
-		{
-			if (fMaxX < vPoint.x) fMaxX = vPoint.x;
-			if (fMinX > vPoint.x) fMinX = vPoint.x;
-
-			if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
-			if (fMinZ > vPoint.z) fMinZ = vPoint.z;
-		}
-
-		const _float fAABBOffset = 0.05f;
-		tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
-		tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
-	}
-	
-	Vec3 vInnerPoint = Vec3::Zero;
-	BoundingBox tAABB;
-
-	vector<Vec3> vecPoints;
-} Obst;
-
+struct Obst;
+struct CellData;
 class CNavMeshView final : public CView
 {
     using Super = CView;
-	struct CellData;
 private:
-	enum POINTS	: uint8	{ POINT_A, POINT_B, POINT_C, POINT_END };
-	enum LINES	: uint8	{ LINE_AB, LINE_BC, LINE_CA, LINE_END };
-
 	enum class TRIMODE : uint8 { DEFAULT, OBSTACLE, REGION, MODE_END };
 
 private:
@@ -87,83 +37,72 @@ public:
 	virtual HRESULT	DebugRender()			override;
 
 public:
-	HRESULT DynamicCreate(CGameObject* const pGameObject);
-	HRESULT UpdateObstacleTransform(CGameObject* const pGameObject);
+	HRESULT		DynamicCreate(CGameObject* const pGameObject);
+	HRESULT		UpdateObstacleTransform(CGameObject* const pGameObject);
 
 private:
-	void	ClearNeighbors(vector<CellData*>& vecCells);
-	void	SetUpNeighbors(vector<CellData*>& vecCells);
-	void	ShowNavMesh(_bool bOnOff) {	m_isNavMeshOn = bOnOff; }
+	void		ClearNeighbors(vector<CellData*>& vecCells);
+	void		SetUpNeighbors(vector<CellData*>& vecCells);
 
-	HRESULT	BakeNavMesh();
-	HRESULT	BakeNavMeshLegacy();
-	HRESULT	BakeSingleObstacleData();
+	HRESULT		BakeNavMesh();
+	HRESULT		BakeSingleObstacleData();
 
-	HRESULT	UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
-	HRESULT	UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
-	HRESULT	UpdateHoleList(triangulateio& tIn, const Obst* pObst = nullptr);
-	HRESULT	UpdateRegionList(triangulateio& tIn, const Obst* pObst = nullptr);
-	
-	HRESULT StaticCreate(const Obst& tObst);
+	HRESULT		UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
+	HRESULT		UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
+	HRESULT		UpdateHoleList(triangulateio& tIn, const Obst* pObst = nullptr);
+	HRESULT		UpdateRegionList(triangulateio& tIn, const Obst* pObst = nullptr);
 
-	HRESULT DynamicCreate(const Obst& tObst);
-	HRESULT DynamicDelete(const Obst& tObst);
+	HRESULT		StaticCreate(const Obst& tObst);
+	HRESULT		DynamicCreate(const Obst& tObst);
+	HRESULT		DynamicDelete(const Obst& tObst);
 
-	HRESULT StressTest();
-
-	HRESULT	SafeReleaseTriangle(triangulateio& tTriangle);
+	HRESULT		CreateAgent(Vec3 vSpawnPosition);
+	HRESULT		CreateAgent(_int iSpawnIndex);
+	HRESULT		StressTest();
 
 private:
-	HRESULT	DebugRenderLegacy();
-	HRESULT	RenderDT();
-	HRESULT	RenderVD();
+	void		SetPolygonHoleCenter(Obst& tObst);
+	HRESULT		GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected);
 
 private:
-	void	SetPolygonHoleCenter(Obst& tObst);
-	HRESULT	GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected);
-
-private:
-	// Obstacle Outline 계산 및 영역 확장
-	HRESULT CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
-	void	Dfs_(const iVec3& vCurrent, const set<iVec3>& setPoints, set<iVec3>& setVisited, OUT vector<iVec3>& vecPath, OUT vector<iVec3>& vecLongest);
-	void	Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vector<iVec3>& vecLongest);
-	Vec3	CalculateNormal(const iVec3& vPrev, const iVec3& vCurrent, const iVec3& vNext);
-	_bool	IsClockwise(const vector<iVec3>& vecPoints);
+	HRESULT		CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
+	void		Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vector<iVec3>& vecLongest);
+	Vec3		CalculateNormal(const iVec3& vPrev, const iVec3& vCurrent, const iVec3& vNext);
+	_bool		IsClockwise(const vector<iVec3>& vecPoints);
 	vector<Vec3> ExpandOutline(const vector<iVec3>& vecOutline, _float fDistance);
-	_bool	IntersectSegments(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, Vec3& vIntersection);
+	_bool		IntersectSegments(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, Vec3& vIntersection);
 	vector<Vec3> ProcessIntersections(vector<Vec3>& vecExpandedOutline);
 
-	_float	PerpendicularDistance(const Vec3& vPt, const Vec3& vLineStart, const Vec3& vLineEnd);
-	void	RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float fEpsilon, OUT vector<Vec3>& vecOut);
+	_float		PerpendicularDistance(const Vec3& vPt, const Vec3& vLineStart, const Vec3& vLineEnd);
+	void		RamerDouglasPeucker(const vector<Vec3>& vecPointList, _float fEpsilon, OUT vector<Vec3>& vecOut);
 
 private:
-	void	Input();
-	_bool	Pick(_uint screenX, _uint screenY);
+	void		Input();
+	_bool		Pick(_uint screenX, _uint screenY);
 
-	HRESULT	SaveNvFile();
-	HRESULT	LoadNvFile();
-	HRESULT	DeleteNvFile();
-	HRESULT	RefreshNvFile();
+	HRESULT		SaveNvFile();
+	HRESULT		LoadNvFile();
+	HRESULT		DeleteNvFile();
+	HRESULT		RefreshNvFile();
 
-	HRESULT	SaveObstacleLocalOutline(const Obst* const pObst, string strName);
-	HRESULT	LoadObstacleOutlineData();
-
-private:
-	void	InfoView();
-	void	PointsGroup();
-	void	ObstaclesGroup();
-	void	CellGroup();
+	HRESULT		SaveObstacleLocalOutline(const Obst* const pObst, string strName);
+	HRESULT		LoadObstacleOutlineData();
 
 private:
-	HRESULT InitialSetting();
-	HRESULT Reset();
+	void		InfoView();
+	void		PointsGroup();
+	void		ObstaclesGroup();
+	void		CellGroup();
 
 private:
-	// 
+	HRESULT		InitialSetting();
+	HRESULT		Reset();
 
+	HRESULT		SafeReleaseTriangle(triangulateio& tTriangle);
 
+private:
 	// Path Finding (A*)
-
+	class CAgent*			m_pAgent = nullptr;
 
 	// Cell Data
 	_int					m_iStaticPointCount = 0;
@@ -189,7 +128,7 @@ private:
 	Matrix					m_matStressOffset = Matrix::Identity;
 
 	// triangulate
-	triangulateio			m_tIn, m_tOut, m_tVD_out;
+	triangulateio			m_tIn, m_tOut;
 	_char					m_szTriswitches[3] = "pz";
 
 	// Default
@@ -216,15 +155,6 @@ private:
 	map<wstring, Obst>		m_mapObstaclePrefabs;
 
 	// Legacy
-	_bool					m_isNavMeshOn = false;
-	_float					m_fSlopeDegree = 0.0f;
-	_float					m_fMaxClimb = 0.0f;
-	const _float			m_fEpsilon = 0.001f;
-	_float					m_fMinArea = 0.0f;
-	BoundingBox				m_tNavMeshBoundVolume;
-
-	wstring					m_strPickedObject;
-	CGameObject*			m_pPickedObject = nullptr;
 	CShader*				m_pCS_TriTest = nullptr;
 
 public:
