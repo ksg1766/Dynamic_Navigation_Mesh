@@ -23,9 +23,12 @@ public:
 	virtual HRESULT LateTick()				override;
 	virtual HRESULT	DebugRender()			override;
 
+public:
+	HRESULT	PlaceObstacle(const wstring& strObjectTag, const Matrix& matWorld);
+
 private:
 	void	Input();
-	void	PlaceObject(const LAYERTAG& eLayerTag, const wstring& strPrototypeTag, const Vec3& vPickPosition);
+	void	PlaceObject(const LAYERTAG& eLayerTag, const wstring& strPrototypeTag, const Vec3& vPickPosition, _bool bNotify = true);
 
 private:
 	void	InfoView();

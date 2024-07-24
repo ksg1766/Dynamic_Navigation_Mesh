@@ -1534,6 +1534,43 @@ HRESULT CNavMeshView::SaveNvFile()
 
 		root->LinkEndChild(node);
 		{
+			map<LAYERTAG, CLayer*>& mapLayer = m_pGameInstance->GetCurrentLevelLayers();
+			auto iter = mapLayer.find(LAYERTAG::GROUND);
+			vector<CGameObject*>* vecGroundObjects = nullptr;
+
+			if (mapLayer.end() != iter)
+			{
+				vecGroundObjects = &iter->second->GetGameObjects();
+			}
+
+			if (nullptr != vecGroundObjects && true == vecGroundObjects->empty())
+			{
+				return E_FAIL;
+			}
+
+			element = document->NewElement("GameObject");
+			element->SetText(Utils::ToString((*vecGroundObjects)[i]->GetObjectTag()).c_str());
+			node->LinkEndChild(element);
+
+			element = document->NewElement("WorldMatrix");
+			element->SetAttribute("_11", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._11);
+			element->SetAttribute("_12", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._12);
+			element->SetAttribute("_13", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._13);
+			element->SetAttribute("_14", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._14);
+			element->SetAttribute("_21", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._21);
+			element->SetAttribute("_22", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._22);
+			element->SetAttribute("_23", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._23);
+			element->SetAttribute("_24", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._24);
+			element->SetAttribute("_31", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._31);
+			element->SetAttribute("_32", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._32);
+			element->SetAttribute("_33", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._33);
+			element->SetAttribute("_34", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._34);
+			element->SetAttribute("_41", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._41);
+			element->SetAttribute("_42", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._42);
+			element->SetAttribute("_43", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._43);
+			element->SetAttribute("_44", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._44);
+			node->LinkEndChild(element);
+
 			element = document->NewElement("InnerPoint");
 			element->SetAttribute("X", m_vecObstacles[i]->vInnerPoint.x);
 			element->SetAttribute("Y", m_vecObstacles[i]->vInnerPoint.y);
@@ -1615,10 +1652,36 @@ HRESULT CNavMeshView::LoadNvFile()
 	tinyxml2::XMLElement* element = nullptr;
 	while (nullptr != node)
 	{
+		Matrix matWorld;
+		wstring strObjectTag;
+
+		element = node->FirstChildElement();
+		strObjectTag = Utils::ToWString(element->GetText());
+
+		element = element->NextSiblingElement();
+		matWorld._11 = element->FloatAttribute("_11");
+		matWorld._12 = element->FloatAttribute("_12");
+		matWorld._13 = element->FloatAttribute("_13");
+		matWorld._14 = element->FloatAttribute("_14");
+		matWorld._21 = element->FloatAttribute("_21");
+		matWorld._22 = element->FloatAttribute("_22");
+		matWorld._23 = element->FloatAttribute("_23");
+		matWorld._24 = element->FloatAttribute("_24");
+		matWorld._31 = element->FloatAttribute("_31");
+		matWorld._32 = element->FloatAttribute("_32");
+		matWorld._33 = element->FloatAttribute("_33");
+		matWorld._34 = element->FloatAttribute("_34");
+		matWorld._41 = element->FloatAttribute("_41");
+		matWorld._42 = element->FloatAttribute("_42");
+		matWorld._43 = element->FloatAttribute("_43");
+		matWorld._44 = element->FloatAttribute("_44");
+
+		m_pMediator->OnNotifiedPlaceObject(strObjectTag, matWorld);
+
 		Obst* pObst = new Obst;
 
 		// InnerPoint
-		element = node->FirstChildElement();
+		element = element->NextSiblingElement();
 		pObst->vInnerPoint.x = element->FloatAttribute("X");
 		pObst->vInnerPoint.y = element->FloatAttribute("Y");
 		pObst->vInnerPoint.z = element->FloatAttribute("Z");
@@ -2119,7 +2182,7 @@ HRESULT CNavMeshView::SaveObstacleLocalOutline(const Obst* const pObst, string s
 	node = document->NewElement(strName.c_str());
 
 	root->LinkEndChild(node);
-	{	// Obstacle Mesh 함께 저장하도록
+	{
 		element = document->NewElement("InnerPoint");
 		element->SetAttribute("X", pObst->vInnerPoint.x);
 		element->SetAttribute("Y", pObst->vInnerPoint.y);

@@ -39,6 +39,11 @@ void CViewMediator::OnNotifiedPickingOn(CView* pSender)
 	}
 }
 
+void CViewMediator::OnNotifiedPlaceObject(const wstring& strObjectTag, const Matrix& matWorld)
+{
+	m_pPrefabsView->PlaceObstacle(strObjectTag, matWorld);
+}
+
 void CViewMediator::OnNotifiedPlaceObstacle(CGameObject* const pGameObject)
 {
 	m_pNavMeshView->DynamicCreate(pGameObject);

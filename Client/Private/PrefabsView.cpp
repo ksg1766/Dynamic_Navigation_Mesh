@@ -48,6 +48,22 @@ HRESULT CPrefabsView::DebugRender()
 	return S_OK;
 }
 
+HRESULT CPrefabsView::PlaceObstacle(const wstring& strObjectTag, const Matrix& matWorld)
+{
+	const wstring strPrototypeTag = TEXT("Prototype_GameObject_") + strObjectTag;
+
+	CGameObject* pGameObject = m_pGameInstance->CreateObject(strPrototypeTag, LAYERTAG::WALL);
+
+	if (nullptr == pGameObject)
+	{
+		return E_FAIL;
+	}
+
+	pGameObject->GetTransform()->Set_WorldMatrix(matWorld);
+
+	return S_OK;
+}
+
 void CPrefabsView::Input()
 {
 	if (ImGui::GetIO().WantCaptureMouse)
@@ -160,7 +176,7 @@ void CPrefabsView::TapGroups()
 	}
 }
 
-void CPrefabsView::PlaceObject(const LAYERTAG& eLayerTag, const wstring& strObjectTag, const Vec3& vPickPosition)
+void CPrefabsView::PlaceObject(const LAYERTAG& eLayerTag, const wstring& strObjectTag, const Vec3& vPickPosition, _bool bNotify)
 {
 	if (eLayerTag == LAYERTAG::LAYER_END) return;
 
@@ -169,7 +185,11 @@ void CPrefabsView::PlaceObject(const LAYERTAG& eLayerTag, const wstring& strObje
 	CGameObject* pGameObject = m_pGameInstance->CreateObject(strPrototypeTag, eLayerTag);
 
 	pGameObject->GetTransform()->Translate(vPickPosition);
-	m_pMediator->OnNotifiedPlaceObstacle(pGameObject);
+
+	if (true == bNotify)
+	{
+		m_pMediator->OnNotifiedPlaceObstacle(pGameObject);
+	}
 }
 
 CPrefabsView* CPrefabsView::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, CTerrain* m_pTerrainBf)
