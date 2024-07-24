@@ -1,3 +1,7 @@
+# 📅 2024.07.23
+📋 진행 사항
+  * 경로탐색 구현을 위해 agent를 배치하고
+
 ---
 https://equal-paw-e8f.notion.site/3-ce15dfe28bc74c5fac609bf0340a0c8f?pvs=4
 
