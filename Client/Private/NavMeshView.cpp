@@ -142,7 +142,7 @@ HRESULT CNavMeshView::DebugRender()
 	m_pContext->IASetInputLayout(m_pInputLayout);
 	
 	m_pBatch->Begin();
-	if (!m_vecCells.empty())
+	if (false == m_vecCells.empty())
 	{
 		for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
 		{
@@ -218,6 +218,11 @@ HRESULT CNavMeshView::DebugRender()
 		}
 	}
 	m_pBatch->End();
+
+	if (nullptr != m_pAgent)
+	{
+		m_pAgent->DebugRender();
+	}
 
 	return S_OK;
 }
@@ -2114,7 +2119,7 @@ HRESULT CNavMeshView::SaveObstacleLocalOutline(const Obst* const pObst, string s
 	node = document->NewElement(strName.c_str());
 
 	root->LinkEndChild(node);
-	{
+	{	// Obstacle Mesh 함께 저장하도록
 		element = document->NewElement("InnerPoint");
 		element->SetAttribute("X", pObst->vInnerPoint.x);
 		element->SetAttribute("Y", pObst->vInnerPoint.y);

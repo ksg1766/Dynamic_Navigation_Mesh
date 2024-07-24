@@ -81,6 +81,11 @@ private:
 	vector<CellData*>* m_pCells;
 	//static multimap<pair<_int, _int>, struct CellData*>* m_pCells;
 
+	// DebugDraw
+	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;
+	BasicEffect* m_pEffect = nullptr;
+	ID3D11InputLayout* m_pInputLayout = nullptr;
+
 public:
 	static	CAgentController* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CComponent* Clone(CGameObject* pGameObject, void* pArg) override;

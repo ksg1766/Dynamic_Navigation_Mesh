@@ -4,6 +4,7 @@
 #include "GameObject.h"
 #include "Terrain.h"
 #include "CellData.h"
+#include "DebugDraw.h"
 
 constexpr auto EPSILON = 0.001f;
 
@@ -34,6 +35,25 @@ HRESULT CAgentController::Initialize(void* pArg)
 	{
 		m_pCurrentCell = static_cast<CellData*>(pArg);
 	}
+
+#pragma region DebugDraw
+	m_pBatch = new PrimitiveBatch<VertexPositionColor>(m_pContext);
+
+	m_pEffect = new BasicEffect(m_pDevice);
+	m_pEffect->SetVertexColorEnabled(true);
+
+	const void* pShaderByteCodes = nullptr;
+	size_t		iLength = 0;
+	m_pEffect->GetVertexShaderBytecode(&pShaderByteCodes, &iLength);
+
+	if (FAILED(m_pDevice->CreateInputLayout(VertexPositionColor::InputElements, VertexPositionColor::InputElementCount, pShaderByteCodes, iLength, &m_pInputLayout)))
+	{
+		Safe_Delete(m_pBatch);
+		Safe_Delete(m_pEffect);
+		Safe_Release(m_pInputLayout);
+		return E_FAIL;
+	}
+#pragma endregion DebugDraw
 
 	return S_OK;
 }
@@ -74,6 +94,19 @@ void CAgentController::LateTick(_float fTimeDelta)
 
 void CAgentController::DebugRender()
 {
+	if (false == m_vecPath.empty())
+	{
+		m_pBatch->Begin();
+		for (auto cell : m_vecPath)
+		{
+			Vec3 vP0 = cell->vPoints[0] + Vec3(0.f, 0.06f, 0.f);
+			Vec3 vP1 = cell->vPoints[1] + Vec3(0.f, 0.06f, 0.f);
+			Vec3 vP2 = cell->vPoints[2] + Vec3(0.f, 0.06f, 0.f);
+				
+			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Blue);
+		}
+		m_pBatch->End();
+	}	
 }
 
 _bool CAgentController::IsIdle()
@@ -305,5 +338,10 @@ CComponent* CAgentController::Clone(CGameObject* pGameObject, void* pArg)
 
 void CAgentController::Free()
 {
+	// DebugDraw
+	Safe_Delete(m_pBatch);
+	Safe_Delete(m_pEffect);
+	Safe_Release(m_pInputLayout);
+
 	Super::Free();
 }
