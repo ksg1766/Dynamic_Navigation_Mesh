@@ -2,7 +2,7 @@
 #include "Client_Defines.h"
 #include "MonoBehaviour.h"
 #include "Transform.h"
-#include "NavMeshAgent.h"
+#include "CellData.h"
 
 BEGIN(Engine)
 
@@ -20,9 +20,10 @@ struct PQNode
 	_bool operator<(const PQNode& other) const { return f < other.f; }
 	_bool operator>(const PQNode& other) const { return f > other.f; }
 
-	_float f; // f = g + h
-	_float g;
+	_float f = FLT_MAX; // f = g + h
+	_float g = FLT_MAX;
 	CellData* pCell = nullptr;
+	LINES ePortal = LINE_END;
 };
 
 class CAgentController : public CMonoBehaviour
@@ -52,6 +53,7 @@ public:
 	_float	GetHeightOffset();
 	_bool	CanMove(Vec3 vPoint);
 	_bool	AStar();
+	_bool	SSF();
 
 	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
 
@@ -77,6 +79,7 @@ private:
 	CellData* m_pDestCell = nullptr;
 	
 	vector<CellData*> m_vecPath;
+	vector<Vec3>	m_vecWayPoints;
 
 	vector<CellData*>* m_pCells;
 	//static multimap<pair<_int, _int>, struct CellData*>* m_pCells;

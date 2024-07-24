@@ -3,7 +3,6 @@
 #include "GameInstance.h"
 #include "GameObject.h"
 #include "Terrain.h"
-#include "CellData.h"
 #include "DebugDraw.h"
 
 constexpr auto EPSILON = 0.001f;
@@ -222,6 +221,11 @@ _bool CAgentController::AStar()	// 매번 호출되는게 아님 혼동하지 �
 
 	// 가장 가까운 노드 반환하도록
 	return false;
+}
+
+_bool CAgentController::SSF()
+{
+	return _bool();
 }
 
 void CAgentController::Move(_float fTimeDelta)
