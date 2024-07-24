@@ -91,7 +91,7 @@ HRESULT CNavMeshView::Tick()
 	{
 		if (nullptr == m_pAgent)
 		{
-			if (FAILED(CreateAgent(Vec3::Zero)))
+			if (FAILED(CreateAgent(0)))
 			{
 				return E_FAIL;
 			}
@@ -842,8 +842,11 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 		vSpawnPosition += point;
 	}
 
+	vSpawnPosition /= 3.f;
+
 	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER, m_vecCells[iSpawnIndex]));
 	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
+	m_pAgent->SetCells(&m_vecCells);
 
 	return S_OK;
 }
@@ -1020,7 +1023,16 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 	//vecTriangle.shrink_to_fit();
 	//vector<BOOL> vecTriTestResult(m_vecCells.size());
 
-	//pStructuredBuffer = CStructuredBuffer::Create(m_pDevice, m_pContext, vecTriangle.data(), 3 * sizeof(Vec3), m_vecCells.size(), sizeof(BOOL), m_vecCells.size());
+	//pStructuredBuffer =
+	//	CStructuredBuffer::Create(
+	//	m_pDevice,
+	//	m_pContext,
+	//	vecTriangle.data(),
+	//	3 * sizeof(Vec3),
+	//	m_vecCells.size(),
+	//	sizeof(BOOL),
+	//	m_vecCells.size()
+	//	);
 
 	//if (FAILED(m_pCS_TriTest->Bind_RawValue("gObstCenter", &tObst.tAABB.Center, sizeof(Vec3))) || 
 	//	FAILED(m_pCS_TriTest->Bind_RawValue("gObstExtents", &tObst.tAABB.Extents, sizeof(Vec3))))
@@ -1092,7 +1104,11 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 
 		for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
 		{
-			if (cVerticalRay.Intersects(vecSurfaceVtx[vecSurfaceIdx[j]._0], vecSurfaceVtx[vecSurfaceIdx[j]._1], vecSurfaceVtx[vecSurfaceIdx[j]._2], OUT fDistance))
+			if (cVerticalRay.Intersects(
+				vecSurfaceVtx[vecSurfaceIdx[j]._0],
+				vecSurfaceVtx[vecSurfaceIdx[j]._1],
+				vecSurfaceVtx[vecSurfaceIdx[j]._2],
+				OUT fDistance))
 			{
 				Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
 
@@ -1104,7 +1120,11 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 				vecIntersected.emplace_back(iVec3(round(vPos.x), round(vPos.y), round(vPos.z)));
 			}
 
-			if (cHorizontalRay.Intersects(vecSurfaceVtx[vecSurfaceIdx[j]._0], vecSurfaceVtx[vecSurfaceIdx[j]._1], vecSurfaceVtx[vecSurfaceIdx[j]._2], OUT fDistance))
+			if (cHorizontalRay.Intersects(
+				vecSurfaceVtx[vecSurfaceIdx[j]._0],
+				vecSurfaceVtx[vecSurfaceIdx[j]._1],
+				vecSurfaceVtx[vecSurfaceIdx[j]._2],
+				OUT fDistance))
 			{
 				Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
 

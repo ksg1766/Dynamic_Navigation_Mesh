@@ -181,7 +181,7 @@ HRESULT CLevel_GameTool::Ready_Layer_Camera()
 
 	pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMETOOL, LAYERTAG::CAMERA, TEXT("Prototype_GameObject_FlyingCamera"));
 	if (nullptr == pGameObject)	return E_FAIL;
-	pGameObject->GetTransform()->Translate(Vec3(-100.f, 500.f, 0.f));
+	pGameObject->GetTransform()->Translate(Vec3(0.0f, 500.0f, 0.0f));
 
 	m_pGameInstance->ChangeCamera(TEXT("FlyingCamera"));
 

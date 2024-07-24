@@ -13,6 +13,18 @@ END
 
 BEGIN(Client)
 
+struct CellData;
+
+struct PQNode
+{
+	_bool operator<(const PQNode& other) const { return f < other.f; }
+	_bool operator>(const PQNode& other) const { return f > other.f; }
+
+	_float f; // f = g + h
+	_float g;
+	CellData* pCell = nullptr;
+};
+
 class CAgentController : public CMonoBehaviour
 {
 	using Super = CMonoBehaviour;
@@ -30,18 +42,25 @@ public:
 	virtual void	DebugRender()				override;
 
 public:
+	void	SetCells(vector<CellData*>* pvecCells) { m_pCells = pvecCells; }	// temp
+
+public:
 	_bool	IsIdle();
 	_bool	IsMoving();
 
 	void	ForceHeight();
 	_float	GetHeightOffset();
-	_bool	CanMove(_fvector vPoint);
+	_bool	CanMove(Vec3 vPoint);
+	_bool	AStar();
 
 	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
 
 private:
 	void	Input(_float fTimeDelta);
 	void	Move(_float fTimeDelta);
+
+private:
+	CellData* FindCellByPosition(const Vec3& vPosition);
 
 private:
 	CTransform*		m_pTransform = nullptr;
@@ -54,7 +73,13 @@ private:
 	Vec3			m_vMaxLinearSpeed;
 	Vec3			m_vLinearSpeed;
 
-	struct CellData* m_pCurrentCell = nullptr;
+	CellData* m_pCurrentCell = nullptr;
+	CellData* m_pDestCell = nullptr;
+	
+	vector<CellData*> m_vecPath;
+
+	vector<CellData*>* m_pCells;
+	//static multimap<pair<_int, _int>, struct CellData*>* m_pCells;
 
 public:
 	static	CAgentController* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

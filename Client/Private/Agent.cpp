@@ -88,6 +88,11 @@ _bool CAgent::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 	return m_pController->Pick(pTerrain, screenX, screenY);
 }
 
+void CAgent::SetCells(vector<CellData*>* pvecCells)
+{
+	m_pController->SetCells(pvecCells);
+}
+
 HRESULT CAgent::Ready_FixedComponents()
 {
 	/* Com_Shader */
