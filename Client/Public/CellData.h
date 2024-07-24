@@ -27,8 +27,10 @@ struct CellData
 	inline Vec3	GetCenter()	{ return (vPoints[0] + vPoints[1] + vPoints[2]) / 3.f; }
 
 	inline static _float CostBetween(CellData* pSour, CellData* pDest)	{ return Vec3::Distance(pSour->GetCenter(), pDest->GetCenter()); }
+	//inline static _float CostBetween(CellData* pSour, CellData* pDest)	{ return fabs(pSour->GetCenter().x - pDest->GetCenter().x) + fabs(pSour->GetCenter().z - pDest->GetCenter().z); }
 	inline static _float HeuristicCost(CellData* pSour, CellData* pDest){ return CostBetween(pSour, pDest); }
 	inline static _float HeuristicCost(CellData* pSour, Vec3 vDest)		{ return Vec3::Distance(pSour->GetCenter(), vDest); }
+	//inline static _float HeuristicCost(CellData* pSour, Vec3 vDest)		{ return fabs(pSour->GetCenter().x - vDest.x) + fabs(pSour->GetCenter().z - vDest.z); }
 
 	// cache
 	_bool	isDead = false;

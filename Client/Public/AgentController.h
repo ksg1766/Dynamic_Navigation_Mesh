@@ -20,10 +20,9 @@ struct PQNode
 	_bool operator<(const PQNode& other) const { return f < other.f; }
 	_bool operator>(const PQNode& other) const { return f > other.f; }
 
-	_float f = FLT_MAX; // f = g + h
-	_float g = FLT_MAX;
+	_float f = 0; // f = g + h
+	_float g = 0;
 	CellData* pCell = nullptr;
-	LINES ePortal = LINE_END;
 };
 
 class CAgentController : public CMonoBehaviour
@@ -78,7 +77,7 @@ private:
 	CellData* m_pCurrentCell = nullptr;
 	CellData* m_pDestCell = nullptr;
 	
-	vector<CellData*> m_vecPath;
+	vector<pair<CellData*, LINES>>	m_vecPath;
 	vector<Vec3>	m_vecWayPoints;
 
 	vector<CellData*>* m_pCells;

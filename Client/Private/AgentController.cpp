@@ -65,7 +65,7 @@ void CAgentController::Tick(_float fTimeDelta)
 	{
 		for (_int i = m_vecPath.size() - 1; i >= 0; --i)
 		{
-			if (m_pCurrentCell == m_vecPath[i])
+			if (m_pCurrentCell == m_vecPath[i].first)
 			{
 				for (_int j = m_vecPath.size() - 1; j > i; --j)
 				{
@@ -96,13 +96,23 @@ void CAgentController::DebugRender()
 	if (false == m_vecPath.empty())
 	{
 		m_pBatch->Begin();
-		for (auto cell : m_vecPath)
+		for (auto pair : m_vecPath)
 		{
-			Vec3 vP0 = cell->vPoints[0] + Vec3(0.f, 0.06f, 0.f);
-			Vec3 vP1 = cell->vPoints[1] + Vec3(0.f, 0.06f, 0.f);
-			Vec3 vP2 = cell->vPoints[2] + Vec3(0.f, 0.06f, 0.f);
-				
-			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Blue);
+			for (uint8 i = LINE_AB; i < LINE_END; ++i)
+			{
+				if (i == pair.second)
+				{
+					m_pBatch->DrawLine(
+						VertexPositionColor(pair.first->vPoints[i], Colors::Blue),
+						VertexPositionColor(pair.first->vPoints[(i + 1) % 3], Colors::Blue));
+				}
+				else
+				{
+					m_pBatch->DrawLine(
+						VertexPositionColor(pair.first->vPoints[i], Colors::Cyan),
+						VertexPositionColor(pair.first->vPoints[(i + 1) % 3], Colors::Cyan));
+				}
+			}
 		}
 		m_pBatch->End();
 	}	
@@ -166,10 +176,10 @@ _bool CAgentController::CanMove(Vec3 vPoint)
 		return true;
 }
 
-_bool CAgentController::AStar()	// 매번 호출되는게 아님 혼동하지 말자...
+_bool CAgentController::AStar()
 {
 	priority_queue<PQNode, vector<PQNode>, greater<PQNode>> pqOpen;
-	map<CellData*, CellData*> mapPath;
+	map<CellData*, pair<CellData*, LINES>> mapPath;
 	map<CellData*, _float> mapCost;
 	set<CellData*> setClosed;
 	m_vecPath.clear();
@@ -183,7 +193,7 @@ _bool CAgentController::AStar()	// 매번 호출되는게 아님 혼동하지 �
 
 		pqOpen.push(PQNode{ g + h, g, m_pCurrentCell });
 		mapCost[m_pCurrentCell] = 0.0f;
-		mapPath[m_pCurrentCell] = nullptr;
+		mapPath[m_pCurrentCell] = pair(nullptr, LINE_END);
 	}
 
 	while (false == pqOpen.empty())
@@ -192,11 +202,11 @@ _bool CAgentController::AStar()	// 매번 호출되는게 아님 혼동하지 �
 
 		if (tNode.pCell == m_pDestCell)
 		{
-			CellData* pCell = m_pDestCell;
-			while (nullptr != pCell)
+			pair<CellData*, LINES> pairCell(m_pDestCell, LINE_END);
+			while (nullptr != pairCell.first)
 			{
-				m_vecPath.push_back(pCell);
-				pCell = mapPath[pCell];
+				m_vecPath.push_back(pairCell);
+				pairCell = mapPath[pairCell.first];
 			}
 
 			return true;
@@ -205,21 +215,21 @@ _bool CAgentController::AStar()	// 매번 호출되는게 아님 혼동하지 �
 		pqOpen.pop();
 		setClosed.emplace(tNode.pCell);
 
-		for (_int i = LINE_AB; i < LINE_END; ++i)
+		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
 			CellData* pNeighbor = tNode.pCell->pNeighbors[i];
 			if (nullptr != pNeighbor && 0 == setClosed.count(pNeighbor))
 			{
 				mapCost[pNeighbor] = mapCost[tNode.pCell] + CellData::CostBetween(tNode.pCell, pNeighbor);
-				mapPath[pNeighbor] = tNode.pCell;
+				mapPath[pNeighbor] = pair(tNode.pCell, (LINES)i);
 
 				_float g = mapCost[pNeighbor];
-				pqOpen.push(PQNode(g + CellData::HeuristicCost(pNeighbor, m_vDestPos), g, pNeighbor));
+				pqOpen.push(PQNode{ g + CellData::HeuristicCost(pNeighbor, m_vDestPos), g, pNeighbor });
 			}
 		}
 	}
 
-	// 가장 가까운 노드 반환하도록
+	// TODO: 가장 가까운 노드 반환하도록
 	return false;
 }
 
@@ -252,7 +262,7 @@ void CAgentController::Move(_float fTimeDelta)
 	}
 	else
 	{
-		vDistance = m_vecPath[m_vecPath.size() - 2]->GetCenter() - m_pTransform->GetPosition();
+		vDistance = m_vecPath[m_vecPath.size() - 2].first->GetCenter() - m_pTransform->GetPosition();
 		vDistance.Normalize(OUT vDirection);
 
 		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
