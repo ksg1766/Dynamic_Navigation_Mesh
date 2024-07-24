@@ -24,6 +24,11 @@ struct CellData
 	_bool	ComparePoints(const Vec3& pSour, const Vec3& pDest);
 	_bool	IsOut(Vec3 vPoint, OUT CellData*& pNeighbor);
 	Vec3	GetPassedEdgeNormal(Vec3 vPoint);
+	inline Vec3	GetCenter()	{ return (vPoints[0] + vPoints[1] + vPoints[2]) / 3.f; }
+
+	inline static _float CostBetween(CellData* pSour, CellData* pDest)	{ return Vec3::Distance(pSour->GetCenter(), pDest->GetCenter()); }
+	inline static _float HeuristicCost(CellData* pSour, CellData* pDest){ return CostBetween(pSour, pDest); }
+	inline static _float HeuristicCost(CellData* pSour, Vec3 vDest)		{ return Vec3::Distance(pSour->GetCenter(), vDest); }
 
 	// cache
 	_bool	isDead = false;

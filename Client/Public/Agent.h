@@ -34,6 +34,7 @@ public:
 
 public:
 	_bool			Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
+	void			SetCells(vector<struct CellData*>* pvecCells);
 
 private:
 	HRESULT			Ready_FixedComponents();
