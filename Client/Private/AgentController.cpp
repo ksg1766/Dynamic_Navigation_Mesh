@@ -281,8 +281,7 @@ _bool CAgentController::SSF()
 		const Vec3& vRight = m_dqPath[i].first->vPoints[(m_dqPath[i].second + 1) % POINT_END];
 
 		// Update right vertex.
-		_float f1 = TriArea2x(vPortalApex, vPortalRight, vRight);
-		if (f1 <= 0.0f)
+		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
 		{
 			if (vPortalApex == vPortalRight || TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
 			{
@@ -315,8 +314,7 @@ _bool CAgentController::SSF()
 		}
 
 		// Update left vertex.
-		_float f2 = TriArea2x(vPortalApex, vPortalLeft, vLeft);
-		if (f2 >= 0.0f)
+		if (TriArea2x(vPortalApex, vPortalLeft, vLeft) >= 0.0f)
 		{
 			if (vPortalApex == vPortalLeft || TriArea2x(vPortalApex, vPortalRight, vLeft) < 0.0f)
 			{
