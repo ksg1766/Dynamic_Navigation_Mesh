@@ -80,6 +80,7 @@
   * Simple Stupid Funnel 알고리즘을 통해 이를 개선하고자 합니다.
   * Efficient Triangulation-Based Pathfindin. (Douglas Jon Demyen) 등의 자료를 참고하고 있습니다.
   * 더 좋은 경로를 발견할 수 있는 휴리스틱을 시도해보고자 합니다.
+  * 아직은 agent의 크기는 고려하지 않은 채 경로를 탐색하고 있습니다. 경로 단순화 이후에 시도해보려합니다.
 
 ---
 # 📅 2024.07.23
