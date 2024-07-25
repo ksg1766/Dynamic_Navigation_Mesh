@@ -86,4 +86,14 @@ HRESULT RamerDouglasPeucker(const vector<Vec3>& vecPoints, _float fEpsilon, vect
 	return S_OK;
 }
 
+_float TriArea2x(const Vec3& vP0, const Vec3& vP1, const Vec3& vP2)
+{
+	const _float fAx = vP1.x - vP0.x;
+	const _float fAz = vP1.z - vP0.z;
+	const _float fBx = vP2.x - vP0.x;
+	const _float fBz = vP2.z - vP0.z;
+
+	return fBx * fAz - fAx * fBz;
+}
+
 END

@@ -4,6 +4,7 @@
 #include "GameObject.h"
 #include "Terrain.h"
 #include "DebugDraw.h"
+#include "NSHelper.h"
 
 constexpr auto EPSILON = 0.001f;
 
@@ -63,13 +64,13 @@ void CAgentController::Tick(_float fTimeDelta)
 
 	if (true == CanMove(m_pTransform->GetPosition()))
 	{
-		for (_int i = m_vecPath.size() - 1; i >= 0; --i)
+		for (_int i = 0; i < m_dqPath.size(); ++i)
 		{
-			if (m_pCurrentCell == m_vecPath[i].first)
+			if (m_pCurrentCell == m_dqPath[i].first)
 			{
-				for (_int j = m_vecPath.size() - 1; j > i; --j)
+				for (_int j = 0; j <= i; ++j)
 				{
-					m_vecPath.pop_back();
+					m_dqPath.pop_front();
 				}
 			}
 		}
@@ -89,33 +90,6 @@ void CAgentController::Tick(_float fTimeDelta)
 void CAgentController::LateTick(_float fTimeDelta)
 {
 	m_vPrePos = m_pTransform->GetPosition();
-}
-
-void CAgentController::DebugRender()
-{
-	if (false == m_vecPath.empty())
-	{
-		m_pBatch->Begin();
-		for (auto pair : m_vecPath)
-		{
-			for (uint8 i = LINE_AB; i < LINE_END; ++i)
-			{
-				if (i == pair.second)
-				{
-					m_pBatch->DrawLine(
-						VertexPositionColor(pair.first->vPoints[i], Colors::Blue),
-						VertexPositionColor(pair.first->vPoints[(i + 1) % 3], Colors::Blue));
-				}
-				else
-				{
-					m_pBatch->DrawLine(
-						VertexPositionColor(pair.first->vPoints[i], Colors::Cyan),
-						VertexPositionColor(pair.first->vPoints[(i + 1) % 3], Colors::Cyan));
-				}
-			}
-		}
-		m_pBatch->End();
-	}	
 }
 
 _bool CAgentController::IsIdle()
@@ -146,6 +120,46 @@ _float CAgentController::GetHeightOffset()
 	);
 
 	return -((vPlane.x * vPos.x + vPlane.z * vPos.z + vPlane.w) / vPlane.y + vPos.y);
+}
+
+void CAgentController::Move(_float fTimeDelta)
+{
+	if (false == IsMoving()) { return; }
+
+	Vec3 vDistance = Vec3::Zero;
+	Vec3 vMoveAmount = Vec3::Zero;
+	Vec3 vDirection = Vec3::Zero;
+
+	// waypoint는 임시로 무게중심.
+	//if (1 >= m_vecPath.size()) // already in destcell or no pathfinding
+	if (1 >= m_dqWayPoints.size()) // already in destcell or no pathfinding
+	{
+		vDistance = m_vDestPos - m_pTransform->GetPosition();
+		vDistance.Normalize(OUT vDirection);
+
+		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
+		if (vMoveAmount.LengthSquared() > vDistance.LengthSquared())
+		{	// end
+			vMoveAmount = vDistance;
+			//m_vecPath.pop_back();
+			m_dqWayPoints.pop_front();
+			m_isMoving = false;
+		}
+	}
+	else
+	{
+		//vDistance = m_vecPath[m_vecPath.size() - 2].first->GetCenter() - m_pTransform->GetPosition();
+		vDistance = m_dqWayPoints[1] - m_pTransform->GetPosition();
+		vDistance.Normalize(OUT vDirection);
+
+		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
+		if (vMoveAmount.LengthSquared() > vDistance.LengthSquared())
+		{	// to next waypoint
+			m_dqWayPoints.pop_front();
+		}
+	}
+	
+	m_pTransform->Translate(vMoveAmount);
 }
 
 _bool CAgentController::CanMove(Vec3 vPoint)
@@ -181,8 +195,8 @@ _bool CAgentController::AStar()
 	priority_queue<PQNode, vector<PQNode>, greater<PQNode>> pqOpen;
 	map<CellData*, pair<CellData*, LINES>> mapPath;
 	map<CellData*, _float> mapCost;
-	set<CellData*> setClosed;
-	m_vecPath.clear();
+
+	m_dqPath.clear();
 
 	{	// start node
 		Vec3 vStartPos = m_pTransform->GetPosition();
@@ -202,10 +216,10 @@ _bool CAgentController::AStar()
 
 		if (tNode.pCell == m_pDestCell)
 		{
-			pair<CellData*, LINES> pairCell(m_pDestCell, LINE_END);
-			while (nullptr != pairCell.first)
+			pair<CellData*, LINES> pairCell(m_pDestCell, mapPath[m_pDestCell].second);
+			while (m_pCurrentCell != pairCell.first)
 			{
-				m_vecPath.push_back(pairCell);
+				m_dqPath.push_front(pairCell);
 				pairCell = mapPath[pairCell.first];
 			}
 
@@ -213,18 +227,22 @@ _bool CAgentController::AStar()
 		}
 
 		pqOpen.pop();
-		setClosed.emplace(tNode.pCell);
 
 		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
-			CellData* pNeighbor = tNode.pCell->pNeighbors[i];
-			if (nullptr != pNeighbor && 0 == setClosed.count(pNeighbor))
+			CellData* pNeighbor = tNode.pCell->pNeighbors[i];	// parent의 인접셀이 nullptr이 아니라면
+			if (nullptr != pNeighbor)
 			{
-				mapCost[pNeighbor] = mapCost[tNode.pCell] + CellData::CostBetween(tNode.pCell, pNeighbor);
-				mapPath[pNeighbor] = pair(tNode.pCell, (LINES)i);
-
-				_float g = mapCost[pNeighbor];
-				pqOpen.push(PQNode{ g + CellData::HeuristicCost(pNeighbor, m_vDestPos), g, pNeighbor });
+				_float g = mapCost[tNode.pCell] + CellData::CostBetween(tNode.pCell, pNeighbor);
+				auto closed = mapCost.find(pNeighbor);
+				
+				if (mapCost.end() == closed || g < closed->second)	// 갱신해야한다면	// mapCost도 안쓰도록 수정 필요. g를 쓰는 이유가 없음.
+				{
+					mapCost[pNeighbor] = g;
+					mapPath[pNeighbor] = pair(tNode.pCell, (LINES)i);	// key : parent
+																		// value : parent의 neighbor index
+					pqOpen.push(PQNode{ g + CellData::HeuristicCost(pNeighbor, m_vDestPos), g, pNeighbor });
+				}
 			}
 		}
 	}
@@ -233,47 +251,115 @@ _bool CAgentController::AStar()
 	return false;
 }
 
+// _int stringPull(const _float* portals, _int nportals, _float* pts, const _int maxPts);
 _bool CAgentController::SSF()
 {
-	return _bool();
-}
+	m_dqWayPoints.clear();
 
-void CAgentController::Move(_float fTimeDelta)
-{
-	if (false == IsMoving()) { return; }
+	// Find straight path.
+	//_int iNpts = 0;
 
-	Vec3 vDistance = Vec3::Zero;
-	Vec3 vMoveAmount = Vec3::Zero;
-	Vec3 vDirection = Vec3::Zero;
+	// Init scan state
+	Vec3 vPortalApex = m_pTransform->GetPosition();
+	Vec3 vPortalLeft = m_pTransform->GetPosition();
+	Vec3 vPortalRight = m_pTransform->GetPosition();
 
-	// waypoint는 임시로 무게중심.
-	if (1 >= m_vecPath.size()) // already in destcell or no pathfinding
+	_int iApexIndex = 0;
+	_int iLeftIndex = 0;
+	_int iRightIndex = 0;
+
+	// Add start point.
+	m_dqWayPoints.push_back(vPortalApex);
+	//++iNpts;
+
+	//for (_int i = m_vecPath.size() - 2; i > 0; --i)
+	_int iSize = m_dqPath.size() - 1;
+	// portal 포인트가 중복될 때 문제 발생.
+	for (_int i = 1; i < iSize; ++i)
 	{
-		vDistance = m_vDestPos - m_pTransform->GetPosition();
-		vDistance.Normalize(OUT vDirection);
+		const Vec3& vLeft = m_dqPath[i].first->vPoints[m_dqPath[i].second];
+		const Vec3& vRight = m_dqPath[i].first->vPoints[(m_dqPath[i].second + 1) % POINT_END];
 
-		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
-		if (vMoveAmount.LengthSquared() > vDistance.LengthSquared())
-		{	// end
-			vMoveAmount = vDistance;
-			m_vecPath.pop_back();
-			m_isMoving = false;
+		// Update right vertex.
+		_float f1 = TriArea2x(vPortalApex, vPortalRight, vRight);
+		if (f1 <= 0.0f)
+		{
+			if (vPortalApex == vPortalRight || TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
+			{
+				// Tighten the funnel.
+				vPortalRight = vRight;
+				iRightIndex = i;
+			}
+			else
+			{
+				// Right over left, insert left to path and restart scan from portal left point.
+				m_dqWayPoints.push_back(vPortalLeft);
+				//++iNpts;
+
+				// Make current left the new apex.
+				vPortalApex = vPortalLeft;
+
+				iApexIndex = iLeftIndex;
+
+				// Reset portal
+				vPortalLeft = vPortalApex;
+				vPortalRight = vPortalApex;
+
+				iLeftIndex = iApexIndex;
+				iRightIndex = iApexIndex;
+
+				// Restart scan
+				i = iApexIndex;
+				continue;
+			}
+		}
+
+		// Update left vertex.
+		_float f2 = TriArea2x(vPortalApex, vPortalLeft, vLeft);
+		if (f2 >= 0.0f)
+		{
+			if (vPortalApex == vPortalLeft || TriArea2x(vPortalApex, vPortalRight, vLeft) < 0.0f)
+			{
+				// Tighten the funnel.
+				vPortalLeft = vLeft;
+				iLeftIndex = i;
+			}
+			else
+			{
+				// Left over right, insert right to path and restart scan from portal right point.
+				m_dqWayPoints.push_back(vPortalRight);
+				//++iNpts;
+
+				// Make current right the new apex.
+				vPortalApex = vPortalRight;
+
+				iApexIndex = iRightIndex;
+
+				// Reset portal
+				vPortalLeft = vPortalApex;
+				vPortalRight = vPortalApex;
+
+				iLeftIndex = iApexIndex;
+				iRightIndex = iApexIndex;
+
+				// Restart scan
+				i = iApexIndex;
+				continue;
+			}
 		}
 	}
-	else
+	// Append last point to path.
+	//if (iNpts < maxPts)
 	{
-		vDistance = m_vecPath[m_vecPath.size() - 2].first->GetCenter() - m_pTransform->GetPosition();
-		vDistance.Normalize(OUT vDirection);
-
-		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
-		if (vMoveAmount.LengthSquared() > vDistance.LengthSquared())
-		{	// to next waypoint
-			m_vecPath.pop_back();
-		}
+		//m_vecWayPoints.push_back(m_vecPath[m_vecPath.size() - 1].first->vPoints[m_vecPath[m_vecPath.size() - 1].second]);
+		m_dqWayPoints.push_back(m_vDestPos);
+		//++iNpts;
 	}
-	
-	m_pTransform->Translate(vMoveAmount);
+
+	return true;
 }
+
+
 
 CellData* CAgentController::FindCellByPosition(const Vec3& vPosition)
 {	// 일단 brute force로 구현 후 개선.
@@ -310,6 +396,10 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 	if (true == AStar())
 	{
+		//if (m_vecPath.size() > 1)
+		{
+			SSF();
+		}
 		m_isMoving = true;
 		return true;
 	}
@@ -322,6 +412,45 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 void CAgentController::Input(_float fTimeDelta)
 {
+}
+
+void CAgentController::DebugRender()
+{
+	if (false == m_dqPath.empty())
+	{
+		m_pBatch->Begin();
+		for (auto pair : m_dqPath)
+		{
+			for (uint8 i = LINE_AB; i < LINE_END; ++i)
+			{
+				if (i == pair.second)
+				{
+					m_pBatch->DrawLine(
+						VertexPositionColor(pair.first->vPoints[i], Colors::Blue),
+						VertexPositionColor(pair.first->vPoints[(i + 1) % 3], Colors::Blue));
+				}
+				else
+				{
+					m_pBatch->DrawLine(
+						VertexPositionColor(pair.first->vPoints[i], Colors::Cyan),
+						VertexPositionColor(pair.first->vPoints[(i + 1) % 3], Colors::Cyan));
+				}
+			}
+		}
+		m_pBatch->End();
+	}
+
+	if (false == m_dqWayPoints.empty())
+	{
+		m_pBatch->Begin();
+		for (size_t i = 0; i < m_dqWayPoints.size() - 1; ++i)
+		{
+			m_pBatch->DrawLine(
+				VertexPositionColor(m_dqWayPoints[i], Colors::Coral),
+				VertexPositionColor(m_dqWayPoints[i + 1], Colors::Coral));
+		}
+		m_pBatch->End();
+	}	
 }
 
 CAgentController* CAgentController::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

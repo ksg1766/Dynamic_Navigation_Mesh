@@ -20,8 +20,8 @@ struct PQNode
 	_bool operator<(const PQNode& other) const { return f < other.f; }
 	_bool operator>(const PQNode& other) const { return f > other.f; }
 
-	_float f = 0; // f = g + h
-	_float g = 0;
+	_float f = FLT_MAX; // f = g + h
+	_float g = FLT_MAX;
 	CellData* pCell = nullptr;
 };
 
@@ -77,8 +77,8 @@ private:
 	CellData* m_pCurrentCell = nullptr;
 	CellData* m_pDestCell = nullptr;
 	
-	vector<pair<CellData*, LINES>>	m_vecPath;
-	vector<Vec3>	m_vecWayPoints;
+	deque<pair<CellData*, LINES>>	m_dqPath;
+	deque<Vec3>	m_dqWayPoints;
 
 	vector<CellData*>* m_pCells;
 	//static multimap<pair<_int, _int>, struct CellData*>* m_pCells;
