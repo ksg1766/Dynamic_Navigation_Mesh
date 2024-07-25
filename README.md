@@ -1,20 +1,85 @@
 
 ---
-# 📅 2024.07.23
+# 📅 2024.07.24
 📋 진행 사항
+  * obstacle 데이터 저장시, 오브젝트 데이터가 저장되지 않아 mesh를 load하지 않던 문제를 해결했습니다.
+  * agent가 삼각형 cell 영역을 벗어나지 않고 이동할 수 있도록 구현했습니다.
   * 기본적인 형태의 A* 알고리즘을 구현했습니다.
     * Agent는 경로로 탐색된 삼각형의 무게중심 좌표를 waypoint로 설정해 이동합니다.
-    * 경로가 심각한 지그재그 형태로 나타나기 때문에 매끄러운 형태로 
-    * 
-      ```
-      ```
+    * 경로가 심각한 지그재그 형태로 나타나기 때문에 매끄러운 형태로 다듬기 위해 관련 알고리즘과 자료를 학습중입니다.
+    * 현재 상태는 아래와 같습니다. 경로로 탐색된 cell은 하늘색, 통과하게 되는 portal(edge)은 파란색으로 표시하고 있습니다. portal은 이후 경로 개선에 사용하기 위해 함께 저장했습니다.
+      * 거리 척도 계산은 우선 유클리드 거리(sqrt(pow(x, 2) + pow(z, 2)))로 계산하고 있습니다. 다른 방법을 함께 적용해볼 계획입니다.
+      * obstacle : 150+ / cell : 1500+
+        
+        ![FPS_61-DEBUG2024-07-2510-23-41-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/851d44b2-4b3d-429a-988c-b7659c21ba9b)
+
+        ```
+		_bool CAgentController::AStar()
+		{
+			priority_queue<PQNode, vector<PQNode>, greater<PQNode>> pqOpen;
+			map<CellData*, pair<CellData*, LINES>> mapPath;
+			map<CellData*, _float> mapCost;
+			set<CellData*> setClosed;
+			m_vecPath.clear();
+
+			{	// start node
+				Vec3 vStartPos = m_pTransform->GetPosition();
+
+				_float g = 0.0f;
+				Vec3 vDistance = m_vDestPos - vStartPos;
+				_float h = vDistance.Length();
+
+				pqOpen.push(PQNode{ g + h, g, m_pCurrentCell });
+				mapCost[m_pCurrentCell] = 0.0f;
+				mapPath[m_pCurrentCell] = pair(nullptr, LINE_END);
+			}
+
+			while (false == pqOpen.empty())
+			{
+				PQNode tNode = pqOpen.top();
+
+				if (tNode.pCell == m_pDestCell)
+				{
+					pair<CellData*, LINES> pairCell(m_pDestCell, LINE_END);
+					while (nullptr != pairCell.first)
+					{
+						m_vecPath.push_back(pairCell);
+						pairCell = mapPath[pairCell.first];
+					}
+
+					return true;
+				}
+
+				pqOpen.pop();
+				setClosed.emplace(tNode.pCell);
+
+				for (uint8 i = LINE_AB; i < LINE_END; ++i)
+				{
+					CellData* pNeighbor = tNode.pCell->pNeighbors[i];
+					if (nullptr != pNeighbor && 0 == setClosed.count(pNeighbor))
+					{
+						mapCost[pNeighbor] = mapCost[tNode.pCell] + CellData::CostBetween(tNode.pCell, pNeighbor);
+						mapPath[pNeighbor] = pair(tNode.pCell, (LINES)i);
+
+						_float g = mapCost[pNeighbor];
+						pqOpen.push(PQNode{ g + CellData::HeuristicCost(pNeighbor, m_vDestPos), g, pNeighbor });
+					}
+				}
+			}
+
+			return false;
+		}
+      	```
   
 ⚠️ 발견된 문제
-  *
+  * 당장은 waypoint를 dell의 무게중심으로 지정한 상태이기 때문에 경로가 매우 불안정합니다.
+  * 도착 지점이 포함된 cell을 모든 cell에 대한 linear search로 탐색하고 있어 개선이 필요합니다.
   
 ⚽ 이후 계획
-  *
-  
+  * Simple Stupid Funnel 알고리즘을 통해 이를 개선하고자 합니다.
+  * Efficient Triangulation-Based Pathfindin. (Douglas Jon Demyen) 등의 자료를 참고하고 있습니다.
+  * 더 좋은 경로를 발견할 수 있는 휴리스틱을 시도해보고자 합니다.
+
 ---
 # 📅 2024.07.23
 📋 진행 사항
