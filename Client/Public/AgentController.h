@@ -78,6 +78,7 @@ private:
 	CellData* m_pDestCell = nullptr;
 	
 	deque<pair<CellData*, LINES>>	m_dqPath;
+	deque<pair<Vec3, Vec3>>	m_dqPortals;
 	deque<Vec3>	m_dqWayPoints;
 
 	vector<CellData*>* m_pCells;

@@ -197,6 +197,7 @@ _bool CAgentController::AStar()
 	map<CellData*, _float> mapCost;
 
 	m_dqPath.clear();
+	m_dqPortals.clear();
 
 	{	// start node
 		Vec3 vStartPos = m_pTransform->GetPosition();
@@ -217,11 +218,15 @@ _bool CAgentController::AStar()
 		if (tNode.pCell == m_pDestCell)
 		{
 			pair<CellData*, LINES> pairCell(m_pDestCell, mapPath[m_pDestCell].second);
+			
+			m_dqPortals.push_front(pair(m_vDestPos, m_vDestPos));
 			while (m_pCurrentCell != pairCell.first)
 			{
 				m_dqPath.push_front(pairCell);
+				m_dqPortals.push_front(pair(pairCell.first->vPoints[pairCell.second], pairCell.first->vPoints[(pairCell.second + 1) % 3]));
 				pairCell = mapPath[pairCell.first];
 			}
+			m_dqPortals.push_front(pair(m_pTransform->GetPosition(), m_pTransform->GetPosition()));
 
 			return true;
 		}
@@ -273,12 +278,12 @@ _bool CAgentController::SSF()
 	//++iNpts;
 
 	//for (_int i = m_vecPath.size() - 2; i > 0; --i)
-	_int iSize = m_dqPath.size() - 1;
+	_int iSize = m_dqPortals.size();
 	// portal 포인트가 중복될 때 문제 발생.
 	for (_int i = 1; i < iSize; ++i)
 	{
-		const Vec3& vLeft = m_dqPath[i].first->vPoints[m_dqPath[i].second];
-		const Vec3& vRight = m_dqPath[i].first->vPoints[(m_dqPath[i].second + 1) % POINT_END];
+		const Vec3& vLeft = m_dqPortals[i].first;
+		const Vec3& vRight = m_dqPortals[i].second;
 
 		// Update right vertex.
 		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
@@ -293,7 +298,7 @@ _bool CAgentController::SSF()
 			{
 				// Right over left, insert left to path and restart scan from portal left point.
 				m_dqWayPoints.push_back(vPortalLeft);
-				//++iNpts;
+				// ++iNpts;
 
 				// Make current left the new apex.
 				vPortalApex = vPortalLeft;
@@ -326,7 +331,7 @@ _bool CAgentController::SSF()
 			{
 				// Left over right, insert right to path and restart scan from portal right point.
 				m_dqWayPoints.push_back(vPortalRight);
-				//++iNpts;
+				// ++iNpts;
 
 				// Make current right the new apex.
 				vPortalApex = vPortalRight;
@@ -349,9 +354,16 @@ _bool CAgentController::SSF()
 	// Append last point to path.
 	//if (iNpts < maxPts)
 	{
-		//m_vecWayPoints.push_back(m_vecPath[m_vecPath.size() - 1].first->vPoints[m_vecPath[m_vecPath.size() - 1].second]);
+		// TODO : 개선할 순 없는가...
+		/*if ((false == m_dqPath.empty()
+			&& false == m_dqWayPoints.empty())
+			&& (m_dqWayPoints[m_dqWayPoints.size() - 1] == m_dqPath[m_dqPath.size() - 1].first->vPoints[m_dqPath[m_dqPath.size() - 1].second]
+			|| m_dqWayPoints[m_dqWayPoints.size() - 1] == m_dqPath[m_dqPath.size() - 1].first->vPoints[(m_dqPath[m_dqPath.size() - 1].second + 1) % 3]))
+		{
+			m_dqWayPoints.pop_back();
+		}*/
+
 		m_dqWayPoints.push_back(m_vDestPos);
-		//++iNpts;
 	}
 
 	return true;
