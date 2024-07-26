@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "AgentController.h"
 #include "GameInstance.h"
-#include "GameObject.h"
+#include "Agent.h"
 #include "Terrain.h"
 #include "DebugDraw.h"
 #include "NSHelper.h"
@@ -10,7 +10,7 @@ constexpr auto EPSILON = 0.001f;
 
 CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	:Super(pDevice, pContext)
-	, m_vLinearSpeed(Vec3(50.0f, 50.0f, 50.0f))
+	, m_vLinearSpeed(Vec3(75.0f, 75.0f, 75.0f))
 	, m_vMaxLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
 {
 }
@@ -33,7 +33,10 @@ HRESULT CAgentController::Initialize(void* pArg)
 
 	if (nullptr != pArg)
 	{
-		m_pCurrentCell = static_cast<CellData*>(pArg);
+		CAgent::AgentDesc* pDesc = reinterpret_cast<CAgent::AgentDesc*>(pArg);
+		m_pCurrentCell = pDesc->pStartCell;
+		m_pCells = pDesc->pCells;
+		m_pGrids = pDesc->pGrids;
 	}
 
 #pragma region DebugDraw
@@ -198,8 +201,8 @@ _bool CAgentController::CanMove(Vec3 vPoint)
 _bool CAgentController::AStar()
 {
 	priority_queue<PQNode, vector<PQNode>, greater<PQNode>> pqOpen;
-	map<CellData*, pair<CellData*, LINES>> mapPath;
-	map<CellData*, _float> mapCost;
+	unordered_map<CellData*, pair<CellData*, LINES>> umapPath;
+	unordered_map<CellData*, _float> umapCost;
 
 	m_dqPath.clear();
 	m_dqPortals.clear();
@@ -214,8 +217,8 @@ _bool CAgentController::AStar()
 		_float h = vDistance.Length();
 
 		pqOpen.push(PQNode{ g + h, g, m_pCurrentCell });
-		mapCost[m_pCurrentCell] = 0.0f;
-		mapPath[m_pCurrentCell] = pair(nullptr, LINE_END);
+		umapCost[m_pCurrentCell] = 0.0f;
+		umapPath[m_pCurrentCell] = pair(nullptr, LINE_END);
 	}
 
 	while (false == pqOpen.empty())
@@ -224,7 +227,7 @@ _bool CAgentController::AStar()
 
 		if (tNode.pCell == m_pDestCell)
 		{
-			pair<CellData*, LINES> pairCell(m_pDestCell, mapPath[m_pDestCell].second);
+			pair<CellData*, LINES> pairCell(m_pDestCell, umapPath[m_pDestCell].second);
 			
 			m_dqPortals.push_front(pair(m_vDestPos, m_vDestPos));
 			m_dqPortalPoints.push_front(pair(BoundingBox(m_vDestPos, Vec3::Zero), BoundingBox(m_vDestPos, Vec3::Zero)));
@@ -242,7 +245,7 @@ _bool CAgentController::AStar()
 
 				m_dqPortalPoints.push_front(pair(BoundingBox(m_dqPortals.front().first, Vec3::One), BoundingBox(m_dqPortals.front().second, Vec3::One)));
 
-				pairCell = mapPath[pairCell.first];
+				pairCell = umapPath[pairCell.first];
 			}
 
 			const Vec3& vStartPos = m_pTransform->GetPosition();
@@ -270,12 +273,12 @@ _bool CAgentController::AStar()
 				}
 
 				_float g = tNode.g + CellData::CostBetween(tNode.pCell, pNeighbor);
-				auto closed = mapCost.find(pNeighbor);
+				auto closed = umapCost.find(pNeighbor);
 
-				if (mapCost.end() == closed || g < closed->second)	// 갱신해야 한다면	// mapCost도 안쓰도록 수정 필요. g를 쓰는 이유가 없음.
+				if (umapCost.end() == closed || g < closed->second)	// 갱신해야 한다면	// mapCost도 안쓰도록 수정 필요. g를 쓰는 이유가 없음.
 				{
-					mapCost[pNeighbor] = g;
-					mapPath[pNeighbor] = pair(tNode.pCell, (LINES)i);	// key : parent
+					umapCost[pNeighbor] = g;
+					umapPath[pNeighbor] = pair(tNode.pCell, (LINES)i);	// key : parent
 																		// value : parent의 neighbor index
 					pqOpen.push(PQNode{ g + CellData::HeuristicCost(pNeighbor, m_vDestPos), g, pNeighbor });
 				}
@@ -352,17 +355,22 @@ void CAgentController::SSF()
 	m_dqWayPoints.push_back(m_vDestPos);
 }
 
-
-
 CellData* CAgentController::FindCellByPosition(const Vec3& vPosition)
-{	// 일단 brute force로 구현 후 개선.
+{
 	CellData* pCell = nullptr;
 
-	for (_int i = 0; i < m_pCells->size(); ++i)
+	_int iX = (vPosition.x + gWorldCX * 0.5f) / gGridCX;
+	_int iZ = (vPosition.z + gWorldCZ * 0.5f) / gGridCZ;
+
+	_int iKey = iZ * gGridX + iX;
+
+	auto grid = m_pGrids->equal_range(iKey);
+
+	for (auto cell = grid.first; cell != grid.second; ++cell)
 	{
-		if (false == (*m_pCells)[i]->IsOut(vPosition, pCell))
+		if (false == cell->second->IsOut(vPosition, pCell))
 		{
-			return (*m_pCells)[i];
+			return cell->second;
 		}
 	}
 
@@ -389,7 +397,7 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 	if (true == AStar())
 	{
-		//if (m_vecPath.size() > 1)
+		// if (m_dqPortals.size() > 1)
 		{
 			SSF();
 		}

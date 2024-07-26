@@ -11,10 +11,18 @@ END
 
 BEGIN(Client)
 
+struct CellData;
 class CAgentController;
 class CAgent final : public CGameObject
 {
 	using Super = CGameObject;
+public:
+	struct AgentDesc
+	{
+		CellData* pStartCell = nullptr;
+		vector<CellData*>* pCells = nullptr;
+		unordered_multimap<_int, CellData*>* pGrids = nullptr;
+	};
 
 private:
 	/* 원형을 생성할 때 */
@@ -34,7 +42,7 @@ public:
 
 public:
 	_bool			Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
-	void			SetCells(vector<struct CellData*>* pvecCells);
+	void			SetCells(vector<CellData*>* pvecCells, unordered_multimap<_int, CellData*>* pumapGrids);
 
 private:
 	HRESULT			Ready_FixedComponents();

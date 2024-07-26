@@ -79,6 +79,7 @@ private:
 private:
 	void		Input();
 	_bool		Pick(_uint screenX, _uint screenY);
+	CellData*	FindCellByPosition(const Vec3& vPosition);
 
 	HRESULT		SaveNvFile();
 	HRESULT		LoadNvFile();
@@ -118,7 +119,8 @@ private:
 
 	vector<Vec3>			m_vecRegions;
 	vector<const _char*>	m_strRegions;
-	
+
+	unordered_multimap<_int, CellData*> m_umapGrids;
 	vector<CellData*>		m_vecCells;
 	vector<const _char*>	m_strCells;
 

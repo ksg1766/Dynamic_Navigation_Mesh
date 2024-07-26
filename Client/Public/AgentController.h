@@ -42,9 +42,6 @@ public:
 	virtual void	DebugRender()				override;
 
 public:
-	void	SetCells(vector<CellData*>* pvecCells) { m_pCells = pvecCells; }	// temp
-
-public:
 	_bool	IsIdle();
 	_bool	IsMoving();
 
@@ -86,7 +83,7 @@ private:
 	deque<pair<BoundingBox, BoundingBox>>	m_dqPortalPoints;
 
 	vector<CellData*>* m_pCells;
-	//static multimap<pair<_int, _int>, struct CellData*>* m_pCells;
+	unordered_multimap<_int, CellData*>* m_pGrids;
 
 	// DebugDraw
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;

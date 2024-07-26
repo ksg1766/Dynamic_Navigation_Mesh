@@ -89,12 +89,14 @@ HRESULT CNavMeshView::Tick()
 
 	if (ImGui::Button("CreateAgent"))
 	{
-		if (nullptr == m_pAgent)
+		if (nullptr != m_pAgent)
+		{			
+			m_pGameInstance->DeleteObject(m_pAgent);
+		}
+
+		if (FAILED(CreateAgent(Vec3::Zero)))
 		{
-			if (FAILED(CreateAgent(0)))
-			{
-				return E_FAIL;
-			}
+			return E_FAIL;
 		}
 	}
 	ImGui::NewLine();
@@ -276,6 +278,11 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 		m_vecCells.clear();
 	}
+	
+	if (false == m_umapGrids.empty())
+	{
+		m_umapGrids.clear();
+	}
 
 	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 	{
@@ -299,8 +306,28 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 		m_vecCells.push_back(pCellData);
 	}
-	
+
 	SetUpNeighbors(m_vecCells);
+
+	BoundingBox tAABB;
+	tAABB.Extents = Vec3(gGridCX * 0.5f, 10.0f, gGridCZ * 0.5f);
+
+	for (auto cell : m_vecCells)
+	{
+		for (_int iX = 0; iX < 1024 / gGridCX; ++iX)
+		{
+			for (_int iZ = 0; iZ < 1024 / gGridCZ; ++iZ)
+			{
+				tAABB.Center = Vec3((gGridCX - gWorldCX) * 0.5f + gGridCX * iX, 0.0f, (gGridCZ - gWorldCZ) * 0.5f + gGridCZ * iZ);
+
+				if (true == tAABB.Intersects(cell->vPoints[POINT_A], cell->vPoints[POINT_B], cell->vPoints[POINT_C]))
+				{
+					_int iKey = iZ * gGridX + iX;
+					m_umapGrids.emplace(iKey, cell);
+				}
+			}
+		}
+	}
 
 	return S_OK;
 }
@@ -827,12 +854,27 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 
 HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 {
-	for (_int i = 0; i < m_vecCells.size(); ++i)
-	{		
-		m_vecCells[i];
+	CellData* pCell = FindCellByPosition(vSpawnPosition);
+
+	if (nullptr == pCell)
+	{
+		return E_FAIL;
 	}
 
-	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER, *m_vecCells.begin()));
+	CAgent::AgentDesc tDesc =
+	{
+		pCell,
+		&m_vecCells,
+		&m_umapGrids
+	};
+
+	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER, &tDesc));
+
+	if (nullptr == m_pAgent)
+	{
+		return E_FAIL;
+	}
+
 	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
 
 	return S_OK;
@@ -849,9 +891,21 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 
 	vSpawnPosition /= 3.f;
 
-	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER, m_vecCells[iSpawnIndex]));
+	CAgent::AgentDesc tDesc =
+	{
+		m_vecCells[iSpawnIndex],
+		&m_vecCells,
+		&m_umapGrids
+	};
+
+	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER, &tDesc));
+	
+	if (nullptr == m_pAgent)
+	{
+		return E_FAIL;
+	}
+
 	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
-	m_pAgent->SetCells(&m_vecCells);
 
 	return S_OK;
 }
@@ -1503,6 +1557,28 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	return true;
 }
 
+CellData* CNavMeshView::FindCellByPosition(const Vec3& vPosition)
+{
+	CellData* pCell = nullptr;
+
+	_int iX = (vPosition.x + gWorldCX * 0.5f) / gGridCX;
+	_int iZ = (vPosition.z + gWorldCZ * 0.5f) / gGridCZ;
+
+	_int iKey = iZ * gGridX + iX;
+
+	auto grid = m_umapGrids.equal_range(iKey);
+
+	for (auto cell = grid.first; cell != grid.second; ++cell)
+	{
+		if (false == cell->second->IsOut(vPosition, pCell))
+		{
+			return cell->second;
+		}
+	}
+
+	return nullptr;
+}
+
 HRESULT CNavMeshView::SaveNvFile()
 {
 	fs::path strPath("../Bin/Resources/LevelData/" + m_strFilePath + "/");
@@ -1914,105 +1990,117 @@ void CNavMeshView::InfoView()
 
 void CNavMeshView::PointsGroup()
 {
-	ImGui::ListBox("Points", &m_item_Current, m_strPoints.data(), m_strPoints.size(), 3);
-	if (ImGui::Button("PopBackPoint"))
+	if (ImGui::TreeNode("Points"))
 	{
-		if (m_vecPoints.empty())
-			return;
+		ImGui::ListBox("", &m_item_Current, m_strPoints.data(), m_strPoints.size(), 3);
+		if (ImGui::Button("PopBackPoint"))
+		{
+			if (m_vecPoints.empty())
+				return;
 
-		m_strPoints.pop_back();
-		m_vecPoints.pop_back();
-		m_vecPointSpheres.pop_back();
+			m_strPoints.pop_back();
+			m_vecPoints.pop_back();
+			m_vecPointSpheres.pop_back();
+		}
+		ImGui::TreePop();
 	}
 }
 
 void CNavMeshView::ObstaclesGroup()
 {
-	ImGui::ListBox("ObstaclePoints", &m_item_Current, m_strObstaclePoints.data(), m_strObstaclePoints.size(), 3);
+	if (ImGui::TreeNode("Obstacles"))
+	{
+		ImGui::ListBox("ObstaclePoints", &m_item_Current, m_strObstaclePoints.data(), m_strObstaclePoints.size(), 3);
+
+		if (ImGui::Button("PopBackObstaclePoint"))
+		{
+			if (m_strObstaclePoints.empty())
+				return;
+
+			m_vecPoints.pop_back();
+			m_strObstaclePoints.pop_back();
+			m_vecObstaclePoints.pop_back();
+			m_vecObstaclePointSpheres.pop_back();
+		}
+
+		if (false == m_vecObstaclePoints.empty())
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("CreateDynamic"))
+			{
+				Obst* pObst = new Obst;
+
+				TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
+				for (auto vPoint : m_vecObstaclePoints)
+				{
+					if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+					if (fMinX > vPoint.x) fMinX = vPoint.x;
+
+					if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+					if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+
+					pObst->vecPoints.push_back(vPoint);
+				}
+
+				const _float fAABBOffset = 0.05f;
+				Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+				Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.0f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
+				pObst->tAABB = BoundingBox(vAABBCenter, vAABBExtent);
+
+				SetPolygonHoleCenter(*pObst);
+
+				m_vecObstacles.push_back(pObst);
+				s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back()->vInnerPoint.x) + ", " + to_string(m_vecObstacles.back()->vInnerPoint.z));
+
+				DynamicCreate(*pObst);
+
+				for_each(m_strObstaclePoints.begin(), m_strObstaclePoints.end(), [](const _char* szPoint) { delete szPoint; });
+				m_strObstaclePoints.clear();
+				m_vecObstaclePoints.clear();
+			}
+		}
 	
-	if (ImGui::Button("PopBackObstaclePoint"))
-	{
-		if (m_strObstaclePoints.empty())
-			return;
+		ImGui::ListBox("", &m_item_Current, m_strObstacles.data(), m_strObstacles.size(), 3);
 
-		m_vecPoints.pop_back();
-		m_strObstaclePoints.pop_back();
-		m_vecObstaclePoints.pop_back();
-		m_vecObstaclePointSpheres.pop_back();
-	}
-
-	if (false == m_vecObstaclePoints.empty())
-	{
-		ImGui::SameLine();
-		if (ImGui::Button("CreateDynamic"))
+		if (false == m_strObstacles.empty())
 		{
-			Obst* pObst = new Obst;
-
-			TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
-			for (auto vPoint : m_vecObstaclePoints)
+			ImGui::NewLine();
+			if (ImGui::Button("DeleteObstacle"))
 			{
-				if (fMaxX < vPoint.x) fMaxX = vPoint.x;
-				if (fMinX > vPoint.x) fMinX = vPoint.x;
+				DynamicDelete(*m_vecObstacles[m_item_Current]);
+				auto iter = m_vecObstacles.begin() + m_item_Current;
+				auto iterStr = m_strObstacles.begin() + m_item_Current;
+				m_vecObstacles.erase(iter);
+				m_strObstacles.erase(iterStr);
 
-				if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
-				if (fMinZ > vPoint.z) fMinZ = vPoint.z;
-
-				pObst->vecPoints.push_back(vPoint);
-			}
-
-			const _float fAABBOffset = 0.05f;
-			Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
-			Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.0f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
-			pObst->tAABB = BoundingBox(vAABBCenter, vAABBExtent);
-
-			SetPolygonHoleCenter(*pObst);
-			
-			m_vecObstacles.push_back(pObst);
-			s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back()->vInnerPoint.x) + ", " + to_string(m_vecObstacles.back()->vInnerPoint.z));
-
-			DynamicCreate(*pObst);
-			
-			for_each(m_strObstaclePoints.begin(), m_strObstaclePoints.end(), [](const _char* szPoint) { delete szPoint; });
-			m_strObstaclePoints.clear();
-			m_vecObstaclePoints.clear();
-		}
-	}
-
-	ImGui::ListBox("Obstacles", &m_item_Current, m_strObstacles.data(), m_strObstacles.size(), 3);
-
-	if (false == m_strObstacles.empty())
-	{
-		ImGui::NewLine();
-		if (ImGui::Button("DeleteObstacle"))
-		{
-			DynamicDelete(*m_vecObstacles[m_item_Current]);
-			auto iter = m_vecObstacles.begin() + m_item_Current;
-			auto iterStr = m_strObstacles.begin() + m_item_Current;
-			m_vecObstacles.erase(iter);
-			m_strObstacles.erase(iterStr);
-
-			if (m_vecObstacles.size() - 1 < m_item_Current)
-			{
-				m_item_Current = ::max(0, (_int)m_vecObstacles.size() - 1);
+				if (m_vecObstacles.size() - 1 < m_item_Current)
+				{
+					m_item_Current = ::max(0, (_int)m_vecObstacles.size() - 1);
+				}
 			}
 		}
+		ImGui::TreePop();
 	}
 }
 // https://gdcvault.com/play/1014514/AI-Navigation-It-s-Not
 void CNavMeshView::CellGroup()
 {
-	ImGui::ListBox("Cells", &m_item_Current, m_strCells.data(), m_strCells.size(), 3);
-	if (ImGui::Button("PopBackCell"))
+	if (ImGui::TreeNode("Cells"))
 	{
-		if (m_vecCells.empty())
-			return;
+		ImGui::ListBox("", &m_item_Current, m_strCells.data(), m_strCells.size(), 3);
+		if (ImGui::Button("PopBackCell"))
+		{
+			if (m_vecCells.empty())
+				return;
 
-		m_strCells.pop_back();
-		m_vecCells.pop_back();
+			m_strCells.pop_back();
+			m_vecCells.pop_back();
 
-		auto iter = m_vecPointSpheres.end() - 3 - m_vecPoints.size();
-		for(_int i = 0; i < 3; ++i)
-			iter = m_vecPointSpheres.erase(iter);
+			auto iter = m_vecPointSpheres.end() - 3 - m_vecPoints.size();
+			for (_int i = 0; i < 3; ++i)
+				iter = m_vecPointSpheres.erase(iter);
+		}
+		ImGui::TreePop();
 	}
 }
 
@@ -2123,43 +2211,6 @@ HRESULT CNavMeshView::SafeReleaseTriangle(triangulateio& tTriangle)
 	if (tTriangle.normlist)					{ free(tTriangle.normlist);					tTriangle.normlist = nullptr; }
 
 	return S_OK;
-}
-
-CNavMeshView* CNavMeshView::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, void* pArg)
-{
-	CNavMeshView* pInstance = new CNavMeshView(pDevice, pContext);
-
-	if (FAILED(pInstance->Initialize(pArg)))
-	{
-		MSG_BOX("Failed to Created : CNavMeshView");
-		Safe_Release(pInstance);
-	}
-
-	return pInstance;
-}
-
-void CNavMeshView::Free()
-{
-	Super::Free();
-
-	Safe_Delete(m_pBatch);
-	Safe_Delete(m_pEffect);
-	Safe_Release(m_pInputLayout);
-
-	SafeReleaseTriangle(m_tIn);
-	SafeReleaseTriangle(m_tOut);
-
-	for (auto cell : m_vecCells)
-	{
-		Safe_Delete(cell);
-	}
-	m_vecCells.clear();
-
-	for (auto obst : m_vecObstacles)
-	{
-		Safe_Delete(obst);
-	}
-	m_vecObstacles.clear();
 }
 
 HRESULT CNavMeshView::SaveObstacleLocalOutline(const Obst* const pObst, string strName)
@@ -2303,63 +2354,53 @@ HRESULT CNavMeshView::LoadObstacleOutlineData()
 	return S_OK;
 }
 
-// Returns a list representing the optimal path between startNode and endNode or null if such a path does not exist
-// If the path exists, the order is such that elements can be popped off the path
-// Note: if you use this code in Javascript, make sure that the toString function of each node returns a unique value
-
-/*
-FindRoute = function (startNode, goalNode)
+CNavMeshView* CNavMeshView::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, void* pArg)
 {
-	var frontier = PriorityQueue({low: true});
-	// what have we not explored?
+	CNavMeshView* pInstance = new CNavMeshView(pDevice, pContext);
 
-	var explored = new Set();
-	// what have we explored?
-
-	var pathTo = {};
-	// A dictionary mapping from nodes to nodes,
-	// used to keep track of the path
-	// The node that is the key
-
-	var gCost = {};
-	// A dictionary mapping from nodes to floats,
-	// used to keep track of the "G cost" associated with traveling to each node from startNode
-
-	pathTo[startNode] = null;
-	gCost[startNode] = 0.0;
-	frontier.push(startNode, 0.0 + HeuristicCostEstimate(startNode, goalNode));
-
-	while (!frontier.empty())
+	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		// While the frontier remains unexplored
-		var leafNode = frontier.Values[0];
-		if (leafNode == goalNode)
-		{ // We found the solution! Reconstruct it.
-			var path = [];
-			var pointer = goalNode;
-			while (pointer != null)
-			{
-				path.push(pointer);
-				pointer = pathTo[pointer];
-			}
-
-			return path;
-		}
-
-		frontier.pop();
-		explored.add(leafNode);
-		for (var i = 0; i < leafNode.linkedTo.length; i++)
-		{
-			var connectedNode = leafNode.linkedTo[i];
-			if (!explored.contains(connectedNode) && !frontier.includes(connectedNode))
-			{
-				gCost[connectedNode] = gCost[leafNode] + CostBetween(leafNode, connectedNode);
-				pathTo[connectedNode] = leafNode;
-				frontier.push(connectedNode, gCost[connectedNode] + HeuristicCostEstimate(connectedNode, goalNode));
-			}
-		}
+		MSG_BOX("Failed to Created : CNavMeshView");
+		Safe_Release(pInstance);
 	}
 
-	return null; // No path could be found
+	return pInstance;
 }
-*/
+
+void CNavMeshView::Free()
+{
+	Super::Free();
+
+	Safe_Delete(m_pBatch);
+	Safe_Delete(m_pEffect);
+	Safe_Release(m_pInputLayout);
+
+	SafeReleaseTriangle(m_tIn);
+	SafeReleaseTriangle(m_tOut);
+
+	for (auto cell : m_vecCells)
+	{
+		Safe_Delete(cell);
+	}
+	m_vecCells.clear();
+	
+	for (auto cell : m_strCells)
+	{
+		Safe_Delete(cell);
+	}
+	m_strCells.clear();
+
+	for (auto obst : m_vecObstacles)
+	{
+		Safe_Delete(obst);
+	}
+	m_vecObstacles.clear();
+	
+	for (auto obst : m_strObstacles)
+	{
+		Safe_Delete(obst);
+	}
+	m_strObstacles.clear();
+
+	m_umapGrids.clear();
+}
