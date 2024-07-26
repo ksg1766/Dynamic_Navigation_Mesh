@@ -55,6 +55,8 @@ HRESULT CAgentController::Initialize(void* pArg)
 	}
 #pragma endregion DebugDraw
 
+	//m_vLinearSpeed = m_vMaxLinearSpeed;
+
 	return S_OK;
 }
 
@@ -198,6 +200,7 @@ _bool CAgentController::AStar()
 
 	m_dqPath.clear();
 	m_dqPortals.clear();
+	m_dqWayPoints.clear();
 
 	{	// start node
 		Vec3 vStartPos = m_pTransform->GetPosition();
@@ -238,10 +241,10 @@ _bool CAgentController::AStar()
 			CellData* pNeighbor = tNode.pCell->pNeighbors[i];	// parent의 인접셀이 nullptr이 아니라면
 			if (nullptr != pNeighbor)
 			{
-				_float g = mapCost[tNode.pCell] + CellData::CostBetween(tNode.pCell, pNeighbor);
+				_float g = tNode.g + CellData::CostBetween(tNode.pCell, pNeighbor);
 				auto closed = mapCost.find(pNeighbor);
 				
-				if (mapCost.end() == closed || g < closed->second)	// 갱신해야한다면	// mapCost도 안쓰도록 수정 필요. g를 쓰는 이유가 없음.
+				if (mapCost.end() == closed || g < closed->second)	// 갱신해야 한다면	// mapCost도 안쓰도록 수정 필요. g를 쓰는 이유가 없음.
 				{
 					mapCost[pNeighbor] = g;
 					mapPath[pNeighbor] = pair(tNode.pCell, (LINES)i);	// key : parent
@@ -256,16 +259,9 @@ _bool CAgentController::AStar()
 	return false;
 }
 
-// _int stringPull(const _float* portals, _int nportals, _float* pts, const _int maxPts);
-_bool CAgentController::SSF()
+void CAgentController::SSF()
 {
-	m_dqWayPoints.clear();
-
-	// Find straight path.
-	//_int iNpts = 0;
-
-	// Init scan state
-	Vec3 vPortalApex = m_pTransform->GetPosition();
+	Vec3 vPortalApex = m_pTransform->GetPosition();		// 초기 상태
 	Vec3 vPortalLeft = m_pTransform->GetPosition();
 	Vec3 vPortalRight = m_pTransform->GetPosition();
 
@@ -273,100 +269,69 @@ _bool CAgentController::SSF()
 	_int iLeftIndex = 0;
 	_int iRightIndex = 0;
 
-	// Add start point.
 	m_dqWayPoints.push_back(vPortalApex);
-	//++iNpts;
 
-	//for (_int i = m_vecPath.size() - 2; i > 0; --i)
-	_int iSize = m_dqPortals.size();
-	// portal 포인트가 중복될 때 문제 발생.
-	for (_int i = 1; i < iSize; ++i)
+	for (_int i = 1; i < m_dqPortals.size(); ++i)
 	{
 		const Vec3& vLeft = m_dqPortals[i].first;
 		const Vec3& vRight = m_dqPortals[i].second;
 
-		// Update right vertex.
 		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
 		{
 			if (vPortalApex == vPortalRight || TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
 			{
-				// Tighten the funnel.
-				vPortalRight = vRight;
+				vPortalRight = vRight;					// funnel 당기기
 				iRightIndex = i;
 			}
 			else
 			{
-				// Right over left, insert left to path and restart scan from portal left point.
-				m_dqWayPoints.push_back(vPortalLeft);
-				// ++iNpts;
+				m_dqWayPoints.push_back(vPortalLeft);	// Right가 Left를 넘었다면 Left를 waypoint에 추가				
 
-				// Make current left the new apex.
-				vPortalApex = vPortalLeft;
-
+				vPortalApex = vPortalLeft;				// L을 새로운 시작점으로
 				iApexIndex = iLeftIndex;
 
-				// Reset portal
-				vPortalLeft = vPortalApex;
-				vPortalRight = vPortalApex;
-
-				iLeftIndex = iApexIndex;
+				vPortalRight = vPortalApex;				// 초기화
 				iRightIndex = iApexIndex;
 
-				// Restart scan
-				i = iApexIndex;
+				i = iApexIndex;							// 재시작 인덱스
 				continue;
 			}
 		}
 
-		// Update left vertex.
 		if (TriArea2x(vPortalApex, vPortalLeft, vLeft) >= 0.0f)
 		{
 			if (vPortalApex == vPortalLeft || TriArea2x(vPortalApex, vPortalRight, vLeft) < 0.0f)
 			{
-				// Tighten the funnel.
 				vPortalLeft = vLeft;
 				iLeftIndex = i;
 			}
 			else
 			{
-				// Left over right, insert right to path and restart scan from portal right point.
 				m_dqWayPoints.push_back(vPortalRight);
-				// ++iNpts;
 
-				// Make current right the new apex.
 				vPortalApex = vPortalRight;
-
 				iApexIndex = iRightIndex;
 
-				// Reset portal
 				vPortalLeft = vPortalApex;
-				vPortalRight = vPortalApex;
-
 				iLeftIndex = iApexIndex;
-				iRightIndex = iApexIndex;
 
-				// Restart scan
 				i = iApexIndex;
 				continue;
 			}
 		}
 	}
+
 	// Append last point to path.
-	//if (iNpts < maxPts)
+	// TODO : 개선할 순 없는가...
+	/*if ((false == m_dqPath.empty()
+		&& false == m_dqWayPoints.empty())
+		&& (m_dqWayPoints[m_dqWayPoints.size() - 1] == m_dqPath[m_dqPath.size() - 1].first->vPoints[m_dqPath[m_dqPath.size() - 1].second]
+		|| m_dqWayPoints[m_dqWayPoints.size() - 1] == m_dqPath[m_dqPath.size() - 1].first->vPoints[(m_dqPath[m_dqPath.size() - 1].second + 1) % 3]))
 	{
-		// TODO : 개선할 순 없는가...
-		/*if ((false == m_dqPath.empty()
-			&& false == m_dqWayPoints.empty())
-			&& (m_dqWayPoints[m_dqWayPoints.size() - 1] == m_dqPath[m_dqPath.size() - 1].first->vPoints[m_dqPath[m_dqPath.size() - 1].second]
-			|| m_dqWayPoints[m_dqWayPoints.size() - 1] == m_dqPath[m_dqPath.size() - 1].first->vPoints[(m_dqPath[m_dqPath.size() - 1].second + 1) % 3]))
-		{
-			m_dqWayPoints.pop_back();
-		}*/
+		m_dqWayPoints.pop_back();
+	}*/
 
-		m_dqWayPoints.push_back(m_vDestPos);
-	}
-
-	return true;
+	m_dqWayPoints.push_back(m_vDestPos);
 }
 
 
@@ -429,21 +394,21 @@ void CAgentController::DebugRender()
 	if (false == m_dqPath.empty())
 	{
 		m_pBatch->Begin();
-		for (auto pair : m_dqPath)
+		for (_int i = m_dqPath.size() - 1; i >= 0; --i)
 		{
-			for (uint8 i = LINE_AB; i < LINE_END; ++i)
+			for (uint8 j = LINE_AB; j < LINE_END; ++j)
 			{
-				if (i == pair.second)
+				if (j == m_dqPath[i].second)
 				{
 					m_pBatch->DrawLine(
-						VertexPositionColor(pair.first->vPoints[i], Colors::Blue),
-						VertexPositionColor(pair.first->vPoints[(i + 1) % 3], Colors::Blue));
+						VertexPositionColor(m_dqPath[i].first->vPoints[j], Colors::Blue),
+						VertexPositionColor(m_dqPath[i].first->vPoints[(j + 1) % POINT_END], Colors::Blue));
 				}
 				else
 				{
 					m_pBatch->DrawLine(
-						VertexPositionColor(pair.first->vPoints[i], Colors::Cyan),
-						VertexPositionColor(pair.first->vPoints[(i + 1) % 3], Colors::Cyan));
+						VertexPositionColor(m_dqPath[i].first->vPoints[j], Colors::Cyan),
+						VertexPositionColor(m_dqPath[i].first->vPoints[(j + 1) % POINT_END], Colors::Cyan));
 				}
 			}
 		}

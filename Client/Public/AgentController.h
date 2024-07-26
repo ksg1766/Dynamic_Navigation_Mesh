@@ -52,7 +52,7 @@ public:
 	_float	GetHeightOffset();
 	_bool	CanMove(Vec3 vPoint);
 	_bool	AStar();
-	_bool	SSF();
+	void	SSF();
 
 	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
 
