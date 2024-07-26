@@ -74,12 +74,16 @@ private:
 	Vec3			m_vMaxLinearSpeed;
 	Vec3			m_vLinearSpeed;
 
-	CellData* m_pCurrentCell = nullptr;
-	CellData* m_pDestCell = nullptr;
+	CellData*		m_pCurrentCell = nullptr;
+	CellData*		m_pDestCell = nullptr;
 	
-	deque<pair<CellData*, LINES>>	m_dqPath;
+	_float			m_fAgentRadius = 10.0f;
+	deque<pair<CellData*, LINES>> m_dqPath;
 	deque<pair<Vec3, Vec3>>	m_dqPortals;
-	deque<Vec3>	m_dqWayPoints;
+	deque<Vec3>		m_dqWayPoints;
+	
+	// For Debug Render
+	deque<pair<BoundingBox, BoundingBox>>	m_dqPortalPoints;
 
 	vector<CellData*>* m_pCells;
 	//static multimap<pair<_int, _int>, struct CellData*>* m_pCells;
