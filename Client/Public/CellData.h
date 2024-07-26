@@ -9,12 +9,12 @@ END
 
 BEGIN(Client)
 
-constexpr _int gWorldCX = 1024;
-constexpr _int gWorldCZ = 1024;
-constexpr _int gGridCX = 64;
-constexpr _int gGridCZ = 64;
-constexpr _int gGridX = 16;
-constexpr _int gGridZ = 16;
+constexpr _uint gWorldCX = 1024;
+constexpr _uint gWorldCZ = 1024;
+constexpr _uint gGridCX = 64;
+constexpr _uint gGridCZ = 64;
+constexpr _uint gGridX = 16;
+constexpr _uint gGridZ = 16;
 
 enum POINTS : uint8 { POINT_A, POINT_B, POINT_C, POINT_END };
 enum LINES : uint8 { LINE_AB, LINE_BC, LINE_CA, LINE_END };
@@ -29,7 +29,7 @@ struct CellData
 	void	SetUpNormals();
 
 	_bool	ComparePoints(const Vec3& pSour, const Vec3& pDest);
-	_bool	IsOut(Vec3 vPoint, OUT CellData*& pNeighbor);
+	_bool	IsOut(const Vec3& vPoint, OUT CellData*& pNeighbor);
 	Vec3	GetPassedEdgeNormal(Vec3 vPoint);
 	inline Vec3	GetCenter()	{ return (vPoints[0] + vPoints[1] + vPoints[2]) / 3.f; }
 

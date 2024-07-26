@@ -2,6 +2,7 @@
 #include "AgentController.h"
 #include "GameInstance.h"
 #include "Agent.h"
+#include "Obstacle.h"
 #include "Terrain.h"
 #include "DebugDraw.h"
 #include "NSHelper.h"
@@ -36,7 +37,8 @@ HRESULT CAgentController::Initialize(void* pArg)
 		CAgent::AgentDesc* pDesc = reinterpret_cast<CAgent::AgentDesc*>(pArg);
 		m_pCurrentCell = pDesc->pStartCell;
 		m_pCells = pDesc->pCells;
-		m_pGrids = pDesc->pGrids;
+		m_pCellGrids = pDesc->pCellGrids;
+		m_pObstGrids = pDesc->pObstGrids;
 	}
 
 #pragma region DebugDraw
@@ -364,13 +366,33 @@ CellData* CAgentController::FindCellByPosition(const Vec3& vPosition)
 
 	_int iKey = iZ * gGridX + iX;
 
-	auto grid = m_pGrids->equal_range(iKey);
-
-	for (auto cell = grid.first; cell != grid.second; ++cell)
+	auto cellGrid = m_pCellGrids->equal_range(iKey);
+	
+	for (auto cell = cellGrid.first; cell != cellGrid.second; ++cell)
 	{
 		if (false == cell->second->IsOut(vPosition, pCell))
 		{
 			return cell->second;
+		}
+	}
+
+	return nullptr;
+}
+
+Obst* CAgentController::FindObstByPosition(const Vec3& vPosition)
+{
+	_int iX = (vPosition.x + gWorldCX * 0.5f) / gGridCX;
+	_int iZ = (vPosition.z + gWorldCZ * 0.5f) / gGridCZ;
+
+	_int iKey = iZ * gGridX + iX;
+
+	auto obstGrid = m_pObstGrids->equal_range(iKey);
+
+	for (auto obst = obstGrid.first; obst != obstGrid.second; ++obst)
+	{
+		if (false == obst->second->IsOut(vPosition))
+		{
+			return obst->second;
 		}
 	}
 
@@ -388,25 +410,44 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 	m_pDestCell = FindCellByPosition(vPickedPos);
 
-	if (nullptr == m_pDestCell)
+	if (nullptr != m_pDestCell)
 	{
+		m_vDestPos = vPickedPos;
+
+		if (true == AStar())
+		{
+			SSF();
+
+			m_isMoving = true;
+			return true;
+		}
+
+		m_vDestPos = m_pTransform->GetPosition();
+		m_pDestCell = nullptr;
+
 		return false;
 	}
 
-	m_vDestPos = vPickedPos;
+	// TODO : 
+	Obst* pObst = FindObstByPosition(vPickedPos);
 
-	if (true == AStar())
+	if (nullptr != pObst)
 	{
-		// if (m_dqPortals.size() > 1)
+		m_vDestPos = vPickedPos;
+
+		if (true == AStar())
 		{
 			SSF();
+
+			m_isMoving = true;
+			return true;
 		}
-		m_isMoving = true;
-		return true;
+
+		m_vDestPos = m_pTransform->GetPosition();
+		pObst = nullptr;
+
+		return false;
 	}
-	
-	m_vDestPos = m_pTransform->GetPosition();
-	m_pDestCell = nullptr;
 
 	return false;
 }

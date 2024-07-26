@@ -14,7 +14,7 @@ END
 BEGIN(Client)
 
 struct CellData;
-
+struct Obst;
 struct PQNode
 {
 	_bool operator<(const PQNode& other) const { return f < other.f; }
@@ -59,6 +59,7 @@ private:
 
 private:
 	CellData* FindCellByPosition(const Vec3& vPosition);
+	Obst* FindObstByPosition(const Vec3& vPosition);
 
 private:
 	CTransform*		m_pTransform = nullptr;
@@ -83,7 +84,8 @@ private:
 	deque<pair<BoundingBox, BoundingBox>>	m_dqPortalPoints;
 
 	vector<CellData*>* m_pCells;
-	unordered_multimap<_int, CellData*>* m_pGrids;
+	unordered_multimap<_int, CellData*>* m_pCellGrids;
+	unordered_multimap<_int, Obst*>* m_pObstGrids;
 
 	// DebugDraw
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;

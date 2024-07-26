@@ -267,6 +267,52 @@ void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
 	}
 }
 
+void CNavMeshView::SetUpCells2Grids(vector<CellData*>& vecCells, OUT unordered_multimap<_int, CellData*>& umapCellGrids, const _uint iGridCX, const _uint iGridCZ)
+{
+	BoundingBox tAABB;
+	tAABB.Extents = Vec3(iGridCX * 0.5f, 10.0f, iGridCZ * 0.5f);
+
+	for (auto pCell : vecCells)
+	{
+		for (_int iX = 0; iX < 1024 / iGridCX; ++iX)
+		{
+			for (_int iZ = 0; iZ < 1024 / iGridCZ; ++iZ)
+			{
+				tAABB.Center = Vec3((iGridCX - gWorldCX) * 0.5f + iGridCX * iX, 0.0f, (iGridCZ - gWorldCZ) * 0.5f + iGridCZ * iZ);
+
+				if (true == tAABB.Intersects(pCell->vPoints[POINT_A], pCell->vPoints[POINT_B], pCell->vPoints[POINT_C]))
+				{
+					_int iKey = iZ * gGridX + iX;
+					umapCellGrids.emplace(iKey, pCell);
+				}
+			}
+		}
+	}
+}
+
+void CNavMeshView::SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_multimap<_int, Obst*> umapObstGrids, const _uint iGridCX, const _uint iGridCZ)
+{
+	BoundingBox tAABB;
+	tAABB.Extents = Vec3(iGridCX * 0.5f, 10.0f, iGridCZ * 0.5f);
+
+	for (auto pObst : vecObstacles)
+	{
+		for (_int iX = 0; iX < 1024 / iGridCX; ++iX)
+		{
+			for (_int iZ = 0; iZ < 1024 / iGridCZ; ++iZ)
+			{
+				tAABB.Center = Vec3((iGridCX - gWorldCX) * 0.5f + iGridCX * iX, 0.0f, (iGridCZ - gWorldCZ) * 0.5f + iGridCZ * iZ);
+
+				if (true == tAABB.Intersects(pObst->tAABB))
+				{
+					_int iKey = iZ * gGridX + iX;
+					umapObstGrids.emplace(iKey, pObst);
+				}
+			}
+		}
+	}
+}
+
 HRESULT CNavMeshView::BakeNavMesh()
 {
 	if (false == m_vecCells.empty())
@@ -279,10 +325,9 @@ HRESULT CNavMeshView::BakeNavMesh()
 		m_vecCells.clear();
 	}
 	
-	if (false == m_umapGrids.empty())
-	{
-		m_umapGrids.clear();
-	}
+	if (false == m_umapCellGrids.empty()) { m_umapCellGrids.clear(); }
+	
+	if (false == m_umapObstGrids.empty()) { m_umapObstGrids.clear(); }
 
 	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 	{
@@ -308,26 +353,8 @@ HRESULT CNavMeshView::BakeNavMesh()
 	}
 
 	SetUpNeighbors(m_vecCells);
-
-	BoundingBox tAABB;
-	tAABB.Extents = Vec3(gGridCX * 0.5f, 10.0f, gGridCZ * 0.5f);
-
-	for (auto cell : m_vecCells)
-	{
-		for (_int iX = 0; iX < 1024 / gGridCX; ++iX)
-		{
-			for (_int iZ = 0; iZ < 1024 / gGridCZ; ++iZ)
-			{
-				tAABB.Center = Vec3((gGridCX - gWorldCX) * 0.5f + gGridCX * iX, 0.0f, (gGridCZ - gWorldCZ) * 0.5f + gGridCZ * iZ);
-
-				if (true == tAABB.Intersects(cell->vPoints[POINT_A], cell->vPoints[POINT_B], cell->vPoints[POINT_C]))
-				{
-					_int iKey = iZ * gGridX + iX;
-					m_umapGrids.emplace(iKey, cell);
-				}
-			}
-		}
-	}
+	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
+	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
 
 	return S_OK;
 }
@@ -865,7 +892,8 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 	{
 		pCell,
 		&m_vecCells,
-		&m_umapGrids
+		&m_umapCellGrids,
+		&m_umapObstGrids
 	};
 
 	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER, &tDesc));
@@ -895,7 +923,8 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 	{
 		m_vecCells[iSpawnIndex],
 		&m_vecCells,
-		&m_umapGrids
+		&m_umapCellGrids,
+		&m_umapObstGrids,
 	};
 
 	m_pAgent = static_cast<CAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_Agent"), LAYERTAG::PLAYER, &tDesc));
@@ -999,28 +1028,7 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 		vCenter /= 3.f;
 
 		// RayCast
-		_int iCrosses = 0;
-
-		for (_int m = 0; m < iSize; ++m)
-		{
-			_float fSourX = tObst.vecPoints[m % iSize].x;
-			_float fSourZ = tObst.vecPoints[m % iSize].z;
-
-			_float fDestX = tObst.vecPoints[(m + 1) % iSize].x;
-			_float fDestZ = tObst.vecPoints[(m + 1) % iSize].z;
-
-			if ((fSourX > vCenter.x) != (fDestX > vCenter.x))	// x ÁÂÇ¥ °Ë»ç
-			{
-				_float fAtZ = (fDestZ - fSourZ) * (vCenter.x - fSourX) / (fDestX - fSourX) + fSourZ; 
-
-				if (vCenter.z < fAtZ)	// z ÁÂÇ¥ °Ë»ç
-				{
-					++iCrosses;
-				}
-			}
-		}
-
-		if (0 < iCrosses % 2)
+		if (false == tObst.IsOut(vCenter))
 		{
 			tObst.vInnerPoint = vCenter;
 			break;
@@ -1566,7 +1574,7 @@ CellData* CNavMeshView::FindCellByPosition(const Vec3& vPosition)
 
 	_int iKey = iZ * gGridX + iX;
 
-	auto grid = m_umapGrids.equal_range(iKey);
+	auto grid = m_umapCellGrids.equal_range(iKey);
 
 	for (auto cell = grid.first; cell != grid.second; ++cell)
 	{
@@ -2402,5 +2410,6 @@ void CNavMeshView::Free()
 	}
 	m_strObstacles.clear();
 
-	m_umapGrids.clear();
+	m_umapCellGrids.clear();
+	m_umapObstGrids.clear();
 }

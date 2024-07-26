@@ -45,6 +45,40 @@ struct Obst
 		tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
 		tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
 	}
+
+	_bool IsOut(const Vec3& vPoint)
+	{
+		_int iSize = vecPoints.size();
+
+		// RayCast
+		_int iCrosses = 0;
+
+		for (_int m = 0; m < iSize; ++m)
+		{
+			_float fSourX = vecPoints[m % iSize].x;
+			_float fSourZ = vecPoints[m % iSize].z;
+
+			_float fDestX = vecPoints[(m + 1) % iSize].x;
+			_float fDestZ = vecPoints[(m + 1) % iSize].z;
+
+			if ((fSourX > vPoint.x) != (fDestX > vPoint.x))	// x ÁÂÇ¥ °Ë»ç
+			{
+				_float fAtZ = (fDestZ - fSourZ) * (vPoint.x - fSourX) / (fDestX - fSourX) + fSourZ;
+
+				if (vPoint.z < fAtZ)	// z ÁÂÇ¥ °Ë»ç
+				{
+					++iCrosses;
+				}
+			}
+		}
+
+		if (0 < iCrosses % 2)
+		{
+			return false;
+		}
+
+		return true;
+	}
 };
 
 END
