@@ -1,15 +1,93 @@
 ---
 # 📅 2024.07.25
 📋 진행 사항
-  * 
+  * Simple Stupid Funnel 알고리즘을 구현해 경로를 단순화했습니다. (도착지점 부근에서 약간의 문제가 있습니다.)
+    * 다음과 같은 과정을 거쳐 경로를 단순화할 수 있습니다.
+      * waypoint와 portal(통과할 edge)의 좌우 정점을 연결한 선분을 점차 좁혀나가며 corner를 찾고, 도착지점까지 반복적으로 탐색을 수행하는 알고리즘입니다.
+      * 과정을 간략히 묘사한 자료입니다.
+        
+        ![image](https://github.com/user-attachments/assets/f44801d9-f42e-48ee-9c00-0f423837af28)
+        
+	```
+	void CAgentController::SSF()
+	{
+		Vec3 vPortalApex = m_pTransform->GetPosition();		// 초기 상태
+		Vec3 vPortalLeft = m_pTransform->GetPosition();
+		Vec3 vPortalRight = m_pTransform->GetPosition();
+
+		_int iApexIndex = 0;
+		_int iLeftIndex = 0;
+		_int iRightIndex = 0;
+
+		m_dqWayPoints.push_back(vPortalApex);
+
+		for (_int i = 1; i < m_dqPortals.size(); ++i)
+		{
+			const Vec3& vLeft = m_dqPortals[i].first;
+			const Vec3& vRight = m_dqPortals[i].second;
+
+			if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
+			{
+				if (vPortalApex == vPortalRight || TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
+				{
+					vPortalRight = vRight;			// funnel 당기기
+					iRightIndex = i;
+				}
+				else
+				{
+					m_dqWayPoints.push_back(vPortalLeft);	// Right가 Left를 넘었다면 Left를 waypoint에 추가
+								
+					vPortalApex = vPortalLeft;		// L을 새로운 시작점으로
+					iApexIndex = iLeftIndex;
+
+					vPortalRight = vPortalApex;		// 초기화
+					iRightIndex = iApexIndex;
+
+					i = iApexIndex;				// 재시작 인덱스
+					continue;
+				}
+			}
+
+			if (TriArea2x(vPortalApex, vPortalLeft, vLeft) >= 0.0f)
+			{
+				if (vPortalApex == vPortalLeft || TriArea2x(vPortalApex, vPortalRight, vLeft) < 0.0f)
+				{
+					vPortalLeft = vLeft;
+					iLeftIndex = i;
+				}
+				else
+				{
+					m_dqWayPoints.push_back(vPortalRight);
+
+					vPortalApex = vPortalRight;
+					iApexIndex = iRightIndex;
+
+					vPortalLeft = vPortalApex;
+					iLeftIndex = iApexIndex;
+
+					i = iApexIndex;
+					continue;
+				}
+			}
+		}	
+
+		m_dqWayPoints.push_back(m_vDestPos);
+	}
+	```
+        
+      * 구현 결과는 아래와 같습니다.
+
+	![FPS_61-DEBUG2024-07-2610-39-55-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/c32573eb-4923-4c92-a0bb-9563f8aaf942)
+        
+  * AStar에 불필요한 자료구조가 사용돼 개선중입니다.
 
 
 ⚠️ 발견된 문제
-  * 
-  
+  * 목적지 cell에서 corner를 방문한 후 destination position으로 도착합니다. 전체적인 경로에 큰 문제는 없지만 도착지점 부근에서의 경로는 개선해야할 것 같습니다.
+  * 아직 obstacle과 부딪혔을 때는 이동할 수 없습니다. (위의 영상은 임시로 obstacle을 무시하도록 설정했습니다.)
 
 ⚽ 이후 계획
-  *
+  * 지금은 agent의 크기를 고려하지 않아 좁은 구간도 자유롭게 통과할 수 있습니다. 이 부분을 반영해 경로를 결정할 수 있도록 구현할 계획입니다.
   
 ---
 # 📅 2024.07.24
