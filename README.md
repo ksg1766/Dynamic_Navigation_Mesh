@@ -26,24 +26,24 @@
 			const Vec3& vLeft = m_dqPortals[i].first;
 			const Vec3& vRight = m_dqPortals[i].second;
 
-			if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
-			{
+			if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)	// 시작점, 현재 portal의 right, 다음 portal의 right 위치가 구성하는 넓이가 0 이하,
+ 			{								// 즉 다음 portal의 right를 연결한 선이 외부를 지나지 않는지 확인 -> 그림 E
 				if (vPortalApex == vPortalRight || TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
 				{
-					vPortalRight = vRight;			// funnel 당기기
+					vPortalRight = vRight;			// funnel 당기기 -> 그림 B, C, D
 					iRightIndex = i;
 				}
 				else
 				{
-					m_dqWayPoints.push_back(vPortalLeft);	// Right가 Left를 넘었다면 Left를 waypoint에 추가
+					m_dqWayPoints.push_back(vPortalLeft);	// Right가 Left를 넘었다면 Left를 waypoint에 추가 -> 그림 F
 								
-					vPortalApex = vPortalLeft;		// L을 새로운 시작점으로
+					vPortalApex = vPortalLeft;		// L을 새로운 시작점으로 -> 그림 G
 					iApexIndex = iLeftIndex;
 
-					vPortalRight = vPortalApex;		// 초기화
+					vPortalRight = vPortalApex;		// 해당 지점으로 초기화
 					iRightIndex = iApexIndex;
 
-					i = iApexIndex;				// 재시작 인덱스
+					i = iApexIndex;				// 재시작할 인덱스
 					continue;
 				}
 			}
