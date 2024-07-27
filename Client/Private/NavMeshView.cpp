@@ -96,6 +96,7 @@ HRESULT CNavMeshView::Tick()
 
 		if (FAILED(CreateAgent(Vec3::Zero)))
 		{
+			ImGui::End();
 			return E_FAIL;
 		}
 	}
@@ -120,7 +121,10 @@ HRESULT CNavMeshView::Tick()
 	if (true == m_bStressTest)
 	{
 		if (FAILED(StressTest()))
+		{
+			ImGui::End();
 			return E_FAIL;
+		}
 	}
 
 	ImGui::End();
@@ -267,7 +271,7 @@ void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
 	}
 }
 
-void CNavMeshView::SetUpCells2Grids(vector<CellData*>& vecCells, OUT unordered_multimap<_int, CellData*>& umapCellGrids, const _uint iGridCX, const _uint iGridCZ)
+void CNavMeshView::SetUpCells2Grids(vector<CellData*>& vecCells, OUT unordered_multimap<_int, CellData*>& umapCellGrids, const _int iGridCX, const _int iGridCZ)
 {
 	BoundingBox tAABB;
 	tAABB.Extents = Vec3(iGridCX * 0.5f, 10.0f, iGridCZ * 0.5f);
@@ -290,7 +294,7 @@ void CNavMeshView::SetUpCells2Grids(vector<CellData*>& vecCells, OUT unordered_m
 	}
 }
 
-void CNavMeshView::SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_multimap<_int, Obst*> umapObstGrids, const _uint iGridCX, const _uint iGridCZ)
+void CNavMeshView::SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_multimap<_int, Obst*>& umapObstGrids, const _int iGridCX, const _int iGridCZ)
 {
 	BoundingBox tAABB;
 	tAABB.Extents = Vec3(iGridCX * 0.5f, 10.0f, iGridCZ * 0.5f);
@@ -353,6 +357,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 	}
 
 	SetUpNeighbors(m_vecCells);
+
 	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
 	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
 

@@ -421,11 +421,6 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 			m_isMoving = true;
 			return true;
 		}
-
-		m_vDestPos = m_pTransform->GetPosition();
-		m_pDestCell = nullptr;
-
-		return false;
 	}
 
 	// TODO : 
@@ -433,7 +428,8 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 	if (nullptr != pObst)
 	{
-		m_vDestPos = vPickedPos;
+		m_vDestPos = pObst->GetClosestPoint(vPickedPos, m_fAgentRadius + 0.1f);
+		m_pDestCell = FindCellByPosition(m_vDestPos);
 
 		if (true == AStar())
 		{
@@ -444,9 +440,6 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 		}
 
 		m_vDestPos = m_pTransform->GetPosition();
-		pObst = nullptr;
-
-		return false;
 	}
 
 	return false;

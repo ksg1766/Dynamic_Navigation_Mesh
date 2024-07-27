@@ -69,7 +69,7 @@ struct Obst
 				{
 					++iCrosses;
 				}
-			}
+			}			
 		}
 
 		if (0 < iCrosses % 2)
@@ -78,6 +78,46 @@ struct Obst
 		}
 
 		return true;
+	}
+
+	Vec3 GetClosestPoint(const Vec3& vPoint, const _float fOffset)
+	{
+		_float fMinDistanceSq = FLT_MAX;
+		Vec3 vMinProjection = Vec3::Zero;
+		Vec3 vMinDistance = Vec3::Zero;
+		Vec3 vClosestPoint = vPoint;
+
+		Vec3 vSour = Vec3::Zero;
+		Vec3 vDest = Vec3::Zero;
+
+		_int iSize = vecPoints.size();
+
+		for (_int m = 0; m < iSize; ++m)
+		{
+			vSour = vecPoints[m];
+			vDest = vecPoints[(m + 1) % iSize];
+
+			Vec3 vToLine = vDest - vSour;
+			Vec3 vToPoint = vPoint - vSour;
+
+			_float fT = vToPoint.Dot(vToLine) / vToLine.LengthSquared();
+			if (fT < 0.f) fT = 0.f;
+			if (fT > 1.f) fT = 1.f;
+
+			Vec3 vProjection = vSour + fT * vToLine;
+			Vec3 vDistance = vProjection - vPoint;
+
+			_float fDistanceSq = vDistance.LengthSquared();
+			if (fDistanceSq < fMinDistanceSq)
+			{
+				fMinDistanceSq = fDistanceSq;
+				vMinProjection = vProjection;
+				vMinDistance = vDistance;
+			}
+		}
+
+		vMinDistance.Normalize();
+		return vMinProjection + fOffset * vMinDistance;
 	}
 };
 

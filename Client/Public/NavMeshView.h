@@ -43,8 +43,8 @@ public:
 private:
 	void		ClearNeighbors(vector<CellData*>& vecCells);
 	void		SetUpNeighbors(vector<CellData*>& vecCells);
-	void		SetUpCells2Grids(vector<CellData*>& vecCells, OUT unordered_multimap<_int, CellData*>& umapCellGrids, const _uint iGridCX = 64U, const _uint iGridCZ = 64U);
-	void		SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_multimap<_int, Obst*> umapObstGrids, const _uint iGridCX = 64U, const _uint iGridCZ = 64U);
+	void		SetUpCells2Grids(vector<CellData*>& vecCells, OUT unordered_multimap<_int, CellData*>& umapCellGrids, const _int iGridCX = 64U, const _int iGridCZ = 64U);
+	void		SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_multimap<_int, Obst*>& umapObstGrids, const _int iGridCX = 64U, const _int iGridCZ = 64U);
 
 	HRESULT		BakeNavMesh();
 	HRESULT		BakeSingleObstacleData();
