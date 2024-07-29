@@ -233,20 +233,27 @@ _bool CAgentController::AStar()
 			PQNode& tNextNode = umapPath[m_pDestCell];
 
 			m_dqPortals.push_front(pair(m_vDestPos, m_vDestPos));
-			m_dqPortalPoints.push_front(pair(BoundingBox(m_vDestPos, Vec3::Zero), BoundingBox(m_vDestPos, Vec3::Zero)));
+			m_dqPortalPoints.push_front(pair(
+				BoundingBox(m_vDestPos, Vec3::Zero),
+				BoundingBox(m_vDestPos, Vec3::Zero)
+			));
 
 			while (m_pCurrentCell != tNextNode.pCell)
 			{
 				m_dqPath.push_front(tNextNode);
 
-				Vec3 vDirection = tNextNode.pCell->vPoints[(tNextNode.ePassedLine + 1) % POINT_END] - tNextNode.pCell->vPoints[tNextNode.ePassedLine];
+				Vec3 vDirection = tNextNode.pCell->vPoints[(tNextNode.ePassedLine + 1) % POINT_END]
+								- tNextNode.pCell->vPoints[tNextNode.ePassedLine];
 				vDirection.Normalize();
 
 				m_dqPortals.push_front(
 					pair(tNextNode.pCell->vPoints[tNextNode.ePassedLine] + m_fAgentRadius * vDirection,
 						tNextNode.pCell->vPoints[(tNextNode.ePassedLine + 1) % POINT_END] - m_fAgentRadius * vDirection));
 
-				m_dqPortalPoints.push_front(pair(BoundingBox(m_dqPortals.front().first, Vec3::One), BoundingBox(m_dqPortals.front().second, Vec3::One)));
+				m_dqPortalPoints.push_front(pair(
+					BoundingBox(m_dqPortals.front().first, Vec3::One),
+					BoundingBox(m_dqPortals.front().second, Vec3::One)
+				));
 
 				tNextNode = umapPath[tNextNode.pCell];
 			}
