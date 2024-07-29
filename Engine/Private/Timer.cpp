@@ -35,7 +35,6 @@ _float CTimer::Compute_TimeDelta()
 	m_LastTime = m_FrameTime;
 
 	return m_fTimeDelta;
-
 }
 
 CTimer * CTimer::Create(void)
