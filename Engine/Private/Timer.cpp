@@ -38,7 +38,6 @@ _float CTimer::Compute_TimeDelta()
 
 }
 
-
 CTimer * CTimer::Create(void)
 {
 	CTimer*		pInstance = new CTimer;

@@ -13,12 +13,10 @@ private:
 	virtual ~CTimerManager() = default;
 
 public:
-	/* 타임델타를 얻어온다. */
-	/* 타임델타를 계산한다. */
 	_float Compute_TimeDelta(const wstring& strTimerTag);
 
 public:
-	HRESULT			Add_Timer(const wstring& strTimerTag);
+	HRESULT	Add_Timer(const wstring& strTimerTag);
 
 private:
 	map<const wstring, class CTimer*>		m_Timers;

@@ -61,6 +61,11 @@ HRESULT CAgentController::Initialize(void* pArg)
 
 	m_vLinearSpeed = m_vMaxLinearSpeed;
 
+#pragma region AStarPerformance
+	if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
+		return E_FAIL;
+#pragma endregion AStarPerformance
+
 	return S_OK;
 }
 
@@ -203,7 +208,6 @@ _bool CAgentController::AStar()
 {
 	priority_queue<PQNode, vector<PQNode>, greater<PQNode>> pqOpen;
 	unordered_map<CellData*, PQNode> umapPath;
-	//unordered_map<CellData*, _float> umapCost;
 
 	m_dqPath.clear();
 	m_dqPortals.clear();
@@ -301,7 +305,7 @@ _bool CAgentController::AStar()
 						pCell->vPoints[i],
 						pCell->vPoints[(i + 1) % 3]
 					);
-				}
+				}				
 
 				auto closed = umapPath.find(pNeighbor);
 
@@ -313,9 +317,8 @@ _bool CAgentController::AStar()
 					tNeighborNode.g = g;
 					tNeighborNode.ePassedLine = (LINES)i;
 
-					//pqOpen.push(PQNode{ g + CellData::HeuristicCost(pNeighbor, m_vDestPos), g, pNeighbor, (LINES)i });
 					Vec3 vEdgeMid = 0.5f * (tNode.pCell->vPoints[i] + tNode.pCell->vPoints[(i + 1) % 3]);
-					pqOpen.push(PQNode{ g + CellData::HeuristicCost(vEdgeMid, m_vDestPos), g, pNeighbor, (LINES)i });
+					pqOpen.push(PQNode{ g + CellData::HeuristicCostEuclidean(vEdgeMid, m_vDestPos), g, pNeighbor, (LINES)i });
 				}
 			}
 		}
@@ -441,6 +444,8 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 		return false;
 	}
 
+	//m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+
 	m_pDestCell = FindCellByPosition(vPickedPos);
 
 	if (nullptr != m_pDestCell)
@@ -452,6 +457,9 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 			SSF();
 
 			m_isMoving = true;
+
+			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+			fAStarPerformance = fAStarPerformance;*/
 			return true;
 		}
 	}
@@ -468,12 +476,17 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 			SSF();
 
 			m_isMoving = true;
+
+			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+			fAStarPerformance = fAStarPerformance;*/
 			return true;
 		}
 
 		m_vDestPos = m_pTransform->GetPosition();
 	}
 
+	/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+	fAStarPerformance = fAStarPerformance;*/
 	return false;
 }
 
