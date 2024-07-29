@@ -22,9 +22,7 @@
 
 ⚽ 이후 계획
   * 위 논문에서 제안한 방법을 참고해 경로의 g값을 계산하는 방식을 개선해볼 계획입니다.
-    * 여러 방법을 통해 계산한 g-cost를 비교함으로써 경로 개선 여부를 확인해보려합니다.
-      * 5.5 Triangulation A* (TA*)의 일부 내용입니다.
-        
+    * 아래와 같이 여러 방법을 통해 계산한 g-cost를 비교함으로써 경로 개선 여부를 확인해보려합니다.(5.5 Triangulation A* (TA*)의 일부입니다)        
       ![image](https://github.com/user-attachments/assets/b5edb17b-046e-4874-bb9e-3c95b1c8bd70)
 
 ---
