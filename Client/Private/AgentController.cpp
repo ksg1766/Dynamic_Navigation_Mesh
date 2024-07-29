@@ -77,9 +77,9 @@ void CAgentController::Tick(_float fTimeDelta)
 			{
 				for (_int j = 0; j <= i; ++j)
 				{
-					m_dqPath.pop_front();
-					m_dqPortals.pop_front();
-					m_dqPortalPoints.pop_front();
+					if (false == m_dqPath.empty())			m_dqPath.pop_front();
+					if (false == m_dqPortals.empty())		m_dqPortals.pop_front();
+					if (false == m_dqPortalPoints.empty())	m_dqPortalPoints.pop_front();
 				}
 			}
 		}
@@ -423,7 +423,6 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 		}
 	}
 
-	// TODO : 
 	Obst* pObst = FindObstByPosition(vPickedPos);
 
 	if (nullptr != pObst)
