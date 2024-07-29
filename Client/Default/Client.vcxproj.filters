@@ -452,6 +452,9 @@
     <ClCompile Include="..\Private\CellData.cpp">
       <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
     </ClCompile>
+    <ClCompile Include="..\Private\NSHelper.cpp">
+      <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">

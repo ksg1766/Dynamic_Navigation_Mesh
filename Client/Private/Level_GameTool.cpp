@@ -128,7 +128,6 @@ HRESULT CLevel_GameTool::Ready_Lights()
 {
 	LIGHT_DESC			LightDesc;
 
-	/* 방향성 광원을 추가하낟. */
 	ZeroMemory(&LightDesc, sizeof LightDesc);
 	LightDesc.eLightType = LIGHT_DESC::LIGHT_DIRECTIONAL;
 	LightDesc.vLightDir = _float4(1.f, -1.f, 1.f, 0.f);

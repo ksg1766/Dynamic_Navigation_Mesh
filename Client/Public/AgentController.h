@@ -23,6 +23,7 @@ struct PQNode
 	_float f = FLT_MAX; // f = g + h
 	_float g = FLT_MAX;
 	CellData* pCell = nullptr;
+	LINES ePassedLine = LINE_END;
 };
 
 class CAgentController : public CMonoBehaviour
@@ -76,7 +77,7 @@ private:
 	CellData*		m_pDestCell = nullptr;
 	
 	_float			m_fAgentRadius = 10.0f;
-	deque<pair<CellData*, LINES>> m_dqPath;
+	deque<PQNode> m_dqPath;
 	deque<pair<Vec3, Vec3>>	m_dqPortals;
 	deque<Vec3>		m_dqWayPoints;
 	

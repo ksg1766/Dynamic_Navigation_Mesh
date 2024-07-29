@@ -7,6 +7,7 @@
 #include "Level_Loading.h"
 #include "FlyingCameraController.h"
 #include "DebugTerrainGrid.h"
+#include "AgentController.h"
 
 CMainApp::CMainApp()	
 	: m_pGameInstance(CGameInstance::GetInstance())
