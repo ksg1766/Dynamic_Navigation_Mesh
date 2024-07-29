@@ -1,16 +1,30 @@
 ---
-# 📅 2024.07.25
+# 📅 2024.07.26
 📋 진행 사항
   * agent의 크기를 고려해 통과할 수 있는 구역만을 경로로 선택하도록 구현했습니다.
-    * 
+    * 통과하게 될 edge(portal)가 agent의 지름보다 작다면 우선순위 큐에 저장하지 않도록 구현했습니다.
+
+    ![FPS_61-DEBUG2024-07-2910-17-27-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/222e9b23-906b-46fe-8d99-26d06bf38f1a)
+    
   * 도착지점이 obstacle 영역 내에 있다면, 근처의 유효한 영역을 대신 목적지로 지정하도록 구현했습니다.
-    * 
+    * 지정한 도착 지점이 obstacle 영역의 내에 있다면 인접한 위치의 cell을 도착 지점으로 변경할 수 있도록 구현했습니다.
+
+    ![FPS_61-DEBUG2024-07-2910-19-29-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/98acc55a-4ce9-430e-bdbd-f2cdfe74ec93)
+  
   * 맵의 전체 구역을 grid로 분할 해, grid 내에서 빠르게 cell을 탐색할 수 있도록 구현했습니다.
     * 각각의 cell들은 위치를 key값으로 하는 AABB 영역에 포함되도록 multi-map 구조로 저장했습니다.
+    * 영상에서 보이는 격자는 grid의 AABB 크기와 동일합니다.
+
   * 더 나은 경로를 탐색할 수 있는 방법을 위해 추가 학습중입니다. (Efficient Triangulation-Based Pathfindin. (Douglas Jon Demyen))
+
+⚠️ 발견된 문제
+  * 이전에 기록했던 문제들을 아직 해결하지 않은 상태입니다.(도착지점에서의 경로 문제 등)
 
 ⚽ 이후 계획
   * 위 논문에서 제안한 방법을 참고해 경로의 g값을 계산하는 방식을 개선해볼 계획입니다.
+    * 여러 방법을 통해 계산한 g-cost를 비교함으로써 경로 개선 여부를 확인해보려합니다.
+      * 5.5 Triangulation A* (TA*)의 일부 내용입니다.
+      ![image](https://github.com/user-attachments/assets/b5edb17b-046e-4874-bb9e-3c95b1c8bd70)
 
 ---
 # 📅 2024.07.25
