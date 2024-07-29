@@ -119,7 +119,7 @@ _float DistanceEdge2Edge(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, cons
 	_float fSc, fSNum, fSDenom = fDenom;
 	_float fTc, fTNum, fTDenom = fDenom;
 
-	if (fDenom < FLT_EPSILON)	// 선분이 평행한 경우
+	if (fDenom < 1e-6f)	// 선분이 평행한 경우
 	{
 		fSNum = 0.0f;
 		fSDenom = 1.0f;
@@ -131,13 +131,13 @@ _float DistanceEdge2Edge(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, cons
 		fSNum = (fB * fE - fC * fD);
 		fTNum = (fA * fE - fB * fD);
 
-		if (fSNum < 0.0f)	// sN < 0인 경우, s = 0
+		if (fSNum < 0.0f)	// SNum < 0인 경우, s = 0
 		{
 			fSNum = 0.0f;
 			fTNum = fE;
 			fTDenom = fC;
 		}
-		else if (fSNum > fSDenom)	// sN > sD인 경우, s = 1
+		else if (fSNum > fSDenom)	// SNum > SDenom인 경우, s = 1
 		{
 			fSNum = fSDenom;
 			fTNum = fE + fB;
@@ -145,7 +145,7 @@ _float DistanceEdge2Edge(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, cons
 		}
 	}
 
-	if (fTNum < 0.0f)		// tN < 0인 경우, t = 0
+	if (fTNum < 0.0f)		// TNum < 0인 경우, t = 0
 	{
 		fTNum = 0.0f;
 		if (-fD < 0.0f)
@@ -162,7 +162,7 @@ _float DistanceEdge2Edge(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, cons
 			fSDenom = fA;
 		}
 	}
-	else if (fTNum > fTDenom)	// tN > tD인 경우, t = 1
+	else if (fTNum > fTDenom)	// TNum > TDenom인 경우, t = 1
 	{
 		fTNum = fTDenom;
 		if ((-fD + fB) < 0.0f)
@@ -180,9 +180,9 @@ _float DistanceEdge2Edge(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, cons
 		}
 	}
 
-	// sc와 tc를 최종적으로 계산
-	fSc = (fabs(fSNum) < FLT_EPSILON ? 0.0f : fSNum / fSDenom);
-	fTc = (fabs(fTNum) < FLT_EPSILON ? 0.0f : fTNum / fTDenom);
+	// Sc와 Tc를 최종적으로 계산
+	fSc = (fabs(fSNum) < 1e-6f) ? 0.0f : fSNum / fSDenom;
+	fTc = (fabs(fTNum) < 1e-6f) ? 0.0f : fTNum / fTDenom;
 
 	// 두 선분의 가장 가까운 점 사이의 벡터를 계산
 	Vec3 vDP = W + (U * fSc) - (V * fTc);

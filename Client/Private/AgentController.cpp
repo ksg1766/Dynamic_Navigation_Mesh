@@ -208,6 +208,7 @@ _bool CAgentController::AStar()
 {
 	priority_queue<PQNode, vector<PQNode>, greater<PQNode>> pqOpen;
 	unordered_map<CellData*, PQNode> umapPath;
+	unordered_set<CellData*> usetClosed;
 
 	m_dqPath.clear();
 	m_dqPortals.clear();
@@ -217,11 +218,10 @@ _bool CAgentController::AStar()
 	// start node
 	Vec3 vStartPos = m_pTransform->GetPosition();
 
-	_float g = 0.0f;
 	Vec3 vDistance = m_vDestPos - vStartPos;
 	_float h = vDistance.Length();
 
-	pqOpen.push(PQNode{ g + h, g, m_pCurrentCell, LINE_END });
+	pqOpen.push(PQNode{ h, 0.0f, m_pCurrentCell, LINE_END });
 	umapPath[m_pCurrentCell] = pqOpen.top();
 
 	while (false == pqOpen.empty())
@@ -260,71 +260,99 @@ _bool CAgentController::AStar()
 		}
 
 		pqOpen.pop();
+		usetClosed.emplace(tNode.pCell);
 
 		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
 			CellData* pNeighbor = tNode.pCell->pNeighbors[i];	// parent의 인접셀이 nullptr이 아니라면
-			if (nullptr != pNeighbor)
+			if (nullptr == pNeighbor)
 			{
-				// portal length
-				_float fPortalLengthSq = (tNode.pCell->vPoints[(i + 1) % 3] - tNode.pCell->vPoints[i]).LengthSquared();
-				_float fAgentDiameterSq = powf(2.0f * m_fAgentRadius, 2.0f);
-
-				if (fPortalLengthSq < fAgentDiameterSq)
-				{
-					continue;
-				}
-
-				//_float g = tNode.g + CellData::CostBetween(tNode.pCell, pNeighbor);
-				//PQNode& tParent = umapPath[pNeighbor];
-
-				_float g = tNode.g;
-				CellData* pCell = tNode.pCell;
-
-				if (m_pCurrentCell == tNode.pCell)
-				{
-					g += CellData::CostBetweenPoint2Edge(
-						vStartPos,
-						pCell->vPoints[i],
-						pCell->vPoints[(i + 1) % 3]
-					);
-				}
-				else if (m_pDestCell == pNeighbor)
-				{
-					g += CellData::CostBetweenPoint2Edge(
-						m_vDestPos,
-						pCell->vPoints[i],
-						pCell->vPoints[(i + 1) % 3]
-					);
-				}
-				else
-				{
-					g += CellData::CostBetweenEdge2Edge(
-						pCell->vPoints[tNode.ePassedLine],
-						pCell->vPoints[(tNode.ePassedLine + 1) % 3],
-						pCell->vPoints[i],
-						pCell->vPoints[(i + 1) % 3]
-					);
-				}				
-
-				auto closed = umapPath.find(pNeighbor);
-
-				if (umapPath.end() == closed || g < closed->second.g)	// 갱신해야 한다면	// mapCost도 안쓰도록 수정 필요. g를 쓰는 이유가 없음.
-				{
-					PQNode& tNeighborNode = umapPath[pNeighbor];	// key : neighbor cell
-																	// value : parent의 neighbor index
-					tNeighborNode.pCell = tNode.pCell;
-					tNeighborNode.g = g;
-					tNeighborNode.ePassedLine = (LINES)i;
-
-					Vec3 vEdgeMid = 0.5f * (tNode.pCell->vPoints[i] + tNode.pCell->vPoints[(i + 1) % 3]);
-					pqOpen.push(PQNode{ g + CellData::HeuristicCostEuclidean(vEdgeMid, m_vDestPos), g, pNeighbor, (LINES)i });
-				}
+				continue;
 			}
+			
+			// portal length
+			_float fPortalLengthSq = (tNode.pCell->vPoints[(i + 1) % POINT_END] - tNode.pCell->vPoints[i]).LengthSquared();
+			_float fAgentDiameterSq = powf(2.0f * m_fAgentRadius, 2.0f);
+
+			if (fPortalLengthSq < fAgentDiameterSq)
+			{
+				continue;
+			}
+
+			_float neighbor_g = 0.0f;
+			CellData* pCell = tNode.pCell;
+
+			if (m_pCurrentCell == tNode.pCell)
+			{
+				Vec3 vNextEdgeDir = pNeighbor->vPoints[(i + 1) % POINT_END] - pNeighbor->vPoints[i];
+				vNextEdgeDir.Normalize();
+
+				neighbor_g = tNode.g + CellData::CostBetweenPoint2Edge(
+					vStartPos,
+					pNeighbor->vPoints[i] + m_fAgentRadius * vNextEdgeDir,
+					pNeighbor->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vNextEdgeDir
+				);
+			}
+			else if (m_pDestCell == pNeighbor)
+			{
+				Vec3 vCurrEdgeDir = pCell->vPoints[(tNode.ePassedLine + 1) % POINT_END] - pCell->vPoints[tNode.ePassedLine];
+				vCurrEdgeDir.Normalize();
+
+				neighbor_g = tNode.g + CellData::CostBetweenPoint2Edge(
+					m_vDestPos,
+					pCell->vPoints[i] + m_fAgentRadius * vCurrEdgeDir,
+					pCell->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vCurrEdgeDir
+				);
+			}
+			else
+			{
+				Vec3 vCurrEdgeDir = pCell->vPoints[(tNode.ePassedLine + 1) % POINT_END] - pCell->vPoints[tNode.ePassedLine];
+				Vec3 vNextEdgeDir = pNeighbor->vPoints[(i + 1) % POINT_END] - pNeighbor->vPoints[i];
+				vCurrEdgeDir.Normalize();
+				vNextEdgeDir.Normalize();
+
+				neighbor_g = tNode.g + CellData::CostBetweenEdge2Edge(
+					pCell->vPoints[tNode.ePassedLine] + m_fAgentRadius * vCurrEdgeDir,
+					pCell->vPoints[(tNode.ePassedLine + 1) % POINT_END] - m_fAgentRadius * vCurrEdgeDir,
+					pNeighbor->vPoints[i] + m_fAgentRadius * vNextEdgeDir,
+					pNeighbor->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vNextEdgeDir
+				);
+
+				/*neighbor_g = tNode.g + CellData::CostBetweenPoint2Edge(vStartPos, pNeighbor->vPoints[i] + m_fAgentRadius * vNextEdgeDir,
+					pNeighbor->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vNextEdgeDir);*/
+
+				/*g += CellData::CostBetweenMax(
+					pCell->vPoints[tNode.ePassedLine] + m_fAgentRadius * vCurrEdgeDir,
+					pCell->vPoints[(tNode.ePassedLine + 1) % POINT_END] - m_fAgentRadius * vCurrEdgeDir,
+					pNeighbor->vPoints[i] + m_fAgentRadius * vNextEdgeDir,
+					pNeighbor->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vNextEdgeDir,
+					vStartPos,
+					m_vDestPos,
+					tNode.g,
+					tNode.f - tNode.g
+				);*/
+			}				
+
+			if (usetClosed.end() == usetClosed.find(pNeighbor))
+			{
+				PQNode& tNeighborParent = umapPath[pNeighbor];	// key : neighbor cell
+																// value : parent의 neighbor
+				tNeighborParent.pCell = tNode.pCell;
+				tNeighborParent.f = tNode.f;
+				tNeighborParent.g = tNode.g;
+				tNeighborParent.ePassedLine = (LINES)i;
+
+				Vec3 vEdgeMid = 0.5f * (pNeighbor->vPoints[i] + pNeighbor->vPoints[(i + 1) % POINT_END]);
+				pqOpen.push(PQNode {
+					neighbor_g + CellData::HeuristicCostEuclidean(vEdgeMid, m_vDestPos),
+					neighbor_g,
+					pNeighbor,
+					(LINES)0
+				});// !!!!!!!얘가 범인이다 얘가!!!!!!!
+			}			
 		}
 	}
 
-	// TODO: 가장 가까운 노드 반환하도록
 	return false;
 }
 

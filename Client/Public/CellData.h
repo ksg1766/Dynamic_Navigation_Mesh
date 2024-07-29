@@ -58,11 +58,11 @@ struct CellData
 		_float fCostPoint2Edge = (vClosestPoint2Edge - vStart).Length();
 		_float fCostEdge2Edge = DistanceEdge2Edge(vP1, vP2, vQ1, vQ2);
 		
-		_float fCurrentH = HeuristicCostEuclidean(vClosestPoint2Edge, vDest);
-		_float fCostHeuristicDiff = fParentG + fParentH - fCurrentH;
+		Vec3 vMidPoint = 0.5f * (vQ1 + vQ2);
+		_float fNeighborH = HeuristicCostEuclidean(vMidPoint, vDest);
+		_float fCostHeuristicDiff = fParentG + fParentH - fNeighborH;
 
 		return ::max(::max(fCostPoint2Edge, fCostEdge2Edge), fCostHeuristicDiff);
-		//return fCostEdge2Edge;
 	}
 
 	// cache
