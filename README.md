@@ -1,4 +1,6 @@
 ---
+https://equal-paw-e8f.notion.site/4-025bff362b2649668d2dccf85cfd482b?pvs=4
+---
 # 📅 2024.07.26
 📋 진행 사항
   * agent의 크기를 고려해 통과할 수 있는 구역만을 경로로 선택하도록 구현했습니다.
