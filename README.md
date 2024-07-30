@@ -1,8 +1,19 @@
 ---
 # 📅 2024.07.30
 📋 진행 사항
-  * 
-  
+  * 아래와 같이 경로가 심각하게 우회되는 현상을 수정했습니다.
+
+    ![FPS_61-DEBUG2024-07-3017-58-21-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/36be4005-1744-4934-b63d-5274f0decc6e)
+
+    * 원인은 어느정도 미리 파악을 했으나 재귀적으로 실행되는 구조가 많아 정확한 문제 발생 지점을 찾는데 많은 시간을 소요했습니다.
+    * 아래와 같이 g-value계산에 사용된 entry 노드를 잘못 지정함으로써 g-value의 오차가 매우 커지는 문제가 원인이었던 것으로 파악됐습니다.
+
+      ![image](https://github.com/user-attachments/assets/a65fcfd8-bb22-4ee0-9648-c161195655cd)
+
+    * 수정된 결과는 아래와 같습니다. 직선거리에서 급격히 우회하는 문제를 수정하고 어느정도 일관성 높은 경로를 계산할 수 있었습니다.
+      
+      ![FPS_61-DEBUG2024-07-3018-27-09-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/1e67ae6e-0041-4198-851d-3558532bdb44)
+
 ⚠️ 발견된 문제
   * 
 
