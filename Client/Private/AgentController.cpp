@@ -77,7 +77,7 @@ void CAgentController::Tick(_float fTimeDelta)
 	{
 		for (_int i = 0; i < m_dqPath.size(); ++i)
 		{
-			if (m_pCurrentCell == m_dqPath[i].pCell)
+			if (m_pCurrentCell == m_dqPath[i].first)
 			{
 				for (_int j = 0; j <= i; ++j)
 				{
@@ -206,9 +206,9 @@ _bool CAgentController::CanMove(Vec3 vPoint)
 
 _bool CAgentController::AStar()
 {
-	priority_queue<PQNode, vector<PQNode>, greater<PQNode>> pqOpen;
-	unordered_map<CellData*, PQNode> umapPath;
-	unordered_set<CellData*> usetClosed;
+	priority_queue<PQNode, vector<PQNode>, greater<PQNode>> Open;
+	unordered_map<CellData*, PATH> Path;
+	unordered_set<CellData*> Closed;
 
 	m_dqPath.clear();
 	m_dqPortals.clear();
@@ -221,53 +221,64 @@ _bool CAgentController::AStar()
 	Vec3 vDistance = m_vDestPos - vStartPos;
 	_float h = vDistance.Length();
 
-	pqOpen.push(PQNode{ h, 0.0f, m_pCurrentCell, LINE_END });
-	umapPath[m_pCurrentCell] = pqOpen.top();
+	Open.push(PQNode{ h, 0.0f, m_pCurrentCell });
+	Path[m_pCurrentCell] = PATH(m_pCurrentCell, LINE_END);
 
-	while (false == pqOpen.empty())
+	while (false == Open.empty())
 	{
-		PQNode tNode = pqOpen.top();
+		PQNode tNode = Open.top();
 
 		if (tNode.pCell == m_pDestCell)
 		{
-			PQNode& tNextNode = umapPath[m_pDestCell];
+			pair<CellData*, LINES>& tNext = Path[m_pDestCell];
 
-			m_dqPortals.push_front(pair(m_vDestPos, m_vDestPos));
+			m_dqPortals.push_front(pair(
+				m_vDestPos,
+				m_vDestPos
+			));
 			m_dqPortalPoints.push_front(pair(
 				BoundingBox(m_vDestPos, Vec3::Zero),
 				BoundingBox(m_vDestPos, Vec3::Zero)
 			));
 
-			while (m_pCurrentCell != tNextNode.pCell)
+			while (m_pCurrentCell != tNext.first)
 			{
-				m_dqPath.push_front(tNextNode);
+				m_dqPath.push_front(tNext);
 
-				Vec3 vDirection = tNextNode.pCell->vPoints[(tNextNode.ePassedLine + 1) % POINT_END]
-								- tNextNode.pCell->vPoints[tNextNode.ePassedLine];
+				Vec3 vDirection = tNext.first->vPoints[(tNext.second + 1) % POINT_END]
+								- tNext.first->vPoints[tNext.second];
 				vDirection.Normalize();
 
-				m_dqPortals.push_front(
-					pair(tNextNode.pCell->vPoints[tNextNode.ePassedLine] + m_fAgentRadius * vDirection,
-						tNextNode.pCell->vPoints[(tNextNode.ePassedLine + 1) % POINT_END] - m_fAgentRadius * vDirection));
+				m_dqPortals.push_front(pair(
+					tNext.first->vPoints[tNext.second] + m_fAgentRadius * vDirection,
+					tNext.first->vPoints[(tNext.second + 1) % POINT_END] - m_fAgentRadius * vDirection
+				));
 
 				m_dqPortalPoints.push_front(pair(
 					BoundingBox(m_dqPortals.front().first, Vec3::One),
 					BoundingBox(m_dqPortals.front().second, Vec3::One)
 				));
 
-				tNextNode = umapPath[tNextNode.pCell];
+				tNext = Path[tNext.first];
 			}
 
 			const Vec3& vStartPos = m_pTransform->GetPosition();
 
-			m_dqPortals.push_front(pair(vStartPos, vStartPos));
-			m_dqPortalPoints.push_front(pair(BoundingBox(vStartPos, Vec3::Zero), BoundingBox(vStartPos, Vec3::Zero)));
+			m_dqPortals.push_front(pair(
+				vStartPos,
+				vStartPos
+			));
+
+			m_dqPortalPoints.push_front(pair(
+				BoundingBox(vStartPos, Vec3::Zero),
+				BoundingBox(vStartPos, Vec3::Zero)
+			));
 
 			return true;
 		}
 
-		pqOpen.pop();
-		usetClosed.emplace(tNode.pCell);
+		Open.pop();
+		Closed.emplace(tNode.pCell);
 
 		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
@@ -287,9 +298,11 @@ _bool CAgentController::AStar()
 			}
 
 			_float neighbor_g = 0.0f;
-			CellData* pCell = tNode.pCell;
+			//CellData* pCell = tNode.pCell;
+			CellData* pParent = Path[tNode.pCell].first;
+			LINES ePassedLine = Path[tNode.pCell].second;
 
-			if (m_pCurrentCell == tNode.pCell)
+			if (m_pCurrentCell == pParent)
 			{
 				Vec3 vNextEdgeDir = pNeighbor->vPoints[(i + 1) % POINT_END] - pNeighbor->vPoints[i];
 				vNextEdgeDir.Normalize();
@@ -302,25 +315,25 @@ _bool CAgentController::AStar()
 			}
 			else if (m_pDestCell == pNeighbor)
 			{
-				Vec3 vCurrEdgeDir = pCell->vPoints[(tNode.ePassedLine + 1) % POINT_END] - pCell->vPoints[tNode.ePassedLine];
+				Vec3 vCurrEdgeDir = pParent->vPoints[(ePassedLine + 1) % POINT_END] - pParent->vPoints[ePassedLine];
 				vCurrEdgeDir.Normalize();
 
 				neighbor_g = tNode.g + CellData::CostBetweenPoint2Edge(
 					m_vDestPos,
-					pCell->vPoints[i] + m_fAgentRadius * vCurrEdgeDir,
-					pCell->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vCurrEdgeDir
+					pParent->vPoints[i] + m_fAgentRadius * vCurrEdgeDir,
+					pParent->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vCurrEdgeDir
 				);
 			}
 			else
 			{
-				Vec3 vCurrEdgeDir = pCell->vPoints[(tNode.ePassedLine + 1) % POINT_END] - pCell->vPoints[tNode.ePassedLine];
+				Vec3 vCurrEdgeDir = pParent->vPoints[(ePassedLine + 1) % POINT_END] - pParent->vPoints[ePassedLine];
 				Vec3 vNextEdgeDir = pNeighbor->vPoints[(i + 1) % POINT_END] - pNeighbor->vPoints[i];
 				vCurrEdgeDir.Normalize();
 				vNextEdgeDir.Normalize();
 
 				neighbor_g = tNode.g + CellData::CostBetweenEdge2Edge(
-					pCell->vPoints[tNode.ePassedLine] + m_fAgentRadius * vCurrEdgeDir,
-					pCell->vPoints[(tNode.ePassedLine + 1) % POINT_END] - m_fAgentRadius * vCurrEdgeDir,
+					pParent->vPoints[ePassedLine] + m_fAgentRadius * vCurrEdgeDir,
+					pParent->vPoints[(ePassedLine + 1) % POINT_END] - m_fAgentRadius * vCurrEdgeDir,
 					pNeighbor->vPoints[i] + m_fAgentRadius * vNextEdgeDir,
 					pNeighbor->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vNextEdgeDir
 				);
@@ -338,24 +351,18 @@ _bool CAgentController::AStar()
 					tNode.g,
 					tNode.f - tNode.g
 				);*/
-			}				
+			}
 
-			if (usetClosed.end() == usetClosed.find(pNeighbor))
+			if (Closed.end() == Closed.find(pNeighbor))
 			{
-				PQNode& tNeighborParent = umapPath[pNeighbor];	// key : neighbor cell
-																// value : parent의 neighbor
-				tNeighborParent.pCell = tNode.pCell;
-				tNeighborParent.f = tNode.f;
-				tNeighborParent.g = tNode.g;
-				tNeighborParent.ePassedLine = (LINES)i;
+				Path[pNeighbor] = PATH(tNode.pCell, (LINES)i);	// tNode.pCell의 i번째 line을 통과한 노드가 pNeighbor
 
 				Vec3 vEdgeMid = 0.5f * (pNeighbor->vPoints[i] + pNeighbor->vPoints[(i + 1) % POINT_END]);
-				pqOpen.push(PQNode {
+				Open.push(PQNode {
 					neighbor_g + CellData::HeuristicCostEuclidean(vEdgeMid, m_vDestPos),
 					neighbor_g,
-					pNeighbor,
-					(LINES)0
-				});// !!!!!!!얘가 범인이다 얘가!!!!!!!
+					pNeighbor
+				});
 			}			
 		}
 	}
@@ -538,15 +545,15 @@ void CAgentController::DebugRender()
 		{
 			for (uint8 j = LINE_AB; j < LINE_END; ++j)
 			{
-				if (j == m_dqPath[i].ePassedLine)
+				if (j == m_dqPath[i].second)
 				{
 					continue;
 				}
 				else
 				{
 					m_pBatch->DrawLine(
-						VertexPositionColor(m_dqPath[i].pCell->vPoints[j], Colors::Cyan),
-						VertexPositionColor(m_dqPath[i].pCell->vPoints[(j + 1) % POINT_END], Colors::Cyan));
+						VertexPositionColor(m_dqPath[i].first->vPoints[j], Colors::Cyan),
+						VertexPositionColor(m_dqPath[i].first->vPoints[(j + 1) % POINT_END], Colors::Cyan));
 				}
 			}
 		}
