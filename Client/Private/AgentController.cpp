@@ -71,33 +71,23 @@ HRESULT CAgentController::Initialize(void* pArg)
 
 void CAgentController::Tick(_float fTimeDelta)
 {
+	Slide(m_pTransform->GetPosition());
+
 	Move(fTimeDelta);
 
-	if (true == CanMove(m_pTransform->GetPosition()))
+	for (_int i = 0; i < m_dqPath.size(); ++i)
 	{
-		for (_int i = 0; i < m_dqPath.size(); ++i)
+		if (m_pCurrentCell == m_dqPath[i].first)
 		{
-			if (m_pCurrentCell == m_dqPath[i].first)
+			for (_int j = 0; j <= i; ++j)
 			{
-				for (_int j = 0; j <= i; ++j)
-				{
-					if (false == m_dqPath.empty())			m_dqPath.pop_front();
-					if (false == m_dqPortals.empty())		m_dqPortals.pop_front();
-					if (false == m_dqPortalPoints.empty())	m_dqPortalPoints.pop_front();
-				}
+				if (false == m_dqPath.empty())			m_dqPath.pop_front();
+				if (false == m_dqPortals.empty())		m_dqPortals.pop_front();
+				if (false == m_dqPortalPoints.empty())	m_dqPortalPoints.pop_front();
 			}
+			break;
 		}
 	}
-	else
-	{
-		m_pTransform->SetPosition(m_vPrePos);
-		// sliding = move - (move · 충돌 edge normal) * 충돌 edge normal
-		/*Vec3 vDir = m_pTransform->GetPosition() - m_vPrePos;
-		Vec3 vPassedLine = m_pNavMeshAgent->GetPassedEdgeNormal(m_pTransform->GetPosition());
-
-		m_pTransform->SetPosition(m_vPrePos + vDir - vDir.Dot(vPassedLine) * vPassedLine);*/
-	}
-
 }
 
 void CAgentController::LateTick(_float fTimeDelta)
@@ -143,8 +133,6 @@ void CAgentController::Move(_float fTimeDelta)
 	Vec3 vMoveAmount = Vec3::Zero;
 	Vec3 vDirection = Vec3::Zero;
 
-	// waypoint는 임시로 무게중심.
-	//if (1 >= m_vecPath.size()) // already in destcell or no pathfinding
 	if (1 >= m_dqWayPoints.size()) // already in destcell or no pathfinding
 	{
 		vDistance = m_vDestPos - m_pTransform->GetPosition();
@@ -154,54 +142,69 @@ void CAgentController::Move(_float fTimeDelta)
 		if (vMoveAmount.LengthSquared() > vDistance.LengthSquared())
 		{	// end
 			vMoveAmount = vDistance;
-			//m_vecPath.pop_back();
-			if(false == m_dqWayPoints.empty())	m_dqWayPoints.pop_front();
+
 			m_dqPortals.clear();
+			m_dqPath.clear();
+			m_dqWayPoints.clear();
+			m_dqPortalPoints.clear();
+
 			m_isMoving = false;
 		}
 	}
 	else
 	{
-		//vDistance = m_vecPath[m_vecPath.size() - 2].first->GetCenter() - m_pTransform->GetPosition();
 		vDistance = m_dqWayPoints[1] - m_pTransform->GetPosition();
 		vDistance.Normalize(OUT vDirection);
 
 		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
 		if (vMoveAmount.LengthSquared() > vDistance.LengthSquared())
 		{	// to next waypoint
-			if (false == m_dqWayPoints.empty())	m_dqWayPoints.pop_front();
+			if (false == m_dqWayPoints.empty())
+			{
+				m_dqWayPoints.pop_front();
+			}
 		}
 	}
 	
 	m_pTransform->Translate(vMoveAmount);
 }
 
-_bool CAgentController::CanMove(Vec3 vPoint)
+void CAgentController::Slide(Vec3 vPoint)
 {
 	CellData* pNeighbor = nullptr;
 
-	if (true == m_pCurrentCell->IsOut(vPoint, pNeighbor))
+	if (false == m_pCurrentCell->IsOut(vPoint, pNeighbor))
 	{
-		if (nullptr != pNeighbor)
-		{
-			while (true)
-			{
-				if (nullptr == pNeighbor)
-					return false;
-
-				if (false == pNeighbor->IsOut(vPoint, pNeighbor))
-				{
-					m_pCurrentCell = pNeighbor;
-					break;
-				}
-			}
-			return true;
-		}
-		else
-			return false;
+		return;
 	}
-	else
-		return true;
+
+	while (nullptr != pNeighbor)
+	{
+		if (false == pNeighbor->IsOut(vPoint, pNeighbor))
+		{
+			m_pCurrentCell = pNeighbor;
+			return;
+		}
+	}
+
+	Vec3 vPosition = m_pTransform->GetPosition();
+	Vec3 vDir = vPosition - m_vPrePos;
+	Vec3 vPassedLine = m_pCurrentCell->GetPassedEdgeNormal(vPosition);
+
+	vPosition = m_vPrePos + vDir - (EPSILON + vDir.Dot(vPassedLine)) * vPassedLine;
+	m_pCurrentCell = FindCellByPosition(vPosition);
+
+	while (nullptr == m_pCurrentCell)
+	{
+		Obst* pObst = FindObstByPosition(vPosition);
+		if (nullptr != pObst)
+		{
+			vPosition = pObst->GetClosestPoint(vPosition, m_fAgentRadius + EPSILON);
+			m_pCurrentCell = FindCellByPosition(vPosition);
+		}
+	}
+
+	m_pTransform->SetPosition(vPosition);
 }
 
 _bool CAgentController::AStar()
@@ -461,6 +464,7 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 	//m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
 
+	//m_pCurrentCell = FindCellByPosition(m_pTransform->GetPosition());	// TODO: ...
 	m_pDestCell = FindCellByPosition(vPickedPos);
 
 	if (nullptr != m_pDestCell)
