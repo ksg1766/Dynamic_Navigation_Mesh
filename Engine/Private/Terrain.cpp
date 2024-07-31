@@ -186,7 +186,7 @@ HRESULT CTerrain::InitializeNorTex(_uint iSizeX, _uint iSizeZ, _uint iCX, _uint 
 			//pVertices[iIndex].vNormal = _float3(0.f, 1.f, 0.f);
 			pVertices[iIndex].vTexcoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 			//pVertices[iIndex].vTangent = _float3(0.f, 0.f, 0.f);
-			m_vecVerticesCache.push_back(m_pVerticesPos[iIndex]);
+			//m_vecVerticesCache.push_back(m_pVerticesPos[iIndex]);
 		}
 	}
 
@@ -221,7 +221,7 @@ HRESULT CTerrain::InitializeNorTex(_uint iSizeX, _uint iSizeZ, _uint iCX, _uint 
 			pIndices[iNumFaces]._1 = iIndices[1];//3
 			pIndices[iNumFaces]._2 = iIndices[2];//1
 
-			m_vecIndicesCache.push_back(pIndices[iNumFaces]);
+			//m_vecIndicesCache.push_back(pIndices[iNumFaces]);
 
 			++iNumFaces;
 
@@ -229,7 +229,7 @@ HRESULT CTerrain::InitializeNorTex(_uint iSizeX, _uint iSizeZ, _uint iCX, _uint 
 			pIndices[iNumFaces]._1 = iIndices[2];//1
 			pIndices[iNumFaces]._2 = iIndices[3];//0
 
-			m_vecIndicesCache.push_back(pIndices[iNumFaces]);
+			//m_vecIndicesCache.push_back(pIndices[iNumFaces]);
 
 			++iNumFaces;
 		}
@@ -328,6 +328,8 @@ HRESULT CTerrain::InitializeWithHeightMap(const wstring& strHeightMapPath)
 			pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
 			pVertices[iIndex].vTexcoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 			//pVertices[iIndex].vTangent = _float3(0.f, 0.f, 0.f);
+
+			m_vecVerticesCache.push_back(m_pVerticesPos[iIndex]);
 		}
 	}
 
@@ -386,6 +388,8 @@ HRESULT CTerrain::InitializeWithHeightMap(const wstring& strHeightMapPath)
 				XMVector3Normalize(XMLoadFloat3(&pVertices[pIndices[iNumFaces]._1].vNormal) + vNormal));
 			XMStoreFloat3(&pVertices[iIndices[2]].vNormal,
 				XMVector3Normalize(XMLoadFloat3(&pVertices[pIndices[iNumFaces]._2].vNormal) + vNormal));
+			
+			m_vecIndicesCache.push_back(pIndices[iNumFaces]);
 
 			++iNumFaces;
 
@@ -407,6 +411,8 @@ HRESULT CTerrain::InitializeWithHeightMap(const wstring& strHeightMapPath)
 				XMVector3Normalize(XMLoadFloat3(&pVertices[pIndices[iNumFaces]._1].vNormal) + vNormal));
 			XMStoreFloat3(&pVertices[pIndices[iNumFaces]._2].vNormal,
 				XMVector3Normalize(XMLoadFloat3(&pVertices[pIndices[iNumFaces]._2].vNormal) + vNormal));
+
+			m_vecIndicesCache.push_back(pIndices[iNumFaces]);
 
 			++iNumFaces;
 		}

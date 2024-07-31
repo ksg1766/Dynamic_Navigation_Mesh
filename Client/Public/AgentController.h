@@ -77,7 +77,7 @@ private:
 	CellData*		m_pCurrentCell = nullptr;
 	CellData*		m_pDestCell = nullptr;
 	
-	_float			m_fAgentRadius = 10.0f;
+	_float			m_fAgentRadius = 3.0f;
 
 	using PATH = pair<CellData*, LINES>;
 	deque<PATH>		m_dqPath;

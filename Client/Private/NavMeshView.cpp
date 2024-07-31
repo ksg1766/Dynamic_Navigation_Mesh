@@ -421,44 +421,79 @@ HRESULT CNavMeshView::BakeSingleObstacleData()
 
 HRESULT CNavMeshView::BakeHeightMapObstacles()
 {
+	Reset();
+	InitialSetting();
+
 	vector<vector<Vec3>> vecOutlines;
 
-	CalculateTerrainOutline(vecOutlines);
+	if (FAILED(CalculateTerrainOutline(vecOutlines)))
+		return E_FAIL;
 
-	Obst* pObst = new Obst;
+	Obst* pObst = nullptr;
 
 	for (_int i = 0; i < vecOutlines.size(); ++i)
 	{
-		pObst->vecPoints.emplace_back(vecOutlines[i]);
+		pObst = new Obst;
+
+		for (_int j = 0; j < vecOutlines[i].size(); ++j)
+		{
+			pObst->vecPoints.emplace_back(vecOutlines[i][j]);
+		}
+
+		TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
+		for (auto vPoint : pObst->vecPoints)
+		{
+			if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+			if (fMinX > vPoint.x) fMinX = vPoint.x;
+
+			if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+			if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+		}
+
+		const _float fAABBOffset = 0.05f;
+		pObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+		pObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
+
+		SetPolygonHoleCenter(*pObst);
+
+		m_vecObstacles.push_back(pObst);
+		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.size()));
+
+		//DynamicCreate(*pObst);
+
+		for (auto& iter : pObst->vecPoints)
+		{
+			BoundingSphere tSphere(iter, 0.1f);
+
+			m_vecObstaclePointSpheres.emplace_back(tSphere);
+		}
 	}
 
-	TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
-	for (auto vPoint : pObst->vecPoints)
+	//
+
+	for (auto pObst : m_vecObstacles)
 	{
-		if (fMaxX < vPoint.x) fMaxX = vPoint.x;
-		if (fMinX > vPoint.x) fMinX = vPoint.x;
-
-		if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
-		if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+		for (auto& vPoint : pObst->vecPoints)
+		{
+			m_vecPoints.push_back(vPoint);
+		}
 	}
 
-	const _float fAABBOffset = 0.05f;
-	pObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
-	pObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
+	SafeReleaseTriangle(m_tIn);
+	SafeReleaseTriangle(m_tOut);
 
-	SetPolygonHoleCenter(*pObst);
+	UpdatePointList(m_tIn, m_vecPoints);
+	UpdateSegmentList(m_tIn, m_vecPoints);
+	UpdateHoleList(m_tIn);
+	UpdateRegionList(m_tIn);
 
-	m_vecObstacles.push_back(pObst);
-	s2cPushBack(m_strObstacles, Utils::ToString(vecObjects[0]->GetObjectTag()));
+	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 
-	DynamicCreate(*pObst);
-
-	for (auto& iter : pObst->vecPoints)
+	if (FAILED(BakeNavMesh()))
 	{
-		BoundingSphere tSphere(iter, 0.1f);
-
-		m_vecObstaclePointSpheres.emplace_back(tSphere);
+		return E_FAIL;
 	}
+	//
 
 	return S_OK;
 }
@@ -1108,7 +1143,7 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 			m_vecCells[i]->isNew = false;
 		}
 
-		if (true == tObst.tAABB.Intersects(m_vecCells[i]->vPoints[POINT_A], m_vecCells[i]->vPoints[POINT_B], m_vecCells[i]->vPoints[POINT_C]))
+		if (false == m_vecCells[i]->isDead && true == tObst.tAABB.Intersects(m_vecCells[i]->vPoints[POINT_A], m_vecCells[i]->vPoints[POINT_B], m_vecCells[i]->vPoints[POINT_C]))
 		{
 			setIntersected.emplace(m_vecCells[i]);
 		}
@@ -1294,12 +1329,12 @@ HRESULT CNavMeshView::CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutli
 
 	vector<vector<_bool>> vecIntersected(1024, vector<_bool>(1024, false));
 
-	for (_int i = -512; i < 512; ++i)
+	for (_int i = -400; i < 400; ++i)
 	{
-		cVerticalRay.position = Vec3((_float)i, 0.05f, -512.0f);
+		cVerticalRay.position = Vec3((_float)i, 0.2f, -512.0f);
 		cVerticalRay.direction = Vec3::Backward;
 
-		cHorizontalRay.position = Vec3(-512.0f, 0.05f, (_float)i);
+		cHorizontalRay.position = Vec3(-512.0f, 0.2f, (_float)i);
 		cHorizontalRay.direction = Vec3::Right;
 
 		for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
@@ -1317,7 +1352,7 @@ HRESULT CNavMeshView::CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutli
 					continue;
 				}
 
-				vecIntersected[round(vPos.x)][round(vPos.z)] = true;
+				vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = true;
 			}
 
 			if (cHorizontalRay.Intersects(
@@ -1333,23 +1368,34 @@ HRESULT CNavMeshView::CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutli
 					continue;
 				}
 
-				vecIntersected[round(vPos.x)][round(vPos.z)] = true;
+				vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = true;
 			}
 		}
 	}
 
-	_int x = 0, z = 0;
-
-	vector<Vec3> vecExpandedOutline;
+	vector<vector<Vec3>> vecExpandedOutlines;
 	vector<vector<iVec3>> vecTightOutlines;
-	vector<Vec3> vecClearOutline;
+	vector<vector<Vec3>> vecClearOutlines;
 
-	DfsTerrain(x, z, vecIntersected, vecTightOutlines);
+	DfsTerrain(vecIntersected, vecTightOutlines);
 
-	vecExpandedOutline = ExpandOutline(vecTightOutlines, 2.0f);
-	vecClearOutline = ProcessIntersections(vecExpandedOutline);
+	for (_int i = 0; i < vecTightOutlines.size(); ++i)
+	{
+		_float fDistance = 0.9f;
+		vecExpandedOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
+	}
+	
+	for (_int i = 0; i < vecExpandedOutlines.size(); ++i)
+	{
+		vecClearOutlines.push_back(ProcessIntersections(vecExpandedOutlines[i]));
+	}
 
-	RamerDouglasPeucker(vecClearOutline, 1.0f, vecOutline);
+	vecOutlines.resize(vecClearOutlines.size());
+	for (_int i = 0; i < vecClearOutlines.size(); ++i)
+	{
+		_float fEpsilon = 1.2f;
+		RamerDouglasPeucker(vecClearOutlines[i], fEpsilon, vecOutlines[i]);
+	}	
 
 	return S_OK;
 }
@@ -1391,18 +1437,18 @@ void CNavMeshView::Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vec
 	}
 }
 
-void CNavMeshView::DfsTerrain(_int iX, _int iZ, vector<vector<_bool>>& vecPoints, OUT vector<vector<iVec3>>& vecOutlines)
+void CNavMeshView::DfsTerrain(vector<vector<_bool>>& vecPoints, OUT vector<vector<iVec3>>& vecOutlines)
 {
 	const vector<pair<_int, _int>> vecDirections =
 	{
 		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
 	};
 
-	stack<pair<iVec3, vector<iVec3>>> stkPoint;
+	/*stack<pair<iVec3, vector<iVec3>>> stkPoint;
 	set<iVec3> setVisited;
 	vector<iVec3> vecOutline;
-	// 시작점 찾아서 추가
-	// stkOutlines.push({ iVec3(iX, 0, iZ), {iVec3(iX, 0, iZ)} });
+	
+	// 이 부분에 첫 obstacle의 시작점을 찾아서 추가...
 
 	vector<iVec3> vecLongest;
 
@@ -1471,6 +1517,56 @@ void CNavMeshView::DfsTerrain(_int iX, _int iZ, vector<vector<_bool>>& vecPoints
 				vector<iVec3> vecNewPath = vecPath;
 				vecNewPath.push_back(vNeighbor);
 				stkPoint.push({ vNeighbor, vecNewPath });
+			}
+		}
+	}*/
+
+	_int iRows = vecPoints.size();
+	_int iCols = vecPoints[0].size();
+	set<iVec3> setVisited;
+
+	for (_int i = 0; i < iRows; ++i)
+	{
+		for (_int j = 0; j < iCols; ++j)
+		{
+			if (vecPoints[i][j] && setVisited.find({ i - 512, 0, j - 512 }) == setVisited.end())
+			{
+				stack<pair<iVec3, vector<iVec3>>> stkPoint;
+				vector<iVec3> vecOutline;
+				stkPoint.push({ {i - 512, 0, j - 512}, {{i - 512, 0, j - 512}} });
+				setVisited.emplace(i - 512, 0, j - 512);
+
+				while (!stkPoint.empty())
+				{
+					auto [vCurrent, vecPath] = stkPoint.top();
+					stkPoint.pop();
+
+					for (const auto& vDir : vecDirections)
+					{
+						iVec3 vNeighbor(vCurrent.x + vDir.first, 0, vCurrent.z + vDir.second);
+
+						if (vNeighbor.x >= -512 && vNeighbor.x < iRows - 512 &&
+							vNeighbor.z >= -512 && vNeighbor.z < iCols - 512 &&
+							vecPoints[vNeighbor.x + 512][vNeighbor.z + 512] &&
+							setVisited.find(vNeighbor) == setVisited.end())
+						{
+							setVisited.emplace(vNeighbor);
+							vector<iVec3> vecNewPath = vecPath;
+							vecNewPath.push_back(vNeighbor);
+							stkPoint.push({ vNeighbor, vecNewPath });
+						}
+					}
+
+					if (vecPath.size() > vecOutline.size())
+					{
+						vecOutline = vecPath;
+					}
+				}
+
+				if (!vecOutline.empty())
+				{
+					vecOutlines.push_back(vecOutline);
+				}
 			}
 		}
 	}
@@ -1846,30 +1942,36 @@ HRESULT CNavMeshView::SaveNvFile()
 
 			if (nullptr != vecGroundObjects && true == vecGroundObjects->empty())
 			{
-				return E_FAIL;
+				//return E_FAIL;
 			}
 
 			element = document->NewElement("GameObject");
-			element->SetText(Utils::ToString((*vecGroundObjects)[i]->GetObjectTag()).c_str());
-			node->LinkEndChild(element);
+			if (nullptr != vecGroundObjects)
+			{
+				element->SetText(Utils::ToString((*vecGroundObjects)[i]->GetObjectTag()).c_str());
+				node->LinkEndChild(element);
 
-			element = document->NewElement("WorldMatrix");
-			element->SetAttribute("_11", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._11);
-			element->SetAttribute("_12", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._12);
-			element->SetAttribute("_13", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._13);
-			element->SetAttribute("_14", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._14);
-			element->SetAttribute("_21", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._21);
-			element->SetAttribute("_22", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._22);
-			element->SetAttribute("_23", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._23);
-			element->SetAttribute("_24", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._24);
-			element->SetAttribute("_31", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._31);
-			element->SetAttribute("_32", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._32);
-			element->SetAttribute("_33", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._33);
-			element->SetAttribute("_34", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._34);
-			element->SetAttribute("_41", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._41);
-			element->SetAttribute("_42", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._42);
-			element->SetAttribute("_43", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._43);
-			element->SetAttribute("_44", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._44);
+				element = document->NewElement("WorldMatrix");
+				element->SetAttribute("_11", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._11);
+				element->SetAttribute("_12", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._12);
+				element->SetAttribute("_13", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._13);
+				element->SetAttribute("_14", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._14);
+				element->SetAttribute("_21", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._21);
+				element->SetAttribute("_22", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._22);
+				element->SetAttribute("_23", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._23);
+				element->SetAttribute("_24", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._24);
+				element->SetAttribute("_31", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._31);
+				element->SetAttribute("_32", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._32);
+				element->SetAttribute("_33", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._33);
+				element->SetAttribute("_34", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._34);
+				element->SetAttribute("_41", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._41);
+				element->SetAttribute("_42", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._42);
+				element->SetAttribute("_43", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._43);
+				element->SetAttribute("_44", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._44);
+			}
+			else
+				element->SetText(".");
+			
 			node->LinkEndChild(element);
 
 			element = document->NewElement("InnerPoint");
@@ -1959,7 +2061,7 @@ HRESULT CNavMeshView::LoadNvFile()
 		element = node->FirstChildElement();
 		strObjectTag = Utils::ToWString(element->GetText());
 
-		if (TEXT("") != strObjectTag)
+		if (TEXT(".") != strObjectTag)
 		{
 			element = element->NextSiblingElement();
 			matWorld._11 = element->FloatAttribute("_11");
@@ -2189,6 +2291,23 @@ void CNavMeshView::InfoView()
 			else
 			{
 				MSG_BOX("Failed to Save Single Obstacle");
+			}
+		}
+		
+	}ImGui::SameLine();
+
+	if (0 == m_vecObstacles.size())
+	{
+		if (ImGui::Button("BakeHeightMapObst"))
+		{
+			if (SUCCEEDED(BakeHeightMapObstacles()))
+			{
+				MSG_BOX("Succeed to Bake Height Obstacles");
+				bBakeSingle = true;
+			}
+			else
+			{
+				MSG_BOX("Failed to Bake Height Obstacles");
 			}
 		}
 	}ImGui::NewLine();
