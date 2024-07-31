@@ -1,6 +1,35 @@
 ---
 # 📅 2024.07.30
 📋 진행 사항
+  * agent가 obstacle의 경계영역과 충돌하는 경우, 진행이 막히는 현상을 수정했습니다.
+    * 수정 전 문제 현상은 아래와 같습니다. 경계선을 넘어 해당 방향으로 진행할 수 없도록 제한했습니다.
+    
+      ![FPS_61-DEBUG2024-07-3114-17-35-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/b5649b06-4661-446d-9751-0b31e628eb5f)
+
+    * 아래는 수정 이후의 모습입니다. 탈출 방향으로 slide vector를 계산해 현재 위치와 cell을 다시 지정했습니다.
+   
+      ![FPS_61-DEBUG2024-07-3114-15-54-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/5e74c9d1-7ff5-4881-ad4c-f12d40d33061)
+
+    *
+	```
+  	...
+  
+ 	// 이전 위치 + 이동 방향 - (move.Dot(탈출edge.normal) * (탈출edge.normal)
+	vPosition = vPrePos + vDir - (EPSILON + vDir.Dot(vPassedLine)) * vPassedLine;
+	m_pCurrentCell = FindCellByPosition(vPosition);
+  
+  	...
+ 	```
+
+⚠️ 발견된 문제
+  *
+
+⚽ 이후 계획
+  *
+  
+---
+# 📅 2024.07.30
+📋 진행 사항
   * 아래와 같이 경로가 심각하게 우회되는 현상을 수정했습니다.
 
     ![FPS_61-DEBUG2024-07-3017-58-21-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/36be4005-1744-4934-b63d-5274f0decc6e)
