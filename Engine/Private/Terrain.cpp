@@ -93,9 +93,6 @@ HRESULT CTerrain::InitializeJustGrid(_uint iSizeX, _uint iSizeZ, _uint iCX, _uin
 	FACEINDICES32* pIndices = new FACEINDICES32[m_iNumPrimitives];
 	ZeroMemory(pIndices, sizeof(FACEINDICES32) * m_iNumPrimitives);
 
-	m_pFaceIndices = new FACEINDICES32[m_iNumPrimitives];
-	ZeroMemory(m_pFaceIndices, sizeof(FACEINDICES32) * m_iNumPrimitives);
-
 	_uint		iNumFaces = 0;
 
 	for (size_t i = 0; i < m_iNumVerticesZ - 1; i++)
@@ -189,7 +186,7 @@ HRESULT CTerrain::InitializeNorTex(_uint iSizeX, _uint iSizeZ, _uint iCX, _uint 
 			//pVertices[iIndex].vNormal = _float3(0.f, 1.f, 0.f);
 			pVertices[iIndex].vTexcoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 			//pVertices[iIndex].vTangent = _float3(0.f, 0.f, 0.f);
-			//m_vecVerticesCache.push_back(m_pVerticesPos[iIndex]);
+			m_vecVerticesCache.push_back(m_pVerticesPos[iIndex]);
 		}
 	}
 
@@ -204,9 +201,6 @@ HRESULT CTerrain::InitializeNorTex(_uint iSizeX, _uint iSizeZ, _uint iCX, _uint 
 
 	FACEINDICES32* pIndices = new FACEINDICES32[m_iNumPrimitives];
 	ZeroMemory(pIndices, sizeof(FACEINDICES32) * m_iNumPrimitives);
-
-	m_pFaceIndices = new FACEINDICES32[m_iNumPrimitives];
-	ZeroMemory(m_pFaceIndices, sizeof(FACEINDICES32) * m_iNumPrimitives);
 
 	_uint		iNumFaces = 0;
 
@@ -227,11 +221,15 @@ HRESULT CTerrain::InitializeNorTex(_uint iSizeX, _uint iSizeZ, _uint iCX, _uint 
 			pIndices[iNumFaces]._1 = iIndices[1];//3
 			pIndices[iNumFaces]._2 = iIndices[2];//1
 
+			m_vecIndicesCache.push_back(pIndices[iNumFaces]);
+
 			++iNumFaces;
 
 			pIndices[iNumFaces]._0 = iIndices[0];//2
 			pIndices[iNumFaces]._1 = iIndices[2];//1
 			pIndices[iNumFaces]._2 = iIndices[3];//0
+
+			m_vecIndicesCache.push_back(pIndices[iNumFaces]);
 
 			++iNumFaces;
 		}
@@ -321,7 +319,7 @@ HRESULT CTerrain::InitializeWithHeightMap(const wstring& strHeightMapPath)
 			_uint		iIndex = i * m_iNumVerticesX + j;
 
 			BYTE* startPtr = reinterpret_cast<BYTE*>(pPixel) + 3 * iIndex;
-			m_pVerticesPos[iIndex] = _float3(j - m_iNumVerticesX / 2.f, (*startPtr & 0x000000ff) / 5.f, i - m_iNumVerticesZ / 2.f);
+			m_pVerticesPos[iIndex] = _float3(j - m_iNumVerticesX / 2.f, (*startPtr & 0x000000ff) / 25.f, i - m_iNumVerticesZ / 2.f);
 
 			/*m_pVerticesPos[iIndex].x *= 0.5f;
 			m_pVerticesPos[iIndex].z *= 0.5f;*/
@@ -352,9 +350,6 @@ HRESULT CTerrain::InitializeWithHeightMap(const wstring& strHeightMapPath)
 
 	FACEINDICES32* pIndices = new FACEINDICES32[m_iNumPrimitives];
 	ZeroMemory(pIndices, sizeof(FACEINDICES32) * m_iNumPrimitives);
-
-	m_pFaceIndices = new FACEINDICES32[m_iNumPrimitives];
-	ZeroMemory(m_pFaceIndices, sizeof(FACEINDICES32) * m_iNumPrimitives);
 
 	_uint		iNumFaces = 0;
 
