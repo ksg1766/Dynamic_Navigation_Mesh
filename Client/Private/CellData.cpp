@@ -67,6 +67,7 @@ _bool CellData::ComparePoints(const Vec3& pSour, const Vec3& pDest)
 
 _bool CellData::IsOut(const Vec3& vPoint, OUT CellData*& pNeighbor)
 {
+	_bool bReturn = false;
 	for (size_t i = 0; i < LINE_END; i++)
 	{
 		Vec3 vSour = vPoint - vPoints[i];
@@ -81,7 +82,7 @@ _bool CellData::IsOut(const Vec3& vPoint, OUT CellData*& pNeighbor)
 		}
 	}
 
-	return false;
+	return bReturn;
 }
 
 Vec3 CellData::GetPassedEdgeNormal(Vec3 vPoint)
