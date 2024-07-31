@@ -74,7 +74,7 @@ void CAgentController::Tick(_float fTimeDelta)
 	if (true == IsMoving())
 	{
 		Slide(Move(fTimeDelta));
-	} PopPath();	
+	} PopPath();
 }
 
 void CAgentController::LateTick(_float fTimeDelta)

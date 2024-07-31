@@ -315,8 +315,8 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GameTool()
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_BasicTerrain"), CBasicTerrain::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 	
-	/* For.Prototype_GameObject_GrassTerrain*/
-	/*if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_GrassTerrain"), CBasicTerrain::Create(m_pDevice, m_pContext))))
+	/* For.Prototype_GameObject_Terrain*/
+	/*if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_BasicTerrain"), CBasicTerrain::Create(m_pDevice, m_pContext))))
 		return E_FAIL;*/
 
 	/* For.Prototype_GameObject_SkyBox*/

@@ -23,14 +23,18 @@ public:
 public:
 	_bool			Pick(_uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float& distance, const Matrix& matWorld);
 
+public:
+	const vector<Vec3>& const GetTerrainVertices()		{ return m_vecVerticesCache; }
+	const vector<FACEINDICES32>& const GetTerrainIndices() { return m_vecIndicesCache; }
+
 private:
 	_ulong				m_iNumVerticesX = { 0 };
 	_ulong				m_iNumVerticesZ = { 0 };
-	FACEINDICES32*		m_pFaceIndices = nullptr;
 	ID3D11InputLayout*	m_pInputLayout = nullptr;
 
 private:
 	vector<Vec3>		m_vecVerticesCache;
+	vector<FACEINDICES32>m_vecIndicesCache;
 
 #ifdef _DEBUG
 private:

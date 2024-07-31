@@ -39,7 +39,7 @@ void CBasicTerrain::LateTick(_float fTimeDelta)
 {
 	Super::Tick(fTimeDelta);
 	//GetRenderer()->Add_RenderGroup(CRenderer::RG_NONBLEND, this);
-	GetRenderer()->Add_RenderGroup(CRenderer::RG_NONLIGHT, this);
+	GetRenderer()->Add_RenderGroup(CRenderer::RG_NONBLEND, this);
 	//GetRenderer()->Add_RenderGroup(CRenderer::RG_BLEND, this);
 }
 
@@ -96,6 +96,9 @@ HRESULT CBasicTerrain::Ready_FixedComponents(void* pArg)
 		if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Shader, TEXT("Prototype_Component_Shader_VtxNorTex"))))
 			return E_FAIL;
 		GetShader()->SetPassIndex(0);
+
+		if (FAILED(GetShader()->Bind_RawValue("g_vMtrlDiffuse", &Colors::MediumSeaGreen, sizeof(Color))))
+			return E_FAIL;
 	}
 
 	return S_OK;

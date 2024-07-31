@@ -155,8 +155,18 @@ HRESULT CLevel_GameTool::Ready_Layer_Default()
 
 HRESULT CLevel_GameTool::Ready_Layer_Terrain()
 {
-	m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(LEVEL_GAMETOOL, LAYERTAG::TERRAIN, TEXT("Prototype_GameObject_BasicTerrain")));
+	wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze.bmp");
+	m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
+		LEVEL_GAMETOOL,
+		LAYERTAG::TERRAIN,
+		TEXT("Prototype_GameObject_BasicTerrain"),
+		&strPath));
 	if (nullptr == m_pBasicTerrain) return E_FAIL;
+	/*m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
+		LEVEL_GAMETOOL,
+		LAYERTAG::TERRAIN,
+		TEXT("Prototype_GameObject_BasicTerrain")));
+	if (nullptr == m_pBasicTerrain) return E_FAIL;*/
 
 	return S_OK;
 }

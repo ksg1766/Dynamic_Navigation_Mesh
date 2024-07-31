@@ -377,7 +377,53 @@ HRESULT CNavMeshView::BakeSingleObstacleData()
 	vector<Vec3> vecOutlines;
 
 	vecObjects[0]->GetTransform()->SetPosition(Vec3::Zero);
-	CalculateObstacleOutline(vecObjects[0], vecOutlines);
+	if (FAILED(CalculateObstacleOutline(vecObjects[0], vecOutlines)))
+		return E_FAIL;
+
+	Obst* pObst = new Obst;
+
+	for (_int i = 0; i < vecOutlines.size(); ++i)
+	{
+		pObst->vecPoints.emplace_back(vecOutlines[i]);
+	}
+
+	TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
+	for (auto vPoint : pObst->vecPoints)
+	{
+		if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+		if (fMinX > vPoint.x) fMinX = vPoint.x;
+
+		if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+		if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+	}
+
+	const _float fAABBOffset = 0.05f;
+	pObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+	pObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
+
+	SetPolygonHoleCenter(*pObst);
+
+	m_vecObstacles.push_back(pObst);
+	s2cPushBack(m_strObstacles, Utils::ToString(vecObjects[0]->GetObjectTag()));
+
+	if (FAILED(DynamicCreate(*pObst)))
+		return E_FAIL;
+
+	for (auto& iter : pObst->vecPoints)
+	{
+		BoundingSphere tSphere(iter, 0.1f);
+
+		m_vecObstaclePointSpheres.emplace_back(tSphere);
+	}
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::BakeHeightMapObstacles()
+{
+	vector<vector<Vec3>> vecOutlines;
+
+	CalculateTerrainOutline(vecOutlines);
 
 	Obst* pObst = new Obst;
 
@@ -413,6 +459,8 @@ HRESULT CNavMeshView::BakeSingleObstacleData()
 
 		m_vecObstaclePointSpheres.emplace_back(tSphere);
 	}
+
+	return S_OK;
 }
 
 HRESULT CNavMeshView::UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst)
@@ -1227,6 +1275,85 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	return S_OK;
 }
 
+HRESULT CNavMeshView::CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutlines)
+{
+	if (nullptr == m_pTerrainBuffer)
+	{
+		return E_FAIL;
+	}
+
+	const vector<Vec3>& vecSurfaceVtx = m_pTerrainBuffer->GetTerrainVertices();
+	const vector<FACEINDICES32>& vecSurfaceIdx = m_pTerrainBuffer->GetTerrainIndices();
+
+	_float fDistance = FLT_MAX;
+	_float fMinDistance = FLT_MAX;
+	Vec3   vPickPosition = -Vec3::One;
+
+	Ray cVerticalRay;
+	Ray cHorizontalRay;
+
+	vector<vector<_bool>> vecIntersected(1024, vector<_bool>(1024, false));
+
+	for (_int i = -512; i < 512; ++i)
+	{
+		cVerticalRay.position = Vec3((_float)i, 0.05f, -512.0f);
+		cVerticalRay.direction = Vec3::Backward;
+
+		cHorizontalRay.position = Vec3(-512.0f, 0.05f, (_float)i);
+		cHorizontalRay.direction = Vec3::Right;
+
+		for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
+		{
+			if (cVerticalRay.Intersects(
+				vecSurfaceVtx[vecSurfaceIdx[j]._0],
+				vecSurfaceVtx[vecSurfaceIdx[j]._1],
+				vecSurfaceVtx[vecSurfaceIdx[j]._2],
+				OUT fDistance))
+			{
+				Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
+
+				if (isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z) || isnan(fDistance))
+				{
+					continue;
+				}
+
+				vecIntersected[round(vPos.x)][round(vPos.z)] = true;
+			}
+
+			if (cHorizontalRay.Intersects(
+				vecSurfaceVtx[vecSurfaceIdx[j]._0],
+				vecSurfaceVtx[vecSurfaceIdx[j]._1],
+				vecSurfaceVtx[vecSurfaceIdx[j]._2],
+				OUT fDistance))
+			{
+				Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
+
+				if (isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z) || isnan(fDistance))
+				{
+					continue;
+				}
+
+				vecIntersected[round(vPos.x)][round(vPos.z)] = true;
+			}
+		}
+	}
+
+	_int x = 0, z = 0;
+
+	vector<Vec3> vecExpandedOutline;
+	vector<vector<iVec3>> vecTightOutlines;
+	vector<Vec3> vecClearOutline;
+
+	DfsTerrain(x, z, vecIntersected, vecTightOutlines);
+
+	vecExpandedOutline = ExpandOutline(vecTightOutlines, 2.0f);
+	vecClearOutline = ProcessIntersections(vecExpandedOutline);
+
+	RamerDouglasPeucker(vecClearOutline, 1.0f, vecOutline);
+
+	return S_OK;
+}
+
 void CNavMeshView::Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vector<iVec3>& vecLongest)
 {
 	const vector<pair<_int, _int>> vecDirections =
@@ -1252,6 +1379,91 @@ void CNavMeshView::Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vec
 		{
 			iVec3 vNeighbor(vCurrent.x + vDir.first, 0, vCurrent.z + vDir.second);
 			
+			if (setPoints.find(vNeighbor) != setPoints.end() &&
+				setVisited.find(vNeighbor) == setVisited.end())
+			{
+				setVisited.emplace(vNeighbor);
+				vector<iVec3> vecNewPath = vecPath;
+				vecNewPath.push_back(vNeighbor);
+				stkPoint.push({ vNeighbor, vecNewPath });
+			}
+		}
+	}
+}
+
+void CNavMeshView::DfsTerrain(_int iX, _int iZ, vector<vector<_bool>>& vecPoints, OUT vector<vector<iVec3>>& vecOutlines)
+{
+	const vector<pair<_int, _int>> vecDirections =
+	{
+		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
+	};
+
+	stack<pair<iVec3, vector<iVec3>>> stkPoint;
+	set<iVec3> setVisited;
+	vector<iVec3> vecOutline;
+	// 시작점 찾아서 추가
+	// stkOutlines.push({ iVec3(iX, 0, iZ), {iVec3(iX, 0, iZ)} });
+
+	vector<iVec3> vecLongest;
+
+	auto [vCurrent, vecPath] = stkPoint.top();
+	stkPoint.pop();
+
+	if (vecPath.size() > vecLongest.size())
+	{
+		vecLongest = vecPath;
+	}
+
+	for (const auto& vDir : vecDirections)
+	{
+		iVec3 vNeighbor(vCurrent.x + vDir.first, 0, vCurrent.z + vDir.second);
+
+		if (true == vecPoints[vNeighbor.x][vNeighbor.z] &&
+			setVisited.find(vNeighbor) == setVisited.end())
+		{
+			setVisited.emplace(vNeighbor);
+			vector<iVec3> vecNewPath = vecPath;
+			vecNewPath.push_back(vNeighbor);
+			stkPoint.push({ vNeighbor, vecNewPath });
+		}
+
+		//////////
+
+		if (setPoints.find(vNeighbor) != setPoints.end() &&
+			setVisited.find(vNeighbor) == setVisited.end())
+		{
+			setVisited.emplace(vNeighbor);
+			vector<iVec3> vecNewPath = vecPath;
+			vecNewPath.push_back(vNeighbor);
+			stkPoint.push({ vNeighbor, vecNewPath });
+		}
+	}
+
+
+
+	for (_int i = -512; i < 512; ++i)
+	{
+		for (_int j = -512; j < 512; ++j)
+		{
+			vecPoints[i][j] = ;
+		}
+	}
+
+
+	while (!stkPoint.empty())
+	{
+		auto [vCurrent, vecPath] = stkPoint.top();
+		stkPoint.pop();
+
+		if (vecPath.size() > vecLongest.size())
+		{
+			vecLongest = vecPath;
+		}
+
+		for (const auto& vDir : vecDirections)
+		{
+			iVec3 vNeighbor(vCurrent.x + vDir.first, 0, vCurrent.z + vDir.second);
+
 			if (setPoints.find(vNeighbor) != setPoints.end() &&
 				setVisited.find(vNeighbor) == setVisited.end())
 			{
@@ -1747,25 +1959,28 @@ HRESULT CNavMeshView::LoadNvFile()
 		element = node->FirstChildElement();
 		strObjectTag = Utils::ToWString(element->GetText());
 
-		element = element->NextSiblingElement();
-		matWorld._11 = element->FloatAttribute("_11");
-		matWorld._12 = element->FloatAttribute("_12");
-		matWorld._13 = element->FloatAttribute("_13");
-		matWorld._14 = element->FloatAttribute("_14");
-		matWorld._21 = element->FloatAttribute("_21");
-		matWorld._22 = element->FloatAttribute("_22");
-		matWorld._23 = element->FloatAttribute("_23");
-		matWorld._24 = element->FloatAttribute("_24");
-		matWorld._31 = element->FloatAttribute("_31");
-		matWorld._32 = element->FloatAttribute("_32");
-		matWorld._33 = element->FloatAttribute("_33");
-		matWorld._34 = element->FloatAttribute("_34");
-		matWorld._41 = element->FloatAttribute("_41");
-		matWorld._42 = element->FloatAttribute("_42");
-		matWorld._43 = element->FloatAttribute("_43");
-		matWorld._44 = element->FloatAttribute("_44");
+		if (TEXT("") != strObjectTag)
+		{
+			element = element->NextSiblingElement();
+			matWorld._11 = element->FloatAttribute("_11");
+			matWorld._12 = element->FloatAttribute("_12");
+			matWorld._13 = element->FloatAttribute("_13");
+			matWorld._14 = element->FloatAttribute("_14");
+			matWorld._21 = element->FloatAttribute("_21");
+			matWorld._22 = element->FloatAttribute("_22");
+			matWorld._23 = element->FloatAttribute("_23");
+			matWorld._24 = element->FloatAttribute("_24");
+			matWorld._31 = element->FloatAttribute("_31");
+			matWorld._32 = element->FloatAttribute("_32");
+			matWorld._33 = element->FloatAttribute("_33");
+			matWorld._34 = element->FloatAttribute("_34");
+			matWorld._41 = element->FloatAttribute("_41");
+			matWorld._42 = element->FloatAttribute("_42");
+			matWorld._43 = element->FloatAttribute("_43");
+			matWorld._44 = element->FloatAttribute("_44");
 
-		m_pMediator->OnNotifiedPlaceObject(strObjectTag, matWorld);
+			m_pMediator->OnNotifiedPlaceObject(strObjectTag, matWorld);			
+		}
 
 		Obst* pObst = new Obst;
 
@@ -1801,7 +2016,7 @@ HRESULT CNavMeshView::LoadNvFile()
 			point = point->NextSiblingElement();
 		}
 
-		m_vecObstacles.push_back(pObst);		
+		m_vecObstacles.push_back(pObst);
 		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back()->vInnerPoint.x) + ", " + to_string(m_vecObstacles.back()->vInnerPoint.z));
 
 		node = node->NextSiblingElement();
