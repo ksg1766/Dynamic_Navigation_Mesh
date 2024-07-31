@@ -62,8 +62,8 @@ HRESULT CAgentController::Initialize(void* pArg)
 	m_vLinearSpeed = m_vMaxLinearSpeed;
 
 #pragma region AStarPerformance
-	if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
-		return E_FAIL;
+	/*if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
+		return E_FAIL;*/
 #pragma endregion AStarPerformance
 
 	return S_OK;
@@ -71,23 +71,10 @@ HRESULT CAgentController::Initialize(void* pArg)
 
 void CAgentController::Tick(_float fTimeDelta)
 {
-	Slide(m_pTransform->GetPosition());
-
-	Move(fTimeDelta);
-
-	for (_int i = 0; i < m_dqPath.size(); ++i)
+	if (true == IsMoving())
 	{
-		if (m_pCurrentCell == m_dqPath[i].first)
-		{
-			for (_int j = 0; j <= i; ++j)
-			{
-				if (false == m_dqPath.empty())			m_dqPath.pop_front();
-				if (false == m_dqPortals.empty())		m_dqPortals.pop_front();
-				if (false == m_dqPortalPoints.empty())	m_dqPortalPoints.pop_front();
-			}
-			break;
-		}
-	}
+		Slide(Move(fTimeDelta));
+	} PopPath();	
 }
 
 void CAgentController::LateTick(_float fTimeDelta)
@@ -125,17 +112,17 @@ _float CAgentController::GetHeightOffset()
 	return -((vPlane.x * vPos.x + vPlane.z * vPos.z + vPlane.w) / vPlane.y + vPos.y);
 }
 
-void CAgentController::Move(_float fTimeDelta)
+Vec3 CAgentController::Move(_float fTimeDelta)
 {
-	if (false == IsMoving()) { return; }
-
 	Vec3 vDistance = Vec3::Zero;
 	Vec3 vMoveAmount = Vec3::Zero;
 	Vec3 vDirection = Vec3::Zero;
 
+	Vec3 vPrePos = m_pTransform->GetPosition();
+
 	if (1 >= m_dqWayPoints.size()) // already in destcell or no pathfinding
 	{
-		vDistance = m_vDestPos - m_pTransform->GetPosition();
+		vDistance = m_vDestPos - vPrePos;
 		vDistance.Normalize(OUT vDirection);
 
 		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
@@ -153,7 +140,7 @@ void CAgentController::Move(_float fTimeDelta)
 	}
 	else
 	{
-		vDistance = m_dqWayPoints[1] - m_pTransform->GetPosition();
+		vDistance = m_dqWayPoints[1] - vPrePos;
 		vDistance.Normalize(OUT vDirection);
 
 		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
@@ -167,31 +154,33 @@ void CAgentController::Move(_float fTimeDelta)
 	}
 	
 	m_pTransform->Translate(vMoveAmount);
+
+	return vPrePos;
 }
 
-void CAgentController::Slide(Vec3 vPoint)
+void CAgentController::Slide(const Vec3 vPrePos)
 {
 	CellData* pNeighbor = nullptr;
+	Vec3 vPosition = m_pTransform->GetPosition();
 
-	if (false == m_pCurrentCell->IsOut(vPoint, pNeighbor))
+	if (false == m_pCurrentCell->IsOut(vPosition, pNeighbor))
 	{
 		return;
 	}
 
 	while (nullptr != pNeighbor)
 	{
-		if (false == pNeighbor->IsOut(vPoint, pNeighbor))
+		if (false == pNeighbor->IsOut(vPosition, pNeighbor))
 		{
 			m_pCurrentCell = pNeighbor;
 			return;
 		}
 	}
 
-	Vec3 vPosition = m_pTransform->GetPosition();
-	Vec3 vDir = vPosition - m_vPrePos;
+	Vec3 vDir = vPosition - vPrePos;
 	Vec3 vPassedLine = m_pCurrentCell->GetPassedEdgeNormal(vPosition);
 
-	vPosition = m_vPrePos + vDir - (EPSILON + vDir.Dot(vPassedLine)) * vPassedLine;
+	vPosition = vPrePos + vDir - (EPSILON + vDir.Dot(vPassedLine)) * vPassedLine;
 	m_pCurrentCell = FindCellByPosition(vPosition);
 
 	while (nullptr == m_pCurrentCell)
@@ -562,6 +551,23 @@ void CAgentController::DebugRender()
 		}
 	}	
 	m_pBatch->End();
+}
+
+void CAgentController::PopPath()
+{
+	for (_int i = 0; i < m_dqPath.size(); ++i)
+	{
+		if (m_pCurrentCell == m_dqPath[i].first)
+		{
+			for (_int j = 0; j <= i; ++j)
+			{
+				if (false == m_dqPath.empty())			m_dqPath.pop_front();
+				if (false == m_dqPortals.empty())		m_dqPortals.pop_front();
+				if (false == m_dqPortalPoints.empty())	m_dqPortalPoints.pop_front();
+			}
+			break;
+		}
+	}
 }
 
 CAgentController* CAgentController::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

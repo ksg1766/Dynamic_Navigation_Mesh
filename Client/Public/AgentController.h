@@ -47,7 +47,10 @@ public:
 
 	void	ForceHeight();
 	_float	GetHeightOffset();
-	void	Slide(Vec3 vPoint);
+
+	void	Slide(const Vec3 vPrePos);
+	Vec3	Move(_float fTimeDelta);
+
 	_bool	AStar();
 	void	SSF();
 
@@ -55,7 +58,6 @@ public:
 
 private:
 	void	Input(_float fTimeDelta);
-	void	Move(_float fTimeDelta);
 
 private:
 	CellData* FindCellByPosition(const Vec3& vPosition);
@@ -81,7 +83,8 @@ private:
 	deque<PATH>		m_dqPath;
 	deque<pair<Vec3, Vec3>>	m_dqPortals;
 	deque<Vec3>		m_dqWayPoints;
-	
+	void			PopPath();
+
 	// For Debug Render
 	deque<pair<BoundingBox, BoundingBox>>	m_dqPortalPoints;
 
