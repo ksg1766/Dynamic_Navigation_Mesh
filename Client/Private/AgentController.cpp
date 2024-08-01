@@ -293,7 +293,12 @@ _bool CAgentController::AStar()
 			
 			// portal length
 			// 4.1 Width Calculation
-
+			_float fWidth = pCurrent->CalculateWidth((LINES)i, (LINES)((i + 1) % LINE_END));
+			if (fWidth < 2.0f * m_fAgentRadius)
+			{
+				continue;
+			}
+			// 검토 필요
 
 			_float neighbor_g = 0.0f;
 

@@ -118,25 +118,56 @@ _float CellData::CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ
 
 _float CellData::CalculateWidth(LINES eLine1, LINES eLine2)
 {
-	// AB BC -> B	// 0 1 -> 1
-	// AB CA -> A	// 0 2 -> 0
-	// BC CA -> C	// 1 2 -> 2
-	// BC AB -> B	// 1 0 -> 1
-	// CA AB -> A	// 2 0 -> 0
-	// CA BC -> C	// 2 1 -> 2
+	POINTS C = POINTS((5 - eLine1 - eLine2) % 3);
+	POINTS A = POINTS((C + 1) % 3);
+	POINTS B = POINTS((C + 2) % 3);
 
-	POINTS C = ;
-
-	if (IsObtuse(POINTS((eLine1 + 1) % 3), POINTS((eLine1 + 2) % 3), POINTS((eLine2 + 2) % 3)) ||
-		IsObtuse(POINTS((eLine1 + 1) % 3), POINTS((eLine2 + 2) % 3), POINTS((eLine1 + 2) % 3)))
-
-
-	return _float();
+	_float d = ::min(
+		(vPoints[(eLine1 + 1) % 3] - vPoints[eLine1]).Length(),
+		(vPoints[(eLine2 + 1) % 3] - vPoints[eLine2]).Length());
+	
+	LINES c = LINES(3 - eLine1 - eLine2);
+	
+	if (IsObtuse(C, A, B) || IsObtuse(C, B, A))
+		return d;
+	else if (nullptr == pNeighbors[c])
+		return CostBetweenPoint2Edge(vPoints[C], vPoints[c], vPoints[(c + 1) % 2]);
+	else
+		return SearchWidth(C, this, c, d);
 }
 
-_float CellData::SearchWidth(LINES eLine1, LINES eLine2)
+_float CellData::SearchWidth(POINTS C, CellData* T, LINES e, _float d)
 {
+	POINTS U = POINTS(e);
+	POINTS V = POINTS((e + 1) % 3);
 
+	if (IsObtuse(C, U, V) || IsObtuse(C, V, U))
+		return d;
 
-	return _float();
+	_float _d = CostBetweenPoint2Edge(vPoints[C], vPoints[U], vPoints[V]);
+
+	if (_d > d)
+		return d;
+	else if (nullptr == pNeighbors[e])
+		return _d;
+	else
+	{
+		CellData* _T = T->pNeighbors[e];
+
+		LINES _e1 = LINE_END, _e2 = LINE_END;
+
+		for (uint8 i = 0; i < LINE_END; ++i)
+		{
+			if (T != _T->pNeighbors[i])
+			{
+				if (LINE_END == _e1)
+					_e1 = (LINES)i;
+				else
+					_e2 = (LINES)i;
+			}
+		}		
+
+		d = pNeighbors[e]->SearchWidth(C, _T, _e1, d);
+		return pNeighbors[e]->SearchWidth(C, _T, _e2, d);
+	}
 }
