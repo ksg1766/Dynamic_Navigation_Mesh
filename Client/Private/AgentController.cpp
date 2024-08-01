@@ -224,6 +224,7 @@ _bool CAgentController::AStar()
 		if (pCurrent == m_pDestCell)
 		{
 			pair<CellData*, LINES>& tNext = Path[m_pDestCell];
+			auto& [pNext, ePassed] = tNext;
 
 			m_dqPortals.push_front(pair(
 				m_vDestPos,
@@ -234,17 +235,17 @@ _bool CAgentController::AStar()
 				BoundingBox(m_vDestPos, Vec3::Zero)
 			));
 
-			while (m_pCurrentCell != tNext.first)
+			while (m_pCurrentCell != pNext)
 			{
 				m_dqPath.push_front(tNext);
 
-				Vec3 vDirection = tNext.first->vPoints[(tNext.second + 1) % POINT_END]
-								- tNext.first->vPoints[tNext.second];
+				Vec3 vDirection = pNext->vPoints[(ePassed + 1) % POINT_END]
+								- pNext->vPoints[ePassed];
 				vDirection.Normalize();
 
 				m_dqPortals.push_front(pair(
-					tNext.first->vPoints[tNext.second] + m_fAgentRadius * vDirection,
-					tNext.first->vPoints[(tNext.second + 1) % POINT_END] - m_fAgentRadius * vDirection
+					pNext->vPoints[ePassed] + m_fAgentRadius * vDirection,
+					pNext->vPoints[(ePassed + 1) % POINT_END] - m_fAgentRadius * vDirection
 				));
 
 				m_dqPortalPoints.push_front(pair(
@@ -252,7 +253,7 @@ _bool CAgentController::AStar()
 					BoundingBox(m_dqPortals.front().second, Vec3::One)
 				));
 
-				tNext = Path[tNext.first];
+				tNext = Path[pNext];
 			}
 
 			const Vec3& vStartPos = m_pTransform->GetPosition();
@@ -291,8 +292,8 @@ _bool CAgentController::AStar()
 			}
 
 			_float neighbor_g = 0.0f;
-			CellData* pParent = Path[pCurrent].first;
-			LINES ePassedLine = Path[pCurrent].second;
+
+			auto& [pParent, ePassedLine] = Path[pCurrent];
 
 			Vec3 vNextEdgeDir = pCurrent->vPoints[(i + 1) % POINT_END] - pCurrent->vPoints[i];
 			vNextEdgeDir.Normalize();
@@ -349,8 +350,7 @@ void CAgentController::SSF()
 
 	for (_int i = 1; i < m_dqPortals.size(); ++i)
 	{
-		const Vec3& vLeft = m_dqPortals[i].first;
-		const Vec3& vRight = m_dqPortals[i].second;
+		const auto& [vLeft, vRight] = m_dqPortals[i];
 
 		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
 		{
@@ -409,9 +409,9 @@ CellData* CAgentController::FindCellByPosition(const Vec3& vPosition)
 
 	_int iKey = iZ * gGridX + iX;
 
-	auto cellGrid = m_pCellGrids->equal_range(iKey);
+	auto [begin, end] = m_pCellGrids->equal_range(iKey);
 	
-	for (auto cell = cellGrid.first; cell != cellGrid.second; ++cell)
+	for (auto cell = begin; cell != end; ++cell)
 	{
 		if (false == cell->second->IsOut(vPosition, pCell))
 		{
@@ -429,9 +429,9 @@ Obst* CAgentController::FindObstByPosition(const Vec3& vPosition)
 
 	_int iKey = iZ * gGridX + iX;
 
-	auto obstGrid = m_pObstGrids->equal_range(iKey);
+	auto [begin, end] = m_pObstGrids->equal_range(iKey);
 
-	for (auto obst = obstGrid.first; obst != obstGrid.second; ++obst)
+	for (auto obst = begin; obst != end; ++obst)
 	{
 		if (false == obst->second->IsOut(vPosition))
 		{
@@ -511,15 +511,13 @@ void CAgentController::DebugRender()
 		{
 			for (uint8 j = LINE_AB; j < LINE_END; ++j)
 			{
-				if (j == m_dqPath[i].second)
-				{
-					continue;
-				}
-				else
+				const auto& [pNext, ePassed] = m_dqPath[i];
+
+				if (j != ePassed)
 				{
 					m_pBatch->DrawLine(
-						VertexPositionColor(m_dqPath[i].first->vPoints[j], Colors::Cyan),
-						VertexPositionColor(m_dqPath[i].first->vPoints[(j + 1) % POINT_END], Colors::Cyan));
+						VertexPositionColor(pNext->vPoints[j], Colors::Cyan),
+						VertexPositionColor(pNext->vPoints[(j + 1) % POINT_END], Colors::Cyan));
 				}
 			}
 		}
@@ -529,14 +527,17 @@ void CAgentController::DebugRender()
 	{
 		for (_int i = 0; i < m_dqPortals.size(); ++i)
 		{
+			const auto& [vLeft, vRight] = m_dqPortals[i];
+			const auto& [vLeftP, vRightP] = m_dqPortalPoints[i];
+
 			m_pBatch->DrawLine(
-				VertexPositionColor(m_dqPortals[i].first, Colors::Blue),
-				VertexPositionColor(m_dqPortals[i].second, Colors::Blue));
+				VertexPositionColor(vLeft, Colors::Blue),
+				VertexPositionColor(vRight, Colors::Blue));
 
 			for (_int i = 0; i < m_dqPortalPoints.size(); ++i)
 			{
-				DX::Draw(m_pBatch, m_dqPortalPoints[i].first, Colors::OrangeRed);
-				DX::Draw(m_pBatch, m_dqPortalPoints[i].second, Colors::OrangeRed);
+				DX::Draw(m_pBatch, vLeftP, Colors::OrangeRed);
+				DX::Draw(m_pBatch, vRightP, Colors::OrangeRed);
 			}
 		}
 	}
