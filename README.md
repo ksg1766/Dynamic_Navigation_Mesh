@@ -1,5 +1,5 @@
 ---
-# 📅 2024.07.30
+# 📅 2024.07.31
 📋 진행 사항
   * agent가 obstacle의 경계영역과 충돌하는 경우, 진행이 막히는 현상을 수정했습니다.
     * 수정 전 문제 현상은 아래와 같습니다. 경계선을 넘어 해당 방향으로 진행할 수 없도록 제한했습니다.
@@ -10,8 +10,8 @@
    
       ![FPS_61-DEBUG2024-07-3114-15-54-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/5e74c9d1-7ff5-4881-ad4c-f12d40d33061)
 
-    *
-	```
+    * 간략하게 다음과 같이 표현할 수 있습니다. 이외에도 다시 셀 검색을 수행하는 등 몇 가지 작업을 추가해 현재 위치한 셀을 추적하는데 오류가 발생하지 않도록 구현했습니다.
+ 	```
   	...
   
  	// 이전 위치 + 이동 방향 - (move.Dot(탈출edge.normal) * (탈출edge.normal)
@@ -19,15 +19,35 @@
 	m_pCurrentCell = FindCellByPosition(vPosition);
   
   	...
- 	```
-  
-  * 관련된 코드 일부를 정리했습니다.
+ 	```  
+    * 추가로, 관련된 코드 일부를 정리했습니다.
+
+  * 좀 더 복잡한 환경에서의 path finding을 테스트하기 위해 맵을 더 복잡하게 구성할 필요가 있었습니다. 적합한 3D mesh 오픈리소스를 구하는 것이 쉽지 않은데다가, 필요에 따라 맵을 어느 정도 커스텀 가능해야 이후에도 좀 더 유연하게 작업할 수 있을 것이라 생각했습니다.
+    * 따라서 아래와 같은 이미지를 제작해 navigation mesh 생성에 사용해 보기로 했습니다.
+
+      ![testmaze](https://github.com/user-attachments/assets/25e38fb0-00f6-49b0-bfdd-3c400b71d8f6)
+
+    * 이미지를 height map으로 활용해 terrain을 생성했습니다.
+
+      ![image](https://github.com/user-attachments/assets/cd5b65c9-f7a6-4033-a924-daebd25923ad)
+
+    * 이전에 제작했던 기능을 개선해 이번엔 모든 언덕 지형에 대해 한 번에 outline들을 생성, 확장 및 단순화 등의 작업을 수행한 뒤, triangulation을 적용해 최종 navigation mesh를 제작했습니다.
+
+      ![image](https://github.com/user-attachments/assets/11c7e984-ed3c-4721-be33-f8018ee1bb07)
+
+    * path finding은 아래와 같이 수행됩니다.
+
+      ![FPS_61-DEBUG2024-08-0110-34-37-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/4fa597d2-74e9-4d0c-8b93-dc04fd4f1f5f)
 
 ⚠️ 발견된 문제
-  *
+  * 해당 지형을 통해 제작된 네비게이션 메쉬를 관찰해보니 4주차 회의에서 피드백으로 말씀해 주셨던 문제점들을 더 명확하게 이해할 수 있었습니다.
+    * 아래와 같이 좁고 긴 통로가 형성되는 지역에서는 agent의 크기가 실제 통로의 너비보다 크더라도 길게 형성되는 portal의 길이 때문에 경로로 선택이 될 수 있습니다.
+    * 이 경우 agent는 경로 이동을 시도하지만 벽에 막혀 이동할 수 없는 문제가 발생합니다.
+      
+    ![image](https://github.com/user-attachments/assets/aed8e6ed-6eff-410b-b13b-26db11abe5bf)
 
 ⚽ 이후 계획
-  *
+  * 오늘은 위 문제를 해결해 agent가 실제로 이동이 가능한 지역만을 경로로 선택할 수 있도록 개선할 계획입니다.
   
 ---
 # 📅 2024.07.30
