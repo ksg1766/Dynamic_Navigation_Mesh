@@ -102,3 +102,41 @@ Vec3 CellData::GetPassedEdgeNormal(Vec3 vPoint)
 
 	return Vec3::Zero;
 }
+
+_float CellData::CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH)
+{
+	Vec3 vClosestPoint2Edge = ProjectionPoint2Edge(vStart, vQ1, vQ2);
+	_float fCostPoint2Edge = (vClosestPoint2Edge - vStart).Length();
+	_float fCostEdge2Edge = DistanceEdge2Edge(vP1, vP2, vQ1, vQ2);
+
+	Vec3 vMidPoint = 0.5f * (vQ1 + vQ2);
+	_float fNeighborH = HeuristicCostEuclidean(vMidPoint, vDest);
+	_float fCostHeuristicDiff = fParentG + fParentH - fNeighborH;
+
+	return ::max(::max(fCostPoint2Edge, fCostEdge2Edge), fCostHeuristicDiff);
+}
+
+_float CellData::CalculateWidth(LINES eLine1, LINES eLine2)
+{
+	// AB BC -> B	// 0 1 -> 1
+	// AB CA -> A	// 0 2 -> 0
+	// BC CA -> C	// 1 2 -> 2
+	// BC AB -> B	// 1 0 -> 1
+	// CA AB -> A	// 2 0 -> 0
+	// CA BC -> C	// 2 1 -> 2
+
+	POINTS C = ;
+
+	if (IsObtuse(POINTS((eLine1 + 1) % 3), POINTS((eLine1 + 2) % 3), POINTS((eLine2 + 2) % 3)) ||
+		IsObtuse(POINTS((eLine1 + 1) % 3), POINTS((eLine2 + 2) % 3), POINTS((eLine1 + 2) % 3)))
+
+
+	return _float();
+}
+
+_float CellData::SearchWidth(LINES eLine1, LINES eLine2)
+{
+
+
+	return _float();
+}

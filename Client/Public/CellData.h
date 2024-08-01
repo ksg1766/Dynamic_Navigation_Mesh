@@ -35,11 +35,9 @@ struct CellData
 	inline Vec3	GetCenter()	{ return (vPoints[0] + vPoints[1] + vPoints[2]) / 3.f; }
 
 	inline static _float CostBetween(CellData* pSour, CellData* pDest)	{ return Vec3::Distance(pSour->GetCenter(), pDest->GetCenter()); }
-	//inline static _float CostBetween(CellData* pSour, CellData* pDest){ return fabs(pSour->GetCenter().x - pDest->GetCenter().x) + fabs(pSour->GetCenter().z - pDest->GetCenter().z); }
 	inline static _float HeuristicCostEuclidean(CellData* pSour, CellData* pDest)		{ return CostBetween(pSour, pDest); }
 	inline static _float HeuristicCostEuclidean(CellData* pSour, const Vec3& vDest)		{ return Vec3::Distance(pSour->GetCenter(), vDest); }
 	inline static _float HeuristicCostEuclidean(const Vec3& vSour, const Vec3& vDest)	{ return Vec3::Distance(vSour, vDest); }
-	//inline static _float HeuristicCostManhattan(CellData* pSour, Vec3 vDest)	{ return fabs(pSour->GetCenter().x - vDest.x) + fabs(pSour->GetCenter().z - vDest.z); }
 
 	inline static _float CostBetweenPoint2Edge(const Vec3& vStart, const Vec3& vQ1, const Vec3& vQ2)
 	{
@@ -52,18 +50,16 @@ struct CellData
 		return DistanceEdge2Edge(vP1, vP2, vQ1, vQ2);
 	}
 	
-	inline static _float CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH)
-	{
-		Vec3 vClosestPoint2Edge = ProjectionPoint2Edge(vStart, vQ1, vQ2);
-		_float fCostPoint2Edge = (vClosestPoint2Edge - vStart).Length();
-		_float fCostEdge2Edge = DistanceEdge2Edge(vP1, vP2, vQ1, vQ2);
-		
-		Vec3 vMidPoint = 0.5f * (vQ1 + vQ2);
-		_float fNeighborH = HeuristicCostEuclidean(vMidPoint, vDest);
-		_float fCostHeuristicDiff = fParentG + fParentH - fNeighborH;
+	static _float CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH);
 
-		return ::max(::max(fCostPoint2Edge, fCostEdge2Edge), fCostHeuristicDiff);
+	//
+	inline _bool IsObtuse(POINTS eP0, POINTS eP1, POINTS eP2)
+	{
+		return (vPoints[eP0] - vPoints[eP2]).LengthSquared() >= ((vPoints[eP2] - vPoints[eP1]).LengthSquared() + (vPoints[eP1] - vPoints[eP0]).LengthSquared());
 	}
+
+	_float CalculateWidth(LINES eLine1, LINES eLine2);
+	_float SearchWidth(LINES eLine1, LINES eLine2);
 
 	// cache
 	_bool	isDead = false;

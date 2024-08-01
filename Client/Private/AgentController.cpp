@@ -202,6 +202,13 @@ _bool CAgentController::AStar()
 	unordered_map<CellData*, PATH> Path;
 	unordered_set<CellData*> Closed;
 
+	// temp
+	
+	/*deque<Vec3> dqPortalLeft;
+	deque<Vec3> dqPortalRight;*/
+
+	// temp
+
 	m_dqPath.clear();
 	m_dqPortals.clear();
 	m_dqPortalPoints.clear();
@@ -274,6 +281,8 @@ _bool CAgentController::AStar()
 		Open.pop();
 		Closed.emplace(pCurrent);
 
+
+
 		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
 			CellData* pNeighbor = pCurrent->pNeighbors[i];	// parent의 인접셀이 nullptr이 아니라면
@@ -283,13 +292,8 @@ _bool CAgentController::AStar()
 			}
 			
 			// portal length
-			_float fPortalLengthSq = (pCurrent->vPoints[(i + 1) % POINT_END] - pCurrent->vPoints[i]).LengthSquared();
-			_float fAgentDiameterSq = powf(2.0f * m_fAgentRadius, 2.0f);
+			// 4.1 Width Calculation
 
-			if (fPortalLengthSq < fAgentDiameterSq)
-			{
-				continue;
-			}
 
 			_float neighbor_g = 0.0f;
 
