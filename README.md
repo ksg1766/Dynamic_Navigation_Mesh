@@ -2,7 +2,7 @@
 # 📅 2024.08.01
 📋 진행 사항
   * 실제 통로의 너비와 agent의 크기 차이가 과도하게 큼에도 그냥 통과해버릴 수 있던 문제를 수정 중입니다.
-  * 아직 구현 및 적용이 완료되지 않아 결과 자료는 없지만 [Efficient Triangulation-Based Pathfindin. (Douglas Jon Demyen)](https://skatgame.net/mburo/ps/thesis_demyen_2006.pdf#page=43)의 4.1절에 제안된 알고리즘을 공부하고 적용중입니다.
+  * 아직 구현 및 적용이 완료되지 않아 결과 자료는 없지만 통로의 너비를 계산할 수 있는 방법을 찾던 중 [Efficient Triangulation-Based Pathfindin. (Douglas Jon Demyen)](https://skatgame.net/mburo/ps/thesis_demyen_2006.pdf#page=43)의 4.1절에 제안된 알고리즘을 알게 돼, 적용 중입니다.
     * 통과하고자 하는 두 edge가 이루는 각이 직,둔각 이상인 경우, 나머지 한 edge가 막혀있는 경우, 그렇지 않은 경우 등 여러 경우에 통로의 너비를 측정할 수 있는 알고리즘을 제안합니다.
     * 아래는 현재 구현 및 적용 중인 의사코드입니다.
       
