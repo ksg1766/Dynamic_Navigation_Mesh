@@ -87,6 +87,7 @@ private:
 
 	// For Debug Render
 	deque<pair<Vec3, Vec3>>	m_dqExpandedVertices;
+	deque<pair<Vec3, Vec3>>	m_dqOffset;
 
 	vector<CellData*>* m_pCells;
 	unordered_multimap<_int, CellData*>* m_pCellGrids;
