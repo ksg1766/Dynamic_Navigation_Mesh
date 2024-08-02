@@ -281,8 +281,6 @@ _bool CAgentController::AStar()
 		Open.pop();
 		Closed.emplace(pCurrent);
 
-
-
 		for (uint8 i = LINE_AB; i < LINE_END; ++i)
 		{
 			CellData* pNeighbor = pCurrent->pNeighbors[i];	// parent의 인접셀이 nullptr이 아니라면
@@ -290,31 +288,49 @@ _bool CAgentController::AStar()
 			{
 				continue;
 			}
-			
+
 			// portal length
 			// 4.1 Width Calculation
-			_float fWidth = pCurrent->CalculateWidth((LINES)i, (LINES)((i + 1) % LINE_END));
-			if (fWidth < 2.0f * m_fAgentRadius)
+			//
+			auto& [pParent, ePassedLine] = Path[pCurrent];
+
+			if (LINE_END != ePassedLine)
+			{
+				LINES eLine1 = LINE_END;
+
+				for (uint8 j = LINE_AB; j < LINE_END; ++j)
+				{
+					if (pCurrent->pNeighbors[j] == pParent)
+					{
+						eLine1 = (LINES)j;
+						break;
+					}
+				}
+
+				_float fWidth = pCurrent->CalculateWidth(eLine1, (LINES)(i));
+				if (fWidth < 2.0f * m_fAgentRadius)
+				{
+					continue;
+				}
+			}
+			else if ((pCurrent->vPoints[(i + 1) % POINT_END] - pCurrent->vPoints[i]).LengthSquared() < powf(2.0f * m_fAgentRadius, 2.0f))
 			{
 				continue;
 			}
-			// 검토 필요
 
 			_float neighbor_g = 0.0f;
-
-			auto& [pParent, ePassedLine] = Path[pCurrent];
 
 			Vec3 vNextEdgeDir = pCurrent->vPoints[(i + 1) % POINT_END] - pCurrent->vPoints[i];
 			vNextEdgeDir.Normalize();
 
 			if (m_pCurrentCell == pCurrent)
-			{				
+			{
 				neighbor_g = tNode.g + CellData::CostBetweenPoint2Edge(
 					vStartPos,
 					pCurrent->vPoints[i] + m_fAgentRadius * vNextEdgeDir,
 					pCurrent->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vNextEdgeDir
 				);
-			}			
+			}
 			else
 			{
 				Vec3 vCurrEdgeDir = pParent->vPoints[(ePassedLine + 1) % POINT_END] - pParent->vPoints[ePassedLine];
@@ -338,7 +354,7 @@ _bool CAgentController::AStar()
 					neighbor_g,
 					pNeighbor
 				});
-			}			
+			}
 		}
 	}
 

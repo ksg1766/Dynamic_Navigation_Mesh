@@ -118,37 +118,40 @@ _float CellData::CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ
 
 _float CellData::CalculateWidth(LINES eLine1, LINES eLine2)
 {
+	if (eLine1 == eLine2)
+		return -FLT_MAX;
+
 	POINTS C = POINTS((5 - eLine1 - eLine2) % 3);
 	POINTS A = POINTS((C + 1) % 3);
 	POINTS B = POINTS((C + 2) % 3);
-
-	_float d = ::min(
-		(vPoints[(eLine1 + 1) % 3] - vPoints[eLine1]).Length(),
-		(vPoints[(eLine2 + 1) % 3] - vPoints[eLine2]).Length());
 	
 	LINES c = LINES(3 - eLine1 - eLine2);
 	
-	if (IsObtuse(C, A, B) || IsObtuse(C, B, A))
+	_float d = ::min(
+		(vPoints[c] - vPoints[C]).Length(),
+		(vPoints[(c + 1) % 3] - vPoints[C]).Length());
+
+	if (IsObtuse(vPoints[C], vPoints[A], vPoints[B]) || IsObtuse(vPoints[C], vPoints[B], vPoints[A]))
 		return d;
 	else if (nullptr == pNeighbors[c])
-		return CostBetweenPoint2Edge(vPoints[C], vPoints[c], vPoints[(c + 1) % 2]);
+		return CostBetweenPoint2Edge(vPoints[C], vPoints[A], vPoints[B]);
 	else
-		return SearchWidth(C, this, c, d);
+		return SearchWidth(vPoints[C], this, c, d);
 }
 
-_float CellData::SearchWidth(POINTS C, CellData* T, LINES e, _float d)
+_float CellData::SearchWidth(const Vec3& C, CellData* T, LINES e, _float d)
 {
-	POINTS U = POINTS(e);
-	POINTS V = POINTS((e + 1) % 3);
+	const Vec3& U = T->vPoints[e];
+	const Vec3& V = T->vPoints[(e + 1) % 3];
 
 	if (IsObtuse(C, U, V) || IsObtuse(C, V, U))
 		return d;
 
-	_float _d = CostBetweenPoint2Edge(vPoints[C], vPoints[U], vPoints[V]);
+	_float _d = CostBetweenPoint2Edge(C, U, V);
 
 	if (_d > d)
 		return d;
-	else if (nullptr == pNeighbors[e])
+	else if (nullptr == T->pNeighbors[e])
 		return _d;
 	else
 	{
@@ -159,15 +162,10 @@ _float CellData::SearchWidth(POINTS C, CellData* T, LINES e, _float d)
 		for (uint8 i = 0; i < LINE_END; ++i)
 		{
 			if (T != _T->pNeighbors[i])
-			{
-				if (LINE_END == _e1)
-					_e1 = (LINES)i;
-				else
-					_e2 = (LINES)i;
-			}
-		}		
+				(LINE_END == _e1) ? _e1 = (LINES)i : _e2 = (LINES)i;
+		}
 
-		d = pNeighbors[e]->SearchWidth(C, _T, _e1, d);
-		return pNeighbors[e]->SearchWidth(C, _T, _e2, d);
+		d = SearchWidth(C, _T, _e1, d);
+		return SearchWidth(C, _T, _e2, d);
 	}
 }

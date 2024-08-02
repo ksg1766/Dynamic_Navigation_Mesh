@@ -51,14 +51,14 @@ struct CellData
 	}
 	
 	static _float CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH);
-
-	inline _bool IsObtuse(POINTS eP0, POINTS eP1, POINTS eP2)
+	
+	inline _bool IsObtuse(const Vec3& vP0, const Vec3& vP1, const Vec3& vP2)
 	{
-		return (vPoints[eP0] - vPoints[eP2]).LengthSquared() >= ((vPoints[eP2] - vPoints[eP1]).LengthSquared() + (vPoints[eP1] - vPoints[eP0]).LengthSquared());
+		return (vP0 - vP2).LengthSquared() >= ((vP2 - vP1).LengthSquared() + (vP1 - vP0).LengthSquared());
 	}
 
 	_float CalculateWidth(LINES eLine1, LINES eLine2);
-	_float SearchWidth(POINTS C, CellData* T, LINES e, _float d);
+	_float SearchWidth(const Vec3& C, CellData* T, LINES e, _float d);
 
 	// cache
 	_bool	isDead = false;
