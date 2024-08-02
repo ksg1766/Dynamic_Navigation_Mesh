@@ -133,7 +133,7 @@ Vec3 CAgentController::Move(_float fTimeDelta)
 			m_dqPortals.clear();
 			m_dqPath.clear();
 			m_dqWayPoints.clear();
-			m_dqPortalPoints.clear();
+			m_dqExpandedVertices.clear();
 
 			m_isMoving = false;
 		}
@@ -211,7 +211,7 @@ _bool CAgentController::AStar()
 
 	m_dqPath.clear();
 	m_dqPortals.clear();
-	m_dqPortalPoints.clear();
+	m_dqExpandedVertices.clear();
 	m_dqWayPoints.clear();
 
 	// start node
@@ -237,28 +237,19 @@ _bool CAgentController::AStar()
 				m_vDestPos,
 				m_vDestPos
 			));
-			m_dqPortalPoints.push_front(pair(
-				BoundingBox(m_vDestPos, Vec3::Zero),
-				BoundingBox(m_vDestPos, Vec3::Zero)
-			));
 
+			m_dqExpandedVertices.push_front(m_dqPortals.front());
+			
 			while (m_pCurrentCell != pNext)
 			{
 				m_dqPath.push_front(tNext);
 
-				Vec3 vDirection = pNext->vPoints[(ePassed + 1) % POINT_END]
-								- pNext->vPoints[ePassed];
-				vDirection.Normalize();
-
 				m_dqPortals.push_front(pair(
-					pNext->vPoints[ePassed] + m_fAgentRadius * vDirection,
-					pNext->vPoints[(ePassed + 1) % POINT_END] - m_fAgentRadius * vDirection
+					pNext->vPoints[ePassed],
+					pNext->vPoints[(ePassed + 1) % POINT_END]
 				));
 
-				m_dqPortalPoints.push_front(pair(
-					BoundingBox(m_dqPortals.front().first, Vec3::One),
-					BoundingBox(m_dqPortals.front().second, Vec3::One)
-				));
+				m_dqExpandedVertices.push_front(m_dqPortals.front());
 
 				tNext = Path[pNext];
 			}
@@ -270,10 +261,7 @@ _bool CAgentController::AStar()
 				vStartPos
 			));
 
-			m_dqPortalPoints.push_front(pair(
-				BoundingBox(vStartPos, Vec3::Zero),
-				BoundingBox(vStartPos, Vec3::Zero)
-			));
+			m_dqExpandedVertices.push_front(m_dqPortals.front());
 
 			return true;
 		}
@@ -291,7 +279,6 @@ _bool CAgentController::AStar()
 
 			// portal length
 			// 4.1 Width Calculation
-			//
 			auto& [pParent, ePassedLine] = Path[pCurrent];
 
 			if (LINE_END != ePassedLine)
@@ -363,6 +350,88 @@ _bool CAgentController::AStar()
 
 void CAgentController::SSF()
 {
+	deque<pair<Vec3, Vec3>> dqOffset;
+
+	dqOffset.emplace_back(Vec3::Zero, Vec3::Zero);
+
+	for (_int i = 2; i < m_dqPortals.size(); ++i)
+	{
+		const auto& [vLeft0, vRight0] = m_dqPortals[i - 2];
+		const auto& [vLeft1, vRight1] = m_dqPortals[i - 1];
+		const auto& [vLeft2, vRight2] = m_dqPortals[i];
+
+		Vec3 vLineL0 = vLeft1 - vLeft0;
+		Vec3 vLineL1 = vLeft2 - vLeft1;
+
+		Vec3 vLineR0 = vRight1 - vRight0;
+		Vec3 vLineR1 = vRight2 - vRight1;
+
+		if (Vec3::Zero == vLineL0)
+		{
+			if (Vec3::Zero == vLineL1)
+			{
+				vLineL0 = dqOffset.back().first;
+				vLineL1 = vLineL0;
+			}
+			else
+			{
+				vLineL1.Normalize();
+				vLineL0 = vLineL1;
+			}			
+		}
+		else
+		{
+			if (Vec3::Zero == vLineL1)
+			{
+				vLineL0.Normalize();
+				vLineL1 = vLineL0;
+			}
+			else
+			{
+				vLineL0.Normalize();
+				vLineL1.Normalize();
+			}
+		}
+
+		if (Vec3::Zero == vLineR0)
+		{
+			if (Vec3::Zero == vLineR1)
+			{
+				vLineR0 = dqOffset.back().second;
+				vLineR1 = vLineR0;
+			}
+			else
+			{
+				vLineR1.Normalize();
+				vLineR0 = vLineR1;
+			}
+		}
+		else
+		{
+			if (Vec3::Zero == vLineR1)
+			{
+				vLineR0.Normalize();
+				vLineR1 = vLineR0;
+			}
+			else
+			{
+				vLineR0.Normalize();
+				vLineR1.Normalize();
+			}
+		}
+
+		Vec3 vAvgL = 0.5f * (vLineL0 + vLineL1);
+		Vec3 vAvgR = 0.5f * (vLineR0 + vLineR1);
+
+		Vec3 vPerpendL = Vec3(m_fAgentRadius * vAvgL.z, vAvgL.y, m_fAgentRadius * -vAvgL.x);
+		Vec3 vPerpendR = Vec3(m_fAgentRadius * -vAvgR.z, vAvgR.y, m_fAgentRadius * vAvgR.x);
+
+		dqOffset.emplace_back(vPerpendL, vPerpendR);
+	}
+
+	dqOffset.emplace_back(Vec3::Zero, Vec3::Zero);
+
+	//
 	Vec3 vPortalApex = m_pTransform->GetPosition();		// 초기 상태
 	Vec3 vPortalLeft = m_pTransform->GetPosition();
 	Vec3 vPortalRight = m_pTransform->GetPosition();
@@ -373,9 +442,13 @@ void CAgentController::SSF()
 
 	m_dqWayPoints.push_back(vPortalApex);
 
-	for (_int i = 1; i < m_dqPortals.size(); ++i)
+	for (_int i = 1; i < dqOffset.size(); ++i)
 	{
-		const auto& [vLeft, vRight] = m_dqPortals[i];
+		const auto& [vOriginL, vOriginR] = m_dqPortals[i];
+		const auto& [vOffsetL, vOffsetR] = dqOffset[i];
+
+		Vec3 vLeft = vOriginL + vOffsetL;
+		Vec3 vRight = vOriginR + vOffsetR;
 
 		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
 		{
@@ -553,17 +626,14 @@ void CAgentController::DebugRender()
 		for (_int i = 0; i < m_dqPortals.size(); ++i)
 		{
 			const auto& [vLeft, vRight] = m_dqPortals[i];
-			const auto& [vLeftP, vRightP] = m_dqPortalPoints[i];
+			const auto& [vLeftP, vRightP] = m_dqExpandedVertices[i];
 
 			m_pBatch->DrawLine(
 				VertexPositionColor(vLeft, Colors::Blue),
 				VertexPositionColor(vRight, Colors::Blue));
 
-			for (_int i = 0; i < m_dqPortalPoints.size(); ++i)
-			{
-				DX::Draw(m_pBatch, vLeftP, Colors::OrangeRed);
-				DX::Draw(m_pBatch, vRightP, Colors::OrangeRed);
-			}
+			DX::DrawRing(m_pBatch, vLeftP, m_fAgentRadius * Vec3::UnitX, m_fAgentRadius * Vec3::UnitZ, Colors::Yellow);
+			DX::DrawRing(m_pBatch, vRightP, m_fAgentRadius * Vec3::UnitX, m_fAgentRadius * Vec3::UnitZ, Colors::GreenYellow);
 		}
 	}
 
@@ -587,9 +657,9 @@ void CAgentController::PopPath()
 		{
 			for (_int j = 0; j <= i; ++j)
 			{
-				if (false == m_dqPath.empty())			m_dqPath.pop_front();
-				if (false == m_dqPortals.empty())		m_dqPortals.pop_front();
-				if (false == m_dqPortalPoints.empty())	m_dqPortalPoints.pop_front();
+				if (false == m_dqPath.empty())				m_dqPath.pop_front();
+				if (false == m_dqPortals.empty())			m_dqPortals.pop_front();
+				if (false == m_dqExpandedVertices.empty())	m_dqExpandedVertices.pop_front();
 			}
 			break;
 		}
@@ -631,7 +701,7 @@ void CAgentController::Free()
 
 	m_dqWayPoints.clear();
 	m_dqPortals.clear();
-	m_dqPortalPoints.clear();
+	m_dqExpandedVertices.clear();
 	m_dqPath.clear();
 
 	Super::Free();

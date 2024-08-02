@@ -77,7 +77,7 @@ private:
 	CellData*		m_pCurrentCell = nullptr;
 	CellData*		m_pDestCell = nullptr;
 	
-	_float			m_fAgentRadius = 3.0f;
+	_float			m_fAgentRadius = 3.5f;
 
 	using PATH = pair<CellData*, LINES>;
 	deque<PATH>		m_dqPath;
@@ -86,7 +86,7 @@ private:
 	void			PopPath();
 
 	// For Debug Render
-	deque<pair<BoundingBox, BoundingBox>>	m_dqPortalPoints;
+	deque<pair<Vec3, Vec3>>	m_dqExpandedVertices;
 
 	vector<CellData*>* m_pCells;
 	unordered_multimap<_int, CellData*>* m_pCellGrids;
