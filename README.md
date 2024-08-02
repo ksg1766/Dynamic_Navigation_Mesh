@@ -1,19 +1,25 @@
 ---
 # 📅 2024.08.01
 📋 진행 사항
-  * 
+  * 실제 통로의 너비와 agent의 크기 차이가 과도하게 큼에도 그냥 통과해버릴 수 있던 문제를 수정 중입니다.
+  * 아직 구현 및 적용이 완료되지 않아 결과 자료는 없지만 [Efficient Triangulation-Based Pathfindin. (Douglas Jon Demyen)](https://skatgame.net/mburo/ps/thesis_demyen_2006.pdf#page=43)의 4.1절에 제안된 알고리즘을 공부하고 적용중입니다.
+    * 통과하고자 하는 두 edge가 이루는 각이 직,둔각 이상인 경우, 나머지 한 edge가 막혀있는 경우, 그렇지 않은 경우 등 여러 경우에 통로의 너비를 측정할 수 있는 알고리즘을 제안합니다.
+    * 아래는 현재 구현 및 적용 중인 의사코드입니다.
+      
+      ![image](https://github.com/user-attachments/assets/c30d01ab-1e0f-4295-8192-7081b72b5302)
+      ![image](https://github.com/user-attachments/assets/7f73f4ac-d5e1-4735-8795-b42aeae4822e)
+      ![image](https://github.com/user-attachments/assets/8d1cd9db-53e5-4755-bff2-e29c459cfc6e)
 
-⚠️ 발견된 문제
-  * 
+    * 통로의 너비가 잘못 측정되는 경우가 있어 파악 및 해결중입니다.
 
 ⚽ 이후 계획
-  * 
+  * 오늘은 위 사항과 함께 obstacle과의 충분한 거리를 유지할 수 있도록 경로 선택 전반의 과정을 개선할 계획입니다.
 
 ---
-* 240801 생각 메모...
-  * IsOut에서 radius를 고려하는건 무한루프 발생... neighbor가 nullptr일 때만 적용하면 얇은 neighbor를 보유한 cell에서 충돌 결과가 명확하지 않음...
-    * ~~경로로 선택된 cell내에서만 외곽충돌을 검출하도록 하면 충분히 가능할 수도??~~
-    * 해답은 논문 4.1과 4.2절에 있는것 같다.
+* ~~240801 생각 메모...~~
+  * ~~IsOut에서 radius를 고려해 충돌 여부 확인하는 건 무한루프 발생... neighbor가 nullptr일 때만 적용하면 얇은 neighbor를 보유한 cell에서 충돌 결과가 명확하지 않음...~~
+    * ~~경로로 선택된 cell내에서만 외곽충돌을 검출하도록 하면 충분히 가능할 수도??->안됨.~~
+    * ~~해답은 논문 4.1과 4.2절에 있는것 같다.~~
       
 ---
 # 📅 2024.07.31
@@ -59,7 +65,6 @@
 ⚠️ 발견된 문제
   * 해당 지형을 통해 제작된 네비게이션 메쉬를 관찰해보니 4주차 회의에서 피드백으로 말씀해 주셨던 문제점들을 더 명확하게 이해할 수 있었습니다.
     * 아래와 같이 좁고 긴 통로가 형성되는 지역에서는 agent의 크기가 실제 통로의 너비보다 크더라도 길게 형성되는 portal의 길이 때문에 경로로 선택이 될 수 있습니다.
-    * 이 경우 agent는 경로 이동을 시도하지만 벽에 막혀 이동할 수 없는 문제가 발생합니다.
       
     ![image](https://github.com/user-attachments/assets/aed8e6ed-6eff-410b-b13b-26db11abe5bf)
 
