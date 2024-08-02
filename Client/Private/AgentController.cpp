@@ -353,7 +353,6 @@ _bool CAgentController::AStar()
 void CAgentController::SSF()
 {
 	//deque<pair<Vec3, Vec3>> dqOffset;
-
 	m_dqOffset.emplace_back(Vec3::Zero, Vec3::Zero);
 
 	for (_int i = 2; i < m_dqPortals.size(); ++i)

@@ -42,7 +42,6 @@ public:
 
 public:
 	_bool			Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
-	void			SetCells(vector<CellData*>* pvecCells, unordered_multimap<_int, CellData*>* pumapGrids);
 
 private:
 	HRESULT			Ready_FixedComponents();
