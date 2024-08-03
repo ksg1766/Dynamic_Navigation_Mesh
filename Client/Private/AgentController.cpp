@@ -12,6 +12,7 @@ CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* p
 	:Super(pDevice, pContext)
 	, m_vLinearSpeed(Vec3(75.0f, 75.0f, 75.0f))
 	, m_vMaxLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
+	, m_fAgentRadius(3.5f)
 {
 }
 
@@ -19,6 +20,7 @@ CAgentController::CAgentController(const CAgentController& rhs)
 	:Super(rhs)
 	, m_vLinearSpeed(rhs.m_vLinearSpeed)
 	, m_vMaxLinearSpeed(rhs.m_vMaxLinearSpeed)
+	, m_fAgentRadius(rhs.m_fAgentRadius)
 {
 }
 
@@ -448,6 +450,7 @@ void CAgentController::SSF()
 	for (_int i = 1; i < m_dqOffset.size(); ++i)
 	{
 		const auto& [vOriginL, vOriginR] = m_dqPortals[i];
+		const auto& [vPreOriginL, vPreOriginR] = m_dqPortals[i - 1];
 		const auto& [vOffsetL, vOffsetR] = m_dqOffset[i];
 
 		Vec3 vLeft = vOriginL + vOffsetL;
@@ -456,8 +459,11 @@ void CAgentController::SSF()
 		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
 		{
 			if (vPortalApex == vPortalRight || TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
-			{
-				vPortalRight = vRight;					// funnel 당기기
+			{	// funnel 당기기
+				if (vPreOriginR != vOriginR)
+				{
+					vPortalRight = vRight;
+				}
 				iRightIndex = i;
 			}
 			else
@@ -479,7 +485,10 @@ void CAgentController::SSF()
 		{
 			if (vPortalApex == vPortalLeft || TriArea2x(vPortalApex, vPortalRight, vLeft) < 0.0f)
 			{
-				vPortalLeft = vLeft;
+				if (vPreOriginL != vOriginL)
+				{
+					vPortalLeft = vLeft;
+				}
 				iLeftIndex = i;
 			}
 			else
