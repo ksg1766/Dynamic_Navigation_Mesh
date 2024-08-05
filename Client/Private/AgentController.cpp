@@ -318,7 +318,7 @@ _bool CAgentController::AStar()
 			}
 			else
 			{
-				Vec3 vCurrEdgeDir = pParent->vPoints[(ePassedLine + 1) % POINT_END] - pParent->vPoints[ePassedLine];
+				/*Vec3 vCurrEdgeDir = pParent->vPoints[(ePassedLine + 1) % POINT_END] - pParent->vPoints[ePassedLine];
 				vCurrEdgeDir.Normalize();
 
 				neighbor_g = tNode.g + CellData::CostBetweenEdge2Edge(
@@ -326,6 +326,25 @@ _bool CAgentController::AStar()
 					pParent->vPoints[(ePassedLine + 1) % POINT_END] - m_fAgentRadius * vCurrEdgeDir,
 					pCurrent->vPoints[i] + m_fAgentRadius * vNextEdgeDir,
 					pCurrent->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vNextEdgeDir
+				);*/
+				
+				//Vec3 vCurrEdgeDir = pParent->vPoints[(ePassedLine + 1) % POINT_END] - pParent->vPoints[ePassedLine];
+				//vCurrEdgeDir.Normalize();
+
+				//_float fTheta = acosf(vCurrEdgeDir.Dot(vNextEdgeDir));
+
+				//neighbor_g = tNode.g + m_fAgentRadius * fTheta;
+
+				neighbor_g = CellData::CostBetweenMax(
+					pParent->vPoints[ePassedLine],
+					pParent->vPoints[(ePassedLine + 1) % POINT_END],
+					pCurrent->vPoints[i],
+					pCurrent->vPoints[(i + 1) % POINT_END],
+					vStartPos,
+					m_vDestPos,
+					tNode.g,
+					tNode.f - tNode.g,
+					m_fAgentRadius
 				);
 			}
 

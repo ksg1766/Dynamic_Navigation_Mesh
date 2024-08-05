@@ -103,11 +103,17 @@ Vec3 CellData::GetPassedEdgeNormal(Vec3 vPoint)
 	return Vec3::Zero;
 }
 
-_float CellData::CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH)
+_float CellData::CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH, _float fAgentRadius)
 {
 	Vec3 vClosestPoint2Edge = ProjectionPoint2Edge(vStart, vQ1, vQ2);
 	_float fCostPoint2Edge = (vClosestPoint2Edge - vStart).Length();
-	_float fCostEdge2Edge = DistanceEdge2Edge(vP1, vP2, vQ1, vQ2);
+
+	Vec3 vEdge1 = vP2 - vP1;
+	Vec3 vEdge2 = vQ2 - vQ1;
+	vEdge1.Normalize();
+	vEdge2.Normalize();
+	_float fTheta = acosf(vEdge1.Dot(vEdge2));
+	_float fCostEdge2Edge = fParentG + fAgentRadius * fTheta;
 
 	Vec3 vMidPoint = 0.5f * (vQ1 + vQ2);
 	_float fNeighborH = HeuristicCostEuclidean(vMidPoint, vDest);

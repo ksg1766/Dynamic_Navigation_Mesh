@@ -50,7 +50,7 @@ struct CellData
 		return DistanceEdge2Edge(vP1, vP2, vQ1, vQ2);
 	}
 	
-	static _float CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH);
+	static _float CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH, _float fAgentRadius);
 	
 	inline _bool IsObtuse(const Vec3& vP0, const Vec3& vP1, const Vec3& vP2)
 	{

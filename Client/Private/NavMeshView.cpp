@@ -1329,7 +1329,7 @@ HRESULT CNavMeshView::CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutli
 
 	vector<vector<_bool>> vecIntersected(1024, vector<_bool>(1024, false));
 
-	for (_int i = -400; i < 400; ++i)
+	for (_int i = -512; i < 512; ++i)
 	{
 		cVerticalRay.position = Vec3((_float)i, 0.2f, -512.0f);
 		cVerticalRay.direction = Vec3::Backward;
