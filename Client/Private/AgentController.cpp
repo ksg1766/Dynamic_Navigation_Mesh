@@ -32,6 +32,7 @@ HRESULT CAgentController::Initialize_Prototype()
 HRESULT CAgentController::Initialize(void* pArg)
 {
 	m_pTransform = GetTransform();
+	m_pTransform->SetScale(m_fAgentRadius * 2.0f * Vec3::One);
 
 	if (nullptr != pArg)
 	{
@@ -205,13 +206,6 @@ _bool CAgentController::AStar()
 	unordered_map<CellData*, PATH> Path;
 	unordered_set<CellData*> Closed;
 
-	// temp
-	
-	/*deque<Vec3> dqPortalLeft;
-	deque<Vec3> dqPortalRight;*/
-
-	// temp
-
 	m_dqPath.clear();
 	m_dqPortals.clear();
 	m_dqOffset.clear();
@@ -373,14 +367,14 @@ void CAgentController::SSF()
 		{
 			if (Vec3::Zero == vLineL1)
 			{
-				vLineL0 = m_dqOffset.back().first;
-				vLineL0.Normalize();
-				vLineL1 = vLineL0;
+				//vLineL0 = m_dqOffset.back().first;
+				//vLineL0.Normalize();
+				//vLineL1 = vLineL0;
 			}
 			else
 			{
 				vLineL1.Normalize();
-				vLineL0 = vLineL1;
+				//vLineL0 = vLineL1;
 			}			
 		}
 		else
@@ -388,7 +382,7 @@ void CAgentController::SSF()
 			if (Vec3::Zero == vLineL1)
 			{
 				vLineL0.Normalize();
-				vLineL1 = vLineL0;
+				//vLineL1 = vLineL0;
 			}
 			else
 			{
@@ -401,14 +395,14 @@ void CAgentController::SSF()
 		{
 			if (Vec3::Zero == vLineR1)
 			{
-				vLineR0 = m_dqOffset.back().second;
-				vLineR0.Normalize();
-				vLineR1 = vLineR0;
+				//vLineR0 = m_dqOffset.back().second;
+				//vLineR0.Normalize();
+				//vLineR1 = vLineR0;
 			}
 			else
 			{
 				vLineR1.Normalize();
-				vLineR0 = vLineR1;
+				//vLineR0 = vLineR1;
 			}
 		}
 		else
@@ -416,7 +410,7 @@ void CAgentController::SSF()
 			if (Vec3::Zero == vLineR1)
 			{
 				vLineR0.Normalize();
-				vLineR1 = vLineR0;
+				//vLineR1 = vLineR0;
 			}
 			else
 			{
@@ -425,8 +419,10 @@ void CAgentController::SSF()
 			}
 		}
 
-		Vec3 vAvgL = 0.5f * (vLineL0 + vLineL1);
-		Vec3 vAvgR = 0.5f * (vLineR0 + vLineR1);
+		Vec3 vAvgL = vLineL0 + vLineL1;
+		Vec3 vAvgR = vLineR0 + vLineR1;
+		if (Vec3::Zero != vAvgL) vAvgL.Normalize();
+		if (Vec3::Zero != vAvgR) vAvgR.Normalize();
 
 		Vec3 vPerpendL = Vec3(m_fAgentRadius * vAvgL.z, vAvgL.y, m_fAgentRadius * -vAvgL.x);
 		Vec3 vPerpendR = Vec3(m_fAgentRadius * -vAvgR.z, vAvgR.y, m_fAgentRadius * vAvgR.x);
@@ -450,7 +446,6 @@ void CAgentController::SSF()
 	for (_int i = 1; i < m_dqOffset.size(); ++i)
 	{
 		const auto& [vOriginL, vOriginR] = m_dqPortals[i];
-		const auto& [vPreOriginL, vPreOriginR] = m_dqPortals[i - 1];
 		const auto& [vOffsetL, vOffsetR] = m_dqOffset[i];
 
 		Vec3 vLeft = vOriginL + vOffsetL;
@@ -459,10 +454,10 @@ void CAgentController::SSF()
 		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
 		{
 			if (vPortalApex == vPortalRight || TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
-			{	// funnel 당기기
-				if (vPreOriginR != vOriginR)
+			{
+				if (vRight != vOriginR || i == m_dqOffset.size() - 1)
 				{
-					vPortalRight = vRight;
+					vPortalRight = vRight;				// funnel 당기기
 				}
 				iRightIndex = i;
 			}
@@ -485,7 +480,7 @@ void CAgentController::SSF()
 		{
 			if (vPortalApex == vPortalLeft || TriArea2x(vPortalApex, vPortalRight, vLeft) < 0.0f)
 			{
-				if (vPreOriginL != vOriginL)
+				if (vLeft != vOriginL || i == m_dqOffset.size() - 1)
 				{
 					vPortalLeft = vLeft;
 				}

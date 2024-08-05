@@ -28,8 +28,6 @@ HRESULT CAgent::Initialize(void* pArg)
 	if (FAILED(Ready_Scripts(pArg)))
 		return E_FAIL;
 
-	GetTransform()->SetScale(Vec3(7.0f, 7.0f, 7.0f));
-
 	return S_OK;
 }
 
