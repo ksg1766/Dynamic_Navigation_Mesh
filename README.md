@@ -1,3 +1,103 @@
+
+# 📅 2024.08.01
+📋 진행 사항
+  * agent가 이동 통로의 실제 너비를 고려해 경로를 탐색하도록 수정했습니다.
+    * 진입하는 삼각형 edge의 양쪽 끝에서 agent의 radius를 뺸 길이를 portal의 입구 크기이자 통로의 너비로 계산했습니다.
+    * 그 결과 아래와 같이 통로의 실제 너비는 짧은 화살표의 길이와 같지만, portal 입구의 크기는 긴 화살표의 길이로 설정돼, agent가 지나갈 수 없을 정도로 작은 통로가 경로에 포함되는 현상이 있었습니다.
+    * 또한 입구의 크기는 충분히 크지만 이후 폭이 좁아지는 형태의 통로가 경로에 포함될 수 있는 가능성이 있었습니다.
+      
+      ![image](https://github.com/user-attachments/assets/aed8e6ed-6eff-410b-b13b-26db11abe5bf)
+      
+      ![image](https://github.com/user-attachments/assets/24f588d1-b5cb-4316-ad71-0c032ca11dc6)
+
+    * [Efficient Triangulation-Based Pathfindin. (Douglas Jon Demyen)](https://skatgame.net/mburo/ps/thesis_demyen_2006.pdf#page=43) 의 4.1절을 참고했습니다. 고려하고자 하는 case는 크게 아래와 같습니다.
+      
+      ![image](https://github.com/user-attachments/assets/3cfa009d-a033-426e-9240-0e6fb98c105f)
+      
+      ![image](https://github.com/user-attachments/assets/9c793406-48d2-4782-952d-cc7da9b61313)
+      
+      ![image](https://github.com/user-attachments/assets/fccd0a0f-522f-49d5-ab05-1b84d60f7d88)
+
+    * 소스 코드 구현은 아래와 같습니다. 변수 이름은 잠시 의사 코드와 일관성있게 선언했습니다.
+
+	```
+	_float CellData::CalculateWidth(LINES eLine1, LINES eLine2)
+	{
+		if (eLine1 == eLine2)
+			return -FLT_MAX;
+
+		POINTS C = POINTS((5 - eLine1 - eLine2) % 3);
+		POINTS A = POINTS((C + 1) % 3);
+		POINTS B = POINTS((C + 2) % 3);
+	
+		LINES c = LINES(3 - eLine1 - eLine2);
+	
+		_float d = ::min(
+			(vPoints[c] - vPoints[C]).Length(),
+			(vPoints[(c + 1) % 3] - vPoints[C]).Length());
+
+		if (IsObtuse(vPoints[C], vPoints[A], vPoints[B]) || IsObtuse(vPoints[C], vPoints[B], vPoints[A]))
+			return d;
+		else if (nullptr == pNeighbors[c])	// isConstrained : 막혀있다면
+			return CostBetweenPoint2Edge(vPoints[C], vPoints[A], vPoints[B]);
+		else
+			return SearchWidth(vPoints[C], this, c, d);
+	}
+	```
+  
+  	```
+   	_float CellData::SearchWidth(const Vec3& C, CellData* T, LINES e, _float d)
+	{
+		const Vec3& U = T->vPoints[e];
+		const Vec3& V = T->vPoints[(e + 1) % 3];
+
+		if (IsObtuse(C, U, V) || IsObtuse(C, V, U))
+			return d;
+
+		_float _d = CostBetweenPoint2Edge(C, U, V);
+
+		if (_d > d)
+			return d;
+		else if (nullptr == T->pNeighbors[e])	// isConstrained : 막혀있다면
+			return _d;
+		else
+		{
+			CellData* _T = T->pNeighbors[e];
+
+			LINES _e1 = LINE_END, _e2 = LINE_END;
+
+			for (uint8 i = 0; i < LINE_END; ++i)
+			{
+				if (T != _T->pNeighbors[i])
+					(LINE_END == _e1) ? _e1 = (LINES)i : _e2 = (LINES)i;
+			}
+
+			d = SearchWidth(C, _T, _e1, d);
+			return SearchWidth(C, _T, _e2, d);
+		}
+	}
+   	```
+
+  * agent가 통로의 가장자리로부터 radius만큼의 간격을 두고 이동할 수 있도록 구현했습니다.
+    * 기존의 구현 방식에서는 앞서 업로드한 사진처럼 entry edge의 기울기에 따라 경로가 벽에 가까이 형성되는 경우가 발생했습니다.
+    * 삼각형 cell의 edge와의 충돌을 검사해 밀어내는 방식을 구현하려 했으나, 위의 통로 너비를 계산할 때와 같이, 현재 cell의 edge가 막혀있는 경우, 막혀있지 않지만 인접한 cell의 너비가 좁고 edge가 막혀있는 경우, 인접 cell의 너비가 넓고 edge가 막혀있는 경우 등등 많은 부분을 충분히 고려하지 않으면 정상적으로 작동하지 않아 어려움을 겪었습니다.
+    * 따라서 같은 논문을 참고해 [4.5 Modified Funnel Algorithm](https://skatgame.net/mburo/ps/thesis_demyen_2006.pdf#page=71)에 제안된 방법을 학습해 구현해보기로 했습니다.
+      
+      ![image](https://github.com/user-attachments/assets/e7929cb5-f39c-4220-8b50-50c880fecc50)
+      
+    * 논문의 의사코드보다는 기존에 구현했던 Simple Stupid Funnel 알고리즘을 개량해 Modified Funnel Algorithm을 구현했습니다. 두 edge의 평균 기울기를 구해 agent의 radius만큼 이격한 위치를 corner로 설정했습니다.
+      * 모든 버그를 수정하고 확인한 결과는 아래와 같습니다.
+     
+        ![image](https://github.com/user-attachments/assets/188b7adf-417f-4091-9ce6-e4459612768d)
+
+    * 여전히 g-value계산에 대한 고민은 필요하지만, 이로써 목표했던 경로의 품질을 달성할 수 있었습니다.
+    
+⚠️ 발견된 문제
+  * 삼각형의 각도가 매우 큰 둔각을 이루고 있을 경우 실제로는 최단거리임에서 경로로 선택되지 않는 경우가 있습니다. g-value계산 방법에 관해서는 지속적으로 고민해보려 합니다.
+  
+⚽ 이후 계획
+  * 논문의 4.2절에 소개된 방법을 통해 g-value를 개선할 수 있는지, 또한 경로 검색의 속도를 더 향상시킬 수 있는지 고민해보려합니다.
+  
 ---
 # 📅 2024.08.01
 📋 진행 사항
