@@ -1,4 +1,24 @@
+---
+5주차 진행 내용 : https://equal-paw-e8f.notion.site/5-6b429686a9924cf6bec13121e2481399?pvs=4
 
+---
+# 📅 2024.08.05
+📋 진행 사항
+  * 이번주부터는 경로 탐색의 성능을 향상시킬 방법을 찾아 구현하는 것을 목표로 하고 있습니다.
+  * 아래와 같은 자료들을 통해 경로 탐색의 성능을 향상 시킬 방법을 찾고 학습중입니다.
+    * [Efficient Triangulation-Based Pathfindin. Chapter 6.](https://skatgame.net/mburo/ps/thesis_demyen_2006.pdf#page=82)
+    * [Hierarchical Path-Finding for Navigation Meshes (HNA*)](https://upcommons.upc.edu/bitstream/handle/2117/98738/Pelechano_HNAstar_prePrint.pdf)
+  
+⚠️ 발견된 문제
+  * 구현한 Funnel알고리즘이 일부 급격한 코너등에서 정상적으로 작동하지 않는 상황이 간혹 있습니다.
+      ![image](https://github.com/user-attachments/assets/c157afff-3b20-4fb1-800b-55d0eab5be19)
+  
+⚽ 이후 계획
+  * 지난주까지 경로의 품질과 형태 향상이 목표였다면 금주부터는 경로 탐색의 성능을 향상키는 데에 초점을 맞춰보려합니다.
+  * 다만 직접 구현한 Funnel알고리즘이 일부 급격한 코너등에서 정상적으로 작동하지 않는 상황이 간혹 있어 [4.5 Modified Funnel Algorithm](https://skatgame.net/mburo/ps/thesis_demyen_2006.pdf#page=71)에 제안된 의사코드를 참고해 수정해볼 계획입니다.
+  * 이전까지 구현했던 Dynamic Obstacle 환경을 함께 적용할 수 있도록 구현할 계획입니다.
+  
+---
 # 📅 2024.08.02
 📋 진행 사항
   * agent가 이동 통로의 실제 너비를 고려해 경로를 탐색하도록 수정했습니다.
@@ -200,7 +220,7 @@
 ---
 # 📅 2024.07.29
   * 29일 진행 사항은 4주차 주간 회의록의 후반 g-value 테스트 부분에 함께 포함돼 있습니다.
-    * https://equal-paw-e8f.notion.site/4-025bff362b2649668d2dccf85cfd482b?pvs=4
+     4주차 진행 내용 : https://equal-paw-e8f.notion.site/4-025bff362b2649668d2dccf85cfd482b?pvs=4
     
 ---
 # 📅 2024.07.26
@@ -422,7 +442,7 @@
   * 경로 최적화와 성능 개선은 우선 A* 적용 후에 더 고민해보록 할 계획입니다.
 
 ---
-https://equal-paw-e8f.notion.site/3-ce15dfe28bc74c5fac609bf0340a0c8f?pvs=4
+3주차 진행 내용 : https://equal-paw-e8f.notion.site/3-ce15dfe28bc74c5fac609bf0340a0c8f?pvs=4
 
 ---
 # 📅 2024.07.22
@@ -696,7 +716,7 @@ https://equal-paw-e8f.notion.site/3-ce15dfe28bc74c5fac609bf0340a0c8f?pvs=4
   * 동시에 경로 탐색 기능을 추가할 계획입니다. 이 부분은 진행하게 되면 관련 알고리즘을 추가로 공부할 계획입니다.
   
 ---
-2주차 요약 정리 : https://equal-paw-e8f.notion.site/2-ab7058a10821484a9878ed1abdca29ac
+2주차 진행 내용 : https://equal-paw-e8f.notion.site/2-ab7058a10821484a9878ed1abdca29ac
 
 ---
 # 📅 2024.07.15
