@@ -12,8 +12,7 @@ CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* p
 	:Super(pDevice, pContext)
 	, m_vLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
 	, m_vMaxLinearSpeed(Vec3(200.0f, 200.0f, 200.0f))
-	//, m_fAgentRadius(3.5f)
-	, m_fAgentRadius(15.0f)
+	, m_fAgentRadius(3.5f)
 {
 }
 

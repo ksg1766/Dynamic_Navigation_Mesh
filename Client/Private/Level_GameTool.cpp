@@ -155,7 +155,7 @@ HRESULT CLevel_GameTool::Ready_Layer_Default()
 
 HRESULT CLevel_GameTool::Ready_Layer_Terrain()
 {
-	wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze1.bmp");
+	wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze0.bmp");
 	m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
 		LEVEL_GAMETOOL,
 		LAYERTAG::TERRAIN,
