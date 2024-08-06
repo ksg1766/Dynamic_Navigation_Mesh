@@ -220,7 +220,8 @@
 ---
 # 📅 2024.07.29
   * 29일 진행 사항은 4주차 주간 회의록의 후반 g-value 테스트 부분에 함께 포함돼 있습니다.
-     4주차 진행 내용 : https://equal-paw-e8f.notion.site/4-025bff362b2649668d2dccf85cfd482b?pvs=4
+
+    4주차 진행 내용 : https://equal-paw-e8f.notion.site/4-025bff362b2649668d2dccf85cfd482b?pvs=4
     
 ---
 # 📅 2024.07.26
