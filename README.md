@@ -5,7 +5,7 @@
 # 📅 2024.08.05
 📋 진행 사항
   * 이번주부터는 경로 탐색의 성능을 향상시킬 방법을 찾아 구현하는 것을 목표로 하고 있습니다.
-  * 아래와 같은 자료들을 통해 경로 탐색의 성능을 향상 시킬 방법을 찾고 학습중입니다.
+  * 지금은 아래와 같은 자료들을 통해 경로 탐색의 성능을 향상 시킬 방법을 찾고 학습중입니다.
     * [Efficient Triangulation-Based Pathfindin. Chapter 6.](https://skatgame.net/mburo/ps/thesis_demyen_2006.pdf#page=82)
     * [Hierarchical Path-Finding for Navigation Meshes (HNA*)](https://upcommons.upc.edu/bitstream/handle/2117/98738/Pelechano_HNAstar_prePrint.pdf)
   
