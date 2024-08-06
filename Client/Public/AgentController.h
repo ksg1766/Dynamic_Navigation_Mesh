@@ -52,7 +52,7 @@ public:
 	Vec3	Move(_float fTimeDelta);
 
 	_bool	AStar();
-	void	SSF();
+	void	FunnelAlgorithm();
 
 	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
 

@@ -12,7 +12,7 @@ CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* p
 	:Super(pDevice, pContext)
 	, m_vLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
 	, m_vMaxLinearSpeed(Vec3(200.0f, 200.0f, 200.0f))
-	, m_fAgentRadius(3.5f)
+	, m_fAgentRadius(3.3f)
 {
 }
 
@@ -238,7 +238,8 @@ _bool CAgentController::AStar()
 
 			m_dqExpandedVertices.push_front(m_dqPortals.front());
 			
-			while (m_pCurrentCell != pNext)
+			//while (m_pCurrentCell != pNext)
+			while (true)
 			{
 				m_dqPath.push_front(tNext);
 
@@ -248,6 +249,9 @@ _bool CAgentController::AStar()
 				));
 
 				m_dqExpandedVertices.push_front(m_dqPortals.front());
+
+				if (m_pCurrentCell == pNext)
+					break;
 
 				tNext = Path[pNext];
 			}
@@ -365,7 +369,7 @@ _bool CAgentController::AStar()
 	return false;
 }
 
-void CAgentController::SSF()
+void CAgentController::FunnelAlgorithm()
 {
 	//deque<pair<Vec3, Vec3>> dqOffset;
 	m_dqOffset.emplace_back(Vec3::Zero, Vec3::Zero);
@@ -467,14 +471,15 @@ void CAgentController::SSF()
 		const auto& [vOriginL, vOriginR] = m_dqPortals[i];
 		const auto& [vOffsetL, vOffsetR] = m_dqOffset[i];
 
-		Vec3 vLeft = vOriginL + vOffsetL;
-		Vec3 vRight = vOriginR + vOffsetR;
+		Vec3 vLeft = vOriginL/* + vOffsetL*/;
+		Vec3 vRight = vOriginR/* + vOffsetR*/;
 
 		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
 		{
 			if (vPortalApex == vPortalRight || TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
 			{
-				if (vRight != vOriginR || i == m_dqOffset.size() - 1)
+				//if (vRight != vOriginR || i == m_dqOffset.size() - 1)
+				//if (Vec3::Zero != vOriginR || i == m_dqOffset.size() - 1)
 				{
 					vPortalRight = vRight;				// funnel 당기기
 				}
@@ -482,7 +487,8 @@ void CAgentController::SSF()
 			}
 			else
 			{
-				m_dqWayPoints.push_back(vPortalLeft);	// Right가 Left를 넘었다면 Left를 waypoint에 추가				
+				if (Vec3::Zero != m_dqOffset[iLeftIndex].first)
+					m_dqWayPoints.push_back(vPortalLeft + m_dqOffset[iLeftIndex].first);	// Right가 Left를 넘었다면 Left를 waypoint에 추가				
 
 				vPortalApex = vPortalLeft;				// L을 새로운 시작점으로
 				iApexIndex = iLeftIndex;
@@ -499,7 +505,8 @@ void CAgentController::SSF()
 		{
 			if (vPortalApex == vPortalLeft || TriArea2x(vPortalApex, vPortalRight, vLeft) < 0.0f)
 			{
-				if (vLeft != vOriginL || i == m_dqOffset.size() - 1)
+				//if (vLeft != vOriginL || i == m_dqOffset.size() - 1)
+				//if (Vec3::Zero != vOriginL || i == m_dqOffset.size() - 1)
 				{
 					vPortalLeft = vLeft;
 				}
@@ -507,7 +514,8 @@ void CAgentController::SSF()
 			}
 			else
 			{
-				m_dqWayPoints.push_back(vPortalRight);
+				if (Vec3::Zero != m_dqOffset[iRightIndex].second)
+					m_dqWayPoints.push_back(vPortalRight + m_dqOffset[iRightIndex].second);
 
 				vPortalApex = vPortalRight;
 				iApexIndex = iRightIndex;
@@ -586,7 +594,7 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 		if (true == AStar())
 		{
-			SSF();
+			FunnelAlgorithm();
 
 			m_isMoving = true;
 
@@ -605,7 +613,7 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 		if (true == AStar())
 		{
-			SSF();
+			FunnelAlgorithm();
 
 			m_isMoving = true;
 
