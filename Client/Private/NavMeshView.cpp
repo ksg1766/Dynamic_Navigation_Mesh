@@ -749,7 +749,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 						else if (true == cell->ComparePoints(OutCell->second.second->vPoints[POINT_C], OutCell->second.second->vPoints[POINT_A]))
 						{
 							OutCell->second.second->pNeighbors[LINE_CA] = cell;
-						}						
+						}
 					}
 				}
 			}
@@ -1127,7 +1127,7 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected)
 {
 #pragma region CPU
-	for (_int i = 0; i < m_vecCells.size(); ++i)
+	/*for (_int i = 0; i < m_vecCells.size(); ++i)
 	{
 		if (true == m_vecCells[i]->isDead)
 		{
@@ -1146,6 +1146,43 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 		if (false == m_vecCells[i]->isDead && true == tObst.tAABB.Intersects(m_vecCells[i]->vPoints[POINT_A], m_vecCells[i]->vPoints[POINT_B], m_vecCells[i]->vPoints[POINT_C]))
 		{
 			setIntersected.emplace(m_vecCells[i]);
+		}
+	}
+
+	return S_OK;*/
+
+	Vec3 vLB = tObst.tAABB.Center - tObst.tAABB.Extents;
+	Vec3 vRT = tObst.tAABB.Center + tObst.tAABB.Extents;
+
+	_int iLB_X = (vLB.x + gWorldCX * 0.5f) / gGridCX;
+	_int iLB_Z = (vLB.z + gWorldCZ * 0.5f) / gGridCZ;
+
+	_int iRT_X = (vRT.x + gWorldCX * 0.5f) / gGridCX;
+	_int iRT_Z = (vRT.z + gWorldCZ * 0.5f) / gGridCZ;
+
+	_int iLB_Key = iLB_Z * gGridX + iLB_X;
+	_int iRT_Key = iRT_Z * gGridX + iRT_X;
+
+	for (_int iKeyZ = iLB_Z; iKeyZ <= iRT_Z; ++iKeyZ)
+	{
+		for (_int iKeyX = iLB_X; iKeyX <= iRT_X; ++iKeyX)
+		{
+			_int iKey = iKeyZ * gGridX + iKeyX;
+
+			auto [begin, end] = m_umapCellGrids.equal_range(iKey);
+
+			for (auto cell = begin; cell != end; ++cell)
+			{
+				if (true == cell->second->isNew)
+				{
+					cell->second->isNew = false;
+				}
+
+				if (false == cell->second->isDead && true == tObst.tAABB.Intersects(cell->second->vPoints[POINT_A], cell->second->vPoints[POINT_B], cell->second->vPoints[POINT_C]))
+				{
+					setIntersected.emplace(cell->second);
+				}
+			}
 		}
 	}
 
@@ -1759,7 +1796,8 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	_float fHeight = vp.height;
 
 	const POINT& p = m_pGameInstance->GetMousePos();
-	m_pTerrainBuffer->Pick(p.x, p.y, pickPos, fDistance, m_pTerrainBuffer->GetTransform()->WorldMatrix());
+	if (false == m_pTerrainBuffer->Pick(p.x, p.y, pickPos, fDistance, m_pTerrainBuffer->GetTransform()->WorldMatrix()))
+		return false;
 	
 	BoundingSphere tSphere;
 	tSphere.Center = pickPos;

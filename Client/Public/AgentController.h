@@ -44,6 +44,7 @@ public:
 public:
 	_bool	IsIdle();
 	_bool	IsMoving();
+	_bool	IsOutOfWorld();
 
 	void	ForceHeight();
 	_float	GetHeightOffset();
