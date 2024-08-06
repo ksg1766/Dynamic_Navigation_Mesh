@@ -10,12 +10,12 @@
     * [Hierarchical Path-Finding for Navigation Meshes (HNA*)](https://upcommons.upc.edu/bitstream/handle/2117/98738/Pelechano_HNAstar_prePrint.pdf)
   
 ⚠️ 발견된 문제
-  * 구현한 Funnel알고리즘이 일부 급격한 코너등에서 정상적으로 작동하지 않는 상황이 간혹 발생합니다.
+  * ~~구현한 Funnel알고리즘이 일부 급격한 코너등에서 정상적으로 작동하지 않는 상황이 간혹 발생합니다.~~ -> 수정했습니다.
       ![image](https://github.com/user-attachments/assets/21ca8988-a9bd-4155-a424-1e6d80f408be)
   
 ⚽ 이후 계획
   * 경로 탐색의 성능을 향상킬 수 있는 방법을 찾고 적용해 볼 계획입니다.
-  * 다만 직접 구현한 Funnel알고리즘이 일부 급격한 코너등에서 정상적으로 작동하지 않는 상황이 간혹 있어 [4.5 Modified Funnel Algorithm](https://skatgame.net/mburo/ps/thesis_demyen_2006.pdf#page=71)에 제안된 의사코드를 참고해 수정해볼 계획입니다.
+  * ~~다만 직접 구현한 Funnel알고리즘이 일부 급격한 코너등에서 정상적으로 작동하지 않는 상황이 간혹 있어 [4.5 Modified Funnel Algorithm](https://skatgame.net/mburo/ps/thesis_demyen_2006.pdf#page=71)에 제안된 의사코드를 참고해 수정해볼 계획입니다.~~ -> 수정했습니다.
   * 이전까지 구현했던 Dynamic Obstacle 환경을 함께 적용할 수 있도록 구현할 계획입니다.
   
 ---
