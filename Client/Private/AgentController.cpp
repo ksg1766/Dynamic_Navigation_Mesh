@@ -74,7 +74,7 @@ HRESULT CAgentController::Initialize(void* pArg)
 
 void CAgentController::Tick(_float fTimeDelta)
 {
-	if (true == IsMoving())
+	if (true == IsMoving() || false == IsOutOfWorld())
 	{
 		Slide(Move(fTimeDelta));
 	} PopPath();
@@ -93,6 +93,16 @@ _bool CAgentController::IsIdle()
 _bool CAgentController::IsMoving()
 {
 	return m_isMoving;
+}
+
+_bool CAgentController::IsOutOfWorld()
+{
+	const Vec3& vPosition = m_pTransform->GetPosition();
+
+	if (vPosition.x >= 0.5f * gWorldCX || vPosition.x <= -0.5f * gWorldCX || vPosition.z >= 0.5f * gWorldCZ || vPosition.z <= -0.5f * gWorldCZ)
+		return true;
+
+	return false;
 }
 
 void CAgentController::ForceHeight()
@@ -469,20 +479,15 @@ void CAgentController::FunnelAlgorithm()
 	for (_int i = 1; i < m_dqOffset.size(); ++i)
 	{
 		const auto& [vOriginL, vOriginR] = m_dqPortals[i];
-		const auto& [vOffsetL, vOffsetR] = m_dqOffset[i];
 
-		Vec3 vLeft = vOriginL/* + vOffsetL*/;
-		Vec3 vRight = vOriginR/* + vOffsetR*/;
+		Vec3 vLeft = vOriginL;
+		Vec3 vRight = vOriginR;
 
 		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
 		{
 			if (vPortalApex == vPortalRight || TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
 			{
-				//if (vRight != vOriginR || i == m_dqOffset.size() - 1)
-				//if (Vec3::Zero != vOriginR || i == m_dqOffset.size() - 1)
-				{
-					vPortalRight = vRight;				// funnel 당기기
-				}
+				vPortalRight = vRight;				// funnel 당기기
 				iRightIndex = i;
 			}
 			else
@@ -505,11 +510,7 @@ void CAgentController::FunnelAlgorithm()
 		{
 			if (vPortalApex == vPortalLeft || TriArea2x(vPortalApex, vPortalRight, vLeft) < 0.0f)
 			{
-				//if (vLeft != vOriginL || i == m_dqOffset.size() - 1)
-				//if (Vec3::Zero != vOriginL || i == m_dqOffset.size() - 1)
-				{
-					vPortalLeft = vLeft;
-				}
+				vPortalLeft = vLeft;
 				iLeftIndex = i;
 			}
 			else
@@ -583,9 +584,9 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 		return false;
 	}
 
-	//m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+	m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
 
-	//m_pCurrentCell = FindCellByPosition(m_pTransform->GetPosition());	// TODO: ...
+	m_pCurrentCell = FindCellByPosition(m_pTransform->GetPosition());	// TODO: ...
 	m_pDestCell = FindCellByPosition(vPickedPos);
 
 	if (nullptr != m_pDestCell)

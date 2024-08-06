@@ -498,9 +498,9 @@ _bool CTerrain::Pick(_uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float
 
 	Ray ray = Ray(start, direction);
 
-	for (int32 i = 0; i < m_iNumVerticesZ; i++)
+	for (int32 i = 0; i < m_iNumVerticesZ - 1; i++)
 	{
-		for (int32 j = 0; j < m_iNumVerticesX; j++)
+		for (int32 j = 0; j < m_iNumVerticesX - 1; j++)
 		{
 			_uint		iIndices[4] = {
 				(i + 1) * m_iNumVerticesX + j,		//2
@@ -515,17 +515,19 @@ _bool CTerrain::Pick(_uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float
 
 			if (ray.Intersects(p[1], p[2], p[0], OUT distance))// 
 			{
-				pickPos = ray.position + ray.direction * distance;
-				if (isnan(pickPos.x) || isnan(pickPos.y) || isnan(pickPos.z) || isnan(distance))
+				if(isnan(distance))
 					return false;
+
+				pickPos = ray.position + ray.direction * distance;
 				return true;
 			}
 
 			if (ray.Intersects(p[3], p[0], p[2], OUT distance))// 
 			{
-				pickPos = ray.position + ray.direction * distance;
-				if (isnan(pickPos.x) || isnan(pickPos.y) || isnan(pickPos.z) || isnan(distance))
+				if (isnan(distance))
 					return false;
+
+				pickPos = ray.position + ray.direction * distance;
 				return true;
 			}
 		}
