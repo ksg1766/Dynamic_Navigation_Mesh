@@ -10,8 +10,8 @@
     * [Hierarchical Path-Finding for Navigation Meshes (HNA*)](https://upcommons.upc.edu/bitstream/handle/2117/98738/Pelechano_HNAstar_prePrint.pdf)
   
 ⚠️ 발견된 문제
-  * 구현한 Funnel알고리즘이 일부 급격한 코너등에서 정상적으로 작동하지 않는 상황이 간혹 있습니다.
-      ![image](https://github.com/user-attachments/assets/c157afff-3b20-4fb1-800b-55d0eab5be19)
+  * 구현한 Funnel알고리즘이 일부 급격한 코너등에서 정상적으로 작동하지 않는 상황이 간혹 발생합니다.
+      ![image](https://github.com/user-attachments/assets/21ca8988-a9bd-4155-a424-1e6d80f408be)
   
 ⚽ 이후 계획
   * 지난주까지 경로의 품질과 형태 향상이 목표였다면 금주부터는 경로 탐색의 성능을 향상키는 데에 초점을 맞춰보려합니다.
