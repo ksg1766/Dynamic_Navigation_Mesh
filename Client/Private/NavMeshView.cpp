@@ -1124,7 +1124,7 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 	}
 }
 
-HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected)
+HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected, _bool bPop)
 {
 #pragma region CPU
 	/*for (_int i = 0; i < m_vecCells.size(); ++i)
@@ -1181,6 +1181,11 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 				if (false == cell->second->isDead && true == tObst.tAABB.Intersects(cell->second->vPoints[POINT_A], cell->second->vPoints[POINT_B], cell->second->vPoints[POINT_C]))
 				{
 					setIntersected.emplace(cell->second);
+
+					if (true == bPop)
+					{
+						
+					}
 				}
 			}
 		}

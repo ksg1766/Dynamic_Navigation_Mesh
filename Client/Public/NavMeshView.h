@@ -65,7 +65,7 @@ private:
 
 private:
 	void		SetPolygonHoleCenter(Obst& tObst);
-	HRESULT		GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected);
+	HRESULT		GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected, _bool bPop = false);
 
 private:
 	HRESULT		CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
