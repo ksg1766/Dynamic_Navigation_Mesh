@@ -274,7 +274,7 @@ void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
 void CNavMeshView::SetUpCells2Grids(vector<CellData*>& vecCells, OUT unordered_multimap<_int, CellData*>& umapCellGrids, const _int iGridCX, const _int iGridCZ)
 {
 	BoundingBox tAABB;
-	tAABB.Extents = Vec3(iGridCX * 0.5f, 10.0f, iGridCZ * 0.5f);
+	tAABB.Extents = Vec3(iGridCX * 0.5f, 512.0f, iGridCZ * 0.5f);
 
 	for (auto pCell : vecCells)
 	{
@@ -502,8 +502,35 @@ HRESULT CNavMeshView::BakeHeightMapObstacles()
 HRESULT CNavMeshView::BakeHeightMap3D()
 {
 	Reset();
-	InitialSetting();
+	//InitialSetting();
+	
+	m_vecPoints.push_back(Vec3(-512.0f, 0.f, -512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, -512.0f), 2.f));
 
+	m_vecPoints.push_back(Vec3(+512.0f, 0.f, -512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, -512.0f), 2.f));
+
+	m_vecPoints.push_back(Vec3(+512.0f, 0.f, +512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, +512.0f), 2.f));
+
+	m_vecPoints.push_back(Vec3(-512.0f, 0.f, +512.0f));
+	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, +512.0f), 2.f));
+
+	m_iStaticPointCount = m_vecPoints.size();
+
+	if (FAILED(UpdatePointList(m_tIn, m_vecPoints)))
+		return E_FAIL;
+
+	if (FAILED(UpdateSegmentList(m_tIn, m_vecPoints)))
+		return E_FAIL;
+
+	if (FAILED(UpdateHoleList(m_tIn)))
+		return E_FAIL;
+
+	if (FAILED(UpdateRegionList(m_tIn)))
+		return E_FAIL;
+	
+	//
 	vector<vector<Vec3>> vecOutlines;
 
 	if (FAILED(CalculateHillOutline(vecOutlines)))
@@ -523,28 +550,20 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 	{
 		for (_int j = 0; j < vecOutlines[i].size(); ++j)
 		{
-			//for (auto point : vecOutlines[i])
-			for (_int m = 0; m < vecOutlines[i].size(); ++m)
-			{
-				m_tIn.pointlist[2 * k + 0] = vecOutlines[i][m].x;
-				m_tIn.pointlist[2 * k + 1] = vecOutlines[i][m].z;
-				++k;
-			}
+			m_tIn.pointlist[2 * k + 0] = vecOutlines[i][j].x;
+			m_tIn.pointlist[2 * k + 1] = vecOutlines[i][j].z;
+			++k;
 		}
 	}
 
 	m_tIn.numberofsegments = m_tIn.numberofpoints;
-
-	SAFE_REALLOC(TRI_REAL, m_tIn.pointlist, m_tIn.numberofpoints * 2)
-
 	if (0 < m_tIn.numberofsegments)
 	{
 		SAFE_REALLOC(_int, m_tIn.segmentlist, m_tIn.numberofsegments * 2)
 
 		_int iStartIndex = m_iStaticPointCount;
 		for (_int i = 0; i < vecOutlines.size(); ++i)
-		{
-			iStartIndex += vecOutlines[i].size();
+		{			
 			for (_int j = 0; j < vecOutlines[i].size() - 1; ++j)
 			{
 				m_tIn.segmentlist[2 * (iStartIndex + j) + 0] = iStartIndex + j + 0;
@@ -554,6 +573,8 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 			_int iCache = iStartIndex + vecOutlines[i].size() - 1;
 			m_tIn.segmentlist[2 * iCache + 0] = iCache;
 			m_tIn.segmentlist[2 * iCache + 1] = iStartIndex;
+
+			iStartIndex += vecOutlines[i].size();
 		}		
 	}
 
@@ -1600,7 +1621,7 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 
 	for (_int i = 0; i < vecTightOutlines.size(); ++i)
 	{
-		_float fDistance = 0.1f;
+		_float fDistance = 0.2f;
 		vecExpandedOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
 	}
 
@@ -1612,7 +1633,7 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 	vecOutlines.resize(vecClearOutlines.size());
 	for (_int i = 0; i < vecClearOutlines.size(); ++i)
 	{
-		_float fEpsilon = 0.1f;
+		_float fEpsilon = 0.5f;
 		RamerDouglasPeucker(vecClearOutlines[i], fEpsilon, vecOutlines[i]);
 	}
 
