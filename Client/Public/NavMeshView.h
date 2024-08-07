@@ -49,7 +49,7 @@ private:
 	HRESULT		BakeNavMesh();
 	HRESULT		BakeSingleObstacleData();
 	HRESULT		BakeHeightMapObstacles();
-	HRESULT		BakeHeightMapSlope();
+	HRESULT		BakeHeightMap3D();
 
 	HRESULT		UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
 	HRESULT		UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
@@ -73,7 +73,7 @@ private:
 	HRESULT		CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutlines);
 	HRESULT		CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines);
 	void		Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vector<iVec3>& vecLongest);
-	void		DfsTerrain(vector<vector<_bool>>& vecPoints, OUT vector<vector<iVec3>>& vecOutlines);
+	void		DfsTerrain(vector<vector<_int>>& vecPoints, OUT vector<vector<iVec3>>& vecOutlines);
 	Vec3		CalculateNormal(const iVec3& vPrev, const iVec3& vCurrent, const iVec3& vNext);
 	_bool		IsClockwise(const vector<iVec3>& vecPoints);
 	vector<Vec3> ExpandOutline(const vector<iVec3>& vecOutline, _float fDistance);
@@ -90,6 +90,7 @@ private:
 
 	HRESULT		SaveNvFile();
 	HRESULT		LoadNvFile();
+	HRESULT		Load3DNvFile();
 	HRESULT		DeleteNvFile();
 	HRESULT		RefreshNvFile();
 
