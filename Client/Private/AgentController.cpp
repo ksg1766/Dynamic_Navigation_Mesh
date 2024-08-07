@@ -65,8 +65,8 @@ HRESULT CAgentController::Initialize(void* pArg)
 	m_vLinearSpeed = m_vMaxLinearSpeed;
 
 #pragma region AStarPerformance
-	if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
-		return E_FAIL;
+	/*if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
+		return E_FAIL;*/
 #pragma endregion AStarPerformance
 
 	return S_OK;
@@ -616,7 +616,7 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 		return false;
 	}
 
-	m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+	//m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
 
 	m_pCurrentCell = FindCellByPosition(m_pTransform->GetPosition());	// TODO: ...
 	m_pDestCell = FindCellByPosition(vPickedPos);
@@ -631,8 +631,8 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 			m_isMoving = true;
 
-			volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-			fAStarPerformance = fAStarPerformance;
+			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+			fAStarPerformance = fAStarPerformance;*/
 			return true;
 		}
 	}
@@ -650,16 +650,16 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 			m_isMoving = true;
 
-			volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-			fAStarPerformance = fAStarPerformance;
+			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+			fAStarPerformance = fAStarPerformance;*/
 			return true;
 		}
 
 		m_vDestPos = m_pTransform->GetPosition();
 	}
 
-	volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-	fAStarPerformance = fAStarPerformance;
+	/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+	fAStarPerformance = fAStarPerformance;*/
 	return false;
 }
 
