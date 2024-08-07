@@ -500,6 +500,85 @@ HRESULT CNavMeshView::BakeHeightMapObstacles()
 	return S_OK;
 }
 
+HRESULT CNavMeshView::BakeHeightMapSlope()
+{
+	Reset();
+	InitialSetting();
+
+	vector<vector<Vec3>> vecOutlines;
+
+	if (FAILED(CalculateTerrainOutline(vecOutlines)))
+		return E_FAIL;
+
+	Obst* pObst = nullptr;
+
+	for (_int i = 0; i < vecOutlines.size(); ++i)
+	{
+		pObst = new Obst;
+
+		for (_int j = 0; j < vecOutlines[i].size(); ++j)
+		{
+			pObst->vecPoints.emplace_back(vecOutlines[i][j]);
+		}
+
+		TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
+		for (auto vPoint : pObst->vecPoints)
+		{
+			if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+			if (fMinX > vPoint.x) fMinX = vPoint.x;
+
+			if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+			if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+		}
+
+		const _float fAABBOffset = 0.05f;
+		pObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+		pObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
+
+		SetPolygonHoleCenter(*pObst);
+
+		m_vecObstacles.push_back(pObst);
+		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.size()));
+
+		//DynamicCreate(*pObst);
+
+		for (auto& iter : pObst->vecPoints)
+		{
+			BoundingSphere tSphere(iter, 0.1f);
+
+			m_vecObstaclePointSpheres.emplace_back(tSphere);
+		}
+	}
+
+	//
+
+	for (auto pObst : m_vecObstacles)
+	{
+		for (auto& vPoint : pObst->vecPoints)
+		{
+			m_vecPoints.push_back(vPoint);
+		}
+	}
+
+	SafeReleaseTriangle(m_tIn);
+	SafeReleaseTriangle(m_tOut);
+
+	UpdatePointList(m_tIn, m_vecPoints);
+	UpdateSegmentList(m_tIn, m_vecPoints);
+	UpdateHoleList(m_tIn);
+	UpdateRegionList(m_tIn);
+
+	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
+
+	if (FAILED(BakeNavMesh()))
+	{
+		return E_FAIL;
+	}
+	//
+
+	return S_OK;
+}
+
 HRESULT CNavMeshView::UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst)
 {
 	tIn.numberofpoints = vecPoints.size() + ((nullptr == pObst) ? 0 : pObst->vecPoints.size());
@@ -1447,6 +1526,130 @@ HRESULT CNavMeshView::CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutli
 		_float fEpsilon = 1.2f;
 		RamerDouglasPeucker(vecClearOutlines[i], fEpsilon, vecOutlines[i]);
 	}	
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines)
+{
+	if (nullptr == m_pTerrainBuffer)
+	{
+		return E_FAIL;
+	}
+
+	const vector<Vec3>& vecSurfaceVtx = m_pTerrainBuffer->GetTerrainVertices();
+	const vector<FACEINDICES32>& vecSurfaceIdx = m_pTerrainBuffer->GetTerrainIndices();
+
+	_float fDistance = FLT_MAX;
+	_float fMinDistance = FLT_MAX;
+	Vec3   vPickPosition = -Vec3::One;
+
+	Ray cVerticalRay;
+	Ray cHorizontalRay;
+
+	vector<vector<_bool>> vecIntersected(1024, vector<_bool>(1024, false));
+
+	for (auto idx : vecSurfaceIdx)
+	{
+		const Vec3& v0 = vecSurfaceVtx[idx._0];
+		const Vec3& v1 = vecSurfaceVtx[idx._1];
+		const Vec3& v2 = vecSurfaceVtx[idx._2];
+
+		Vec3 v10 = v1 - v0;
+		Vec3 v21 = v2 - v1;
+		Vec3 vResult;
+		v10.Cross(v21, vResult);
+
+		vResult.Normalize();
+
+		Vec3 vFloor(vResult.x, 0.0f, vResult.z);
+		vFloor.Normalize();
+
+		if (cosf(XMConvertToRadians(90.0f - 45.0f)) >= vResult.Dot(vFloor))
+		{
+			// 등고선을 terrain vtx y값으로 정하게 되면 맵 테두리 등에서 따로 처리할 문제가 생김.
+			// 오래걸리더라도 0.05f 정도 작은 값 y에 offset주고 RayCasting해서 Outline 따내도록 해보자.
+			// 이후 static 정점 & index 추가해서 삼각형 제대로 구성하도록 해보고 navmesh y적용해서 렌더링 및 지형타기까지.
+			// 
+
+			CellData* tCellData = new CellData;
+			tCellData->vPoints[0] = v0;
+			tCellData->vPoints[1] = v1;
+			tCellData->vPoints[2] = v2;
+
+			m_vecCells.push_back(tCellData);
+		}
+	}
+
+	//////////
+	for (_int i = -512; i < 512; ++i)
+	{
+		cVerticalRay.position = Vec3((_float)i, 0.2f, -512.0f);
+		cVerticalRay.direction = Vec3::Backward;
+
+		cHorizontalRay.position = Vec3(-512.0f, 0.2f, (_float)i);
+		cHorizontalRay.direction = Vec3::Right;
+
+		for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
+		{
+			if (cVerticalRay.Intersects(
+				vecSurfaceVtx[vecSurfaceIdx[j]._0],
+				vecSurfaceVtx[vecSurfaceIdx[j]._1],
+				vecSurfaceVtx[vecSurfaceIdx[j]._2],
+				OUT fDistance))
+			{
+				Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
+
+				if (isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z) || isnan(fDistance))
+				{
+					continue;
+				}
+
+				vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = true;
+			}
+
+			if (cHorizontalRay.Intersects(
+				vecSurfaceVtx[vecSurfaceIdx[j]._0],
+				vecSurfaceVtx[vecSurfaceIdx[j]._1],
+				vecSurfaceVtx[vecSurfaceIdx[j]._2],
+				OUT fDistance))
+			{
+				Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
+
+				if (isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z) || isnan(fDistance))
+				{
+					continue;
+				}
+
+				vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = true;
+			}
+		}
+	}
+	//////////
+
+	vector<vector<Vec3>> vecExpandedOutlines;
+	vector<vector<iVec3>> vecTightOutlines;
+	vector<vector<Vec3>> vecClearOutlines;
+
+	DfsTerrain(vecIntersected, vecTightOutlines);
+
+	for (_int i = 0; i < vecTightOutlines.size(); ++i)
+	{
+		_float fDistance = 0.9f;
+		vecExpandedOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
+	}
+
+	for (_int i = 0; i < vecExpandedOutlines.size(); ++i)
+	{
+		vecClearOutlines.push_back(ProcessIntersections(vecExpandedOutlines[i]));
+	}
+
+	vecOutlines.resize(vecClearOutlines.size());
+	for (_int i = 0; i < vecClearOutlines.size(); ++i)
+	{
+		_float fEpsilon = 1.2f;
+		RamerDouglasPeucker(vecClearOutlines[i], fEpsilon, vecOutlines[i]);
+	}
 
 	return S_OK;
 }

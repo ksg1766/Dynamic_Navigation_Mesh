@@ -49,6 +49,7 @@ private:
 	HRESULT		BakeNavMesh();
 	HRESULT		BakeSingleObstacleData();
 	HRESULT		BakeHeightMapObstacles();
+	HRESULT		BakeHeightMapSlope();
 
 	HRESULT		UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
 	HRESULT		UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
@@ -70,6 +71,7 @@ private:
 private:
 	HRESULT		CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
 	HRESULT		CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutlines);
+	HRESULT		CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines);
 	void		Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vector<iVec3>& vecLongest);
 	void		DfsTerrain(vector<vector<_bool>>& vecPoints, OUT vector<vector<iVec3>>& vecOutlines);
 	Vec3		CalculateNormal(const iVec3& vPrev, const iVec3& vCurrent, const iVec3& vNext);
@@ -169,5 +171,5 @@ public:
 	static class CNavMeshView* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, void* pArg = nullptr);
 	virtual void Free() override;
 };
-
+// https://www.slideshare.net/OrenKoler1/path-finding-in-hazard-terrain
 END
