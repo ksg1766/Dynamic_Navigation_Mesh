@@ -18,7 +18,7 @@ void CellData::CW()
 	}
 }
 
-void CellData::SetUpNormals()
+void CellData::SetUpData()
 {
 	Vec3 vLines[LINE_END];
 
@@ -26,10 +26,21 @@ void CellData::SetUpNormals()
 	vLines[LINE_BC] = vPoints[POINT_C] - vPoints[POINT_B];
 	vLines[LINE_CA] = vPoints[POINT_A] - vPoints[POINT_C];
 
-	for (size_t i = 0; i < LINE_END; i++)
+	for (uint8 i = 0; i < LINE_END; i++)
 	{
 		vNormals[i] = Vec3(vLines[i].z * -1.f, 0.f, vLines[i].x);
 		vNormals[i].Normalize();
+	}
+
+	for (uint8 i = 0; i < LINE_END; i++)
+	{
+		fHalfWidths[i] = CalculateHalfWidth((LINES)((i + 2) % 3), (LINES)i);
+		vLines[i].Normalize();
+	}
+	
+	for (uint8 i = 0; i < LINE_END; i++)
+	{
+		fTheta[i] = acosf(vLines[i].Dot(-vLines[(i + 2) % 3]));
 	}
 }
 
@@ -122,7 +133,24 @@ _float CellData::CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ
 	return ::max(::max(fCostPoint2Edge, fCostEdge2Edge), fCostHeuristicDiff);
 }
 
-_float CellData::CalculateWidth(LINES eLine1, LINES eLine2)
+_float CellData::CostBetweenMax(POINTS eP1, POINTS eP2, POINTS eQ1, POINTS eQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH, _float fAgentRadius)
+{
+	Vec3 vClosestPoint2Edge = ProjectionPoint2Edge(vStart, vPoints[eQ1], vPoints[eQ2]);
+	_float fCostPoint2Edge = (vClosestPoint2Edge - vStart).Length();
+
+	POINTS eBetween = POINT_END;
+	(eP1 == eQ1) ? eBetween = eP1 : eBetween = eP2;
+
+	_float fCostEdge2Edge = fParentG + fAgentRadius * fTheta[eBetween];
+
+	Vec3 vMidPoint = 0.5f * (vPoints[eP1] + vPoints[eP2]);
+	_float fNeighborH = HeuristicCostEuclidean(vMidPoint, vDest);
+	_float fCostHeuristicDiff = fParentG + fParentH - fNeighborH;
+
+	return ::max(::max(fCostPoint2Edge, fCostEdge2Edge), fCostHeuristicDiff);
+}
+
+_float CellData::CalculateHalfWidth(LINES eLine1, LINES eLine2)
 {
 	if (eLine1 == eLine2)
 		return -FLT_MAX;
@@ -138,11 +166,11 @@ _float CellData::CalculateWidth(LINES eLine1, LINES eLine2)
 		(vPoints[(c + 1) % 3] - vPoints[C]).Length());
 
 	if (IsObtuse(vPoints[C], vPoints[A], vPoints[B]) || IsObtuse(vPoints[C], vPoints[B], vPoints[A]))
-		return d;
+		return 0.5f * d;
 	else if (nullptr == pNeighbors[c])
-		return CostBetweenPoint2Edge(vPoints[C], vPoints[A], vPoints[B]);
+		return 0.5f * CostBetweenPoint2Edge(vPoints[C], vPoints[A], vPoints[B]);
 	else
-		return SearchWidth(vPoints[C], this, c, d);
+		return 0.5f * SearchWidth(vPoints[C], this, c, d);
 }
 
 _float CellData::SearchWidth(const Vec3& C, CellData* T, LINES e, _float d)

@@ -319,7 +319,7 @@ HRESULT CTerrain::InitializeWithHeightMap(const wstring& strHeightMapPath)
 			_uint		iIndex = i * m_iNumVerticesX + j;
 
 			BYTE* startPtr = reinterpret_cast<BYTE*>(pPixel) + 3 * iIndex;
-			m_pVerticesPos[iIndex] = _float3(j - m_iNumVerticesX / 2.f, (*startPtr & 0x000000ff) / 5.f, i - m_iNumVerticesZ / 2.f);
+			m_pVerticesPos[iIndex] = _float3(j - m_iNumVerticesX / 2.f, (*startPtr & 0x000000ff) / 25.f, i - m_iNumVerticesZ / 2.f);
 
 			/*m_pVerticesPos[iIndex].x *= 0.5f;
 			m_pVerticesPos[iIndex].z *= 0.5f;*/

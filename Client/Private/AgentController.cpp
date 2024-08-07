@@ -65,8 +65,8 @@ HRESULT CAgentController::Initialize(void* pArg)
 	m_vLinearSpeed = m_vMaxLinearSpeed;
 
 #pragma region AStarPerformance
-	/*if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
-		return E_FAIL;*/
+	if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
+		return E_FAIL;
 #pragma endregion AStarPerformance
 
 	return S_OK;
@@ -293,10 +293,10 @@ _bool CAgentController::AStar()
 			// 4.1 Width Calculation
 			auto& [pParent, ePassedLine] = Path[pCurrent];
 
-			if (LINE_END != ePassedLine)
-			{
-				LINES eLine1 = LINE_END;
+			LINES eLine1 = LINE_END;
 
+			if (LINE_END != ePassedLine)
+			{				
 				for (uint8 j = LINE_AB; j < LINE_END; ++j)
 				{
 					if (pCurrent->pNeighbors[j] == pParent)
@@ -306,8 +306,8 @@ _bool CAgentController::AStar()
 					}
 				}
 
-				_float fWidth = pCurrent->CalculateWidth(eLine1, (LINES)(i));
-				if (fWidth < 2.0f * m_fAgentRadius)
+				_float fHalfWidth = pCurrent->fHalfWidths[POINTS((5 - eLine1 - i) % 3)];
+				if (fHalfWidth < m_fAgentRadius)
 				{
 					continue;
 				}
@@ -346,14 +346,28 @@ _bool CAgentController::AStar()
 				//vCurrEdgeDir.Normalize();
 
 				//_float fTheta = acosf(vCurrEdgeDir.Dot(vNextEdgeDir));
+				
+				/*_float fTheta = pCurrent->fTheta[((POINTS)eLine1 == (POINTS)i) ? (POINTS)eLine1 : (POINTS)((eLine1 + 1) % POINT_END)];
 
-				//neighbor_g = tNode.g + m_fAgentRadius * fTheta;
+				neighbor_g = tNode.g + m_fAgentRadius * fTheta;*/
 
-				neighbor_g = CellData::CostBetweenMax(
+				/*neighbor_g = CellData::CostBetweenMax(
 					pParent->vPoints[ePassedLine],
 					pParent->vPoints[(ePassedLine + 1) % POINT_END],
 					pCurrent->vPoints[i],
 					pCurrent->vPoints[(i + 1) % POINT_END],
+					vStartPos,
+					m_vDestPos,
+					tNode.g,
+					tNode.f - tNode.g,
+					m_fAgentRadius
+				);*/
+
+				neighbor_g = pCurrent->CostBetweenMax(
+					(POINTS)eLine1,
+					(POINTS)((eLine1 + 1) % POINT_END),
+					(POINTS)i,
+					(POINTS)((i + 1) % POINT_END),
 					vStartPos,
 					m_vDestPos,
 					tNode.g,
@@ -454,11 +468,29 @@ void CAgentController::FunnelAlgorithm()
 
 		Vec3 vAvgL = vLineL0 + vLineL1;
 		Vec3 vAvgR = vLineR0 + vLineR1;
-		if (Vec3::Zero != vAvgL) vAvgL.Normalize();
-		if (Vec3::Zero != vAvgR) vAvgR.Normalize();
 
-		Vec3 vPerpendL = Vec3(m_fAgentRadius * vAvgL.z, vAvgL.y, m_fAgentRadius * -vAvgL.x);
-		Vec3 vPerpendR = Vec3(m_fAgentRadius * -vAvgR.z, vAvgR.y, m_fAgentRadius * vAvgR.x);
+		Vec3 vPerpendL = Vec3::Zero;
+		Vec3 vPerpendR = Vec3::Zero;
+
+		if (Vec3::Zero != vAvgL)
+		{
+			vAvgL.Normalize();
+			vPerpendL = Vec3(m_fAgentRadius * vAvgL.z, vAvgL.y, m_fAgentRadius * -vAvgL.x);
+		}
+		else
+		{
+			vPerpendL = m_dqOffset.back().first;
+		}
+
+		if (Vec3::Zero != vAvgR)
+		{
+			vAvgR.Normalize();
+			vPerpendR = Vec3(m_fAgentRadius * -vAvgR.z, vAvgR.y, m_fAgentRadius * vAvgR.x);
+		}
+		else
+		{
+			vPerpendR = m_dqOffset.back().second;
+		}
 
 		m_dqOffset.emplace_back(vPerpendL, vPerpendR);
 	}
@@ -478,10 +510,10 @@ void CAgentController::FunnelAlgorithm()
 
 	for (_int i = 1; i < m_dqOffset.size(); ++i)
 	{
-		const auto& [vOriginL, vOriginR] = m_dqPortals[i];
+		const auto& [vLeft, vRight] = m_dqPortals[i];
 
-		Vec3 vLeft = vOriginL;
-		Vec3 vRight = vOriginR;
+		//Vec3 vLeft = vOriginL;
+		//Vec3 vRight = vOriginR;
 
 		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
 		{
@@ -492,7 +524,7 @@ void CAgentController::FunnelAlgorithm()
 			}
 			else
 			{
-				if (Vec3::Zero != m_dqOffset[iLeftIndex].first)
+				//if (Vec3::Zero != m_dqOffset[iLeftIndex].first)
 					m_dqWayPoints.push_back(vPortalLeft + m_dqOffset[iLeftIndex].first);	// Right가 Left를 넘었다면 Left를 waypoint에 추가				
 
 				vPortalApex = vPortalLeft;				// L을 새로운 시작점으로
@@ -515,7 +547,7 @@ void CAgentController::FunnelAlgorithm()
 			}
 			else
 			{
-				if (Vec3::Zero != m_dqOffset[iRightIndex].second)
+				//if (Vec3::Zero != m_dqOffset[iRightIndex].second)
 					m_dqWayPoints.push_back(vPortalRight + m_dqOffset[iRightIndex].second);
 
 				vPortalApex = vPortalRight;
@@ -599,8 +631,8 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 			m_isMoving = true;
 
-			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-			fAStarPerformance = fAStarPerformance;*/
+			volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+			fAStarPerformance = fAStarPerformance;
 			return true;
 		}
 	}
@@ -618,16 +650,16 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 			m_isMoving = true;
 
-			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-			fAStarPerformance = fAStarPerformance;*/
+			volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+			fAStarPerformance = fAStarPerformance;
 			return true;
 		}
 
 		m_vDestPos = m_pTransform->GetPosition();
 	}
 
-	/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-	fAStarPerformance = fAStarPerformance;*/
+	volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
+	fAStarPerformance = fAStarPerformance;
 	return false;
 }
 

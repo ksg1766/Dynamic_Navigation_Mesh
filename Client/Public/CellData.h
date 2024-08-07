@@ -25,9 +25,11 @@ struct CellData
 	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
 	array<CellData*, LINE_END> pNeighbors = { nullptr, nullptr, nullptr };
 	array<Vec3, LINE_END> vNormals = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
+	array<_float, LINE_END> fHalfWidths = { FLT_MAX, FLT_MAX, FLT_MAX };
+	array<_float, LINE_END> fTheta = { FLT_MAX, FLT_MAX, FLT_MAX };
 	
 	void	CW();
-	void	SetUpNormals();
+	void	SetUpData();
 
 	_bool	ComparePoints(const Vec3& pSour, const Vec3& pDest);
 	_bool	IsOut(const Vec3& vPoint, OUT CellData*& pNeighbor);
@@ -51,13 +53,14 @@ struct CellData
 	}
 	
 	static _float CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH, _float fAgentRadius);
+	_float CostBetweenMax(POINTS eP1, POINTS eP2, POINTS eQ1, POINTS eQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH, _float fAgentRadius);
 	
 	inline _bool IsObtuse(const Vec3& vP0, const Vec3& vP1, const Vec3& vP2)
 	{
 		return (vP0 - vP2).LengthSquared() >= ((vP2 - vP1).LengthSquared() + (vP1 - vP0).LengthSquared());
 	}
 
-	_float CalculateWidth(LINES eLine1, LINES eLine2);
+	_float CalculateHalfWidth(LINES eLine1, LINES eLine2);
 	_float SearchWidth(const Vec3& C, CellData* T, LINES e, _float d);
 
 	// cache

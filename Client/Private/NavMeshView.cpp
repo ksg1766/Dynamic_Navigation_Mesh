@@ -351,12 +351,14 @@ HRESULT CNavMeshView::BakeNavMesh()
 		pCellData->vPoints[POINT_B] = vtx[POINT_B];
 		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
-		pCellData->SetUpNormals();
+		//pCellData->SetUpData();
 
 		m_vecCells.push_back(pCellData);
 	}
 
 	SetUpNeighbors(m_vecCells);
+
+	for_each(m_vecCells.begin(), m_vecCells.end(), [](CellData* pCell) { pCell->SetUpData(); });
 
 	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
 	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
@@ -632,7 +634,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
-	if (FAILED(GetIntersectedCells(tObst, setIntersected)))
+	if (FAILED(GetIntersectedCells(tObst, setIntersected, true)))
 	{
 		return E_FAIL;
 	}
@@ -713,7 +715,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		pCellData->vPoints[POINT_B] = vtx[POINT_B];
 		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
-		pCellData->SetUpNormals();
+		pCellData->SetUpData();
 
 		vecNewCells.emplace_back(pCellData);
 	}
@@ -758,6 +760,8 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		cell->isNew = true;
 		m_vecCells.emplace_back(cell);
 	}
+
+	for_each(vecNewCells.begin(), vecNewCells.end(), [](CellData* pCell) { pCell->SetUpData(); });
 
 	SafeReleaseTriangle(tIn);
 	SafeReleaseTriangle(tOut);
@@ -915,7 +919,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		pCellData->vPoints[POINT_B] = vtx[POINT_B];
 		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
-		pCellData->SetUpNormals();
+		//pCellData->SetUpData();
 
 		vecNewCells.emplace_back(pCellData);
 	}
@@ -960,6 +964,8 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		cell->isNew = true;
 		m_vecCells.emplace_back(cell);
 	}
+
+	for_each(vecNewCells.begin(), vecNewCells.end(), [](CellData* pCell) { pCell->SetUpData(); });
 
 	SafeReleaseTriangle(tIn);
 	SafeReleaseTriangle(tOut);
@@ -1171,7 +1177,7 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 
 			auto [begin, end] = m_umapCellGrids.equal_range(iKey);
 
-			for (auto cell = begin; cell != end; ++cell)
+			for (auto cell = begin; cell != end;)
 			{
 				if (true == cell->second->isNew)
 				{
@@ -1184,9 +1190,12 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 
 					if (true == bPop)
 					{
-						
+						cell = m_umapCellGrids.erase(cell);
+						continue;
 					}
 				}
+
+				++cell;
 			}
 		}
 	}
