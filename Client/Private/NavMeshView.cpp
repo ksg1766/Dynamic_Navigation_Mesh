@@ -339,11 +339,21 @@ HRESULT CNavMeshView::BakeNavMesh()
 		_int iIdx2 = m_tOut.trianglelist[i * 3 + POINT_B];
 		_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
 
+		_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
+		auto height = m_umapPointHeights.find(m_tOut.pointlist[iIdx1 * 2] + m_tOut.pointlist[iIdx1 * 2 + 1]);
+		if (m_umapPointHeights.end() != height) { y1 = height->second.first - height->second.second; }
+
+		height = m_umapPointHeights.find(m_tOut.pointlist[iIdx2 * 2] + m_tOut.pointlist[iIdx2 * 2 + 1]);
+		if (m_umapPointHeights.end() != height) { y2 = height->second.first - height->second.second; }
+
+		height = m_umapPointHeights.find(m_tOut.pointlist[iIdx3 * 2] + m_tOut.pointlist[iIdx3 * 2 + 1]);
+		if (m_umapPointHeights.end() != height) { y3 = height->second.first - height->second.second; }
+
 		Vec3 vtx[POINT_END] =
 		{
-			{ m_tOut.pointlist[iIdx1 * 2], 0.f, m_tOut.pointlist[iIdx1 * 2 + 1] },
-			{ m_tOut.pointlist[iIdx2 * 2], 0.f, m_tOut.pointlist[iIdx2 * 2 + 1] },
-			{ m_tOut.pointlist[iIdx3 * 2], 0.f, m_tOut.pointlist[iIdx3 * 2 + 1] },
+			{ m_tOut.pointlist[iIdx1 * 2], y1, m_tOut.pointlist[iIdx1 * 2 + 1] },
+			{ m_tOut.pointlist[iIdx2 * 2], y2, m_tOut.pointlist[iIdx2 * 2 + 1] },
+			{ m_tOut.pointlist[iIdx3 * 2], y3, m_tOut.pointlist[iIdx3 * 2 + 1] },
 		};
 
 		CellData* pCellData = new CellData;
@@ -357,7 +367,10 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 	SetUpNeighbors(m_vecCells);
 
-	for_each(m_vecCells.begin(), m_vecCells.end(), [](CellData* pCell) { pCell->SetUpData(); });
+	for (auto cell : m_vecCells)
+	{
+		cell->SetUpData();
+	}
 
 	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
 	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
@@ -505,18 +518,12 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 	//InitialSetting();
 	
 	m_vecPoints.push_back(Vec3(-512.0f, 0.f, -512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, -512.0f), 2.f));
-
 	m_vecPoints.push_back(Vec3(+512.0f, 0.f, -512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, -512.0f), 2.f));
-
 	m_vecPoints.push_back(Vec3(+512.0f, 0.f, +512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, +512.0f), 2.f));
-
 	m_vecPoints.push_back(Vec3(-512.0f, 0.f, +512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, +512.0f), 2.f));
 
 	m_iStaticPointCount = m_vecPoints.size();
+	m_vecSegments.push_back(m_iStaticPointCount);
 
 	if (FAILED(UpdatePointList(m_tIn, m_vecPoints)))
 		return E_FAIL;
@@ -552,8 +559,11 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 		{
 			m_tIn.pointlist[2 * k + 0] = vecOutlines[i][j].x;
 			m_tIn.pointlist[2 * k + 1] = vecOutlines[i][j].z;
+
+			m_vecPoints.push_back(vecOutlines[i][j]);
 			++k;
 		}
+		m_vecSegments.push_back(m_vecPoints.size());
 	}
 
 	m_tIn.numberofsegments = m_tIn.numberofpoints;
@@ -563,8 +573,9 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 
 		_int iStartIndex = m_iStaticPointCount;
 		for (_int i = 0; i < vecOutlines.size(); ++i)
-		{			
+		{
 			for (_int j = 0; j < vecOutlines[i].size() - 1; ++j)
+			//for (_int j = 0; j < m_vecSegments[i]; ++j)
 			{
 				m_tIn.segmentlist[2 * (iStartIndex + j) + 0] = iStartIndex + j + 0;
 				m_tIn.segmentlist[2 * (iStartIndex + j) + 1] = iStartIndex + j + 1;
@@ -575,7 +586,14 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 			m_tIn.segmentlist[2 * iCache + 1] = iStartIndex;
 
 			iStartIndex += vecOutlines[i].size();
-		}		
+		}
+	}
+
+	if (false == m_umapPointHeights.empty()) { m_umapPointHeights.clear(); }
+
+	for (_int i = 0; i < m_vecPoints.size(); ++i)
+	{
+		m_umapPointHeights.emplace(m_vecPoints[i].x + m_vecPoints[i].z, pair(m_vecPoints[i].z, m_vecPoints[i].y));
 	}
 
 	UpdateHoleList(m_tIn);
@@ -852,7 +870,10 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		m_vecCells.emplace_back(cell);
 	}
 
-	for_each(vecNewCells.begin(), vecNewCells.end(), [](CellData* pCell) { pCell->SetUpData(); });
+	for (auto cell : vecNewCells)
+	{
+		cell->SetUpData();
+	}
 
 	SafeReleaseTriangle(tIn);
 	SafeReleaseTriangle(tOut);
@@ -1056,7 +1077,10 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		m_vecCells.emplace_back(cell);
 	}
 
-	for_each(vecNewCells.begin(), vecNewCells.end(), [](CellData* pCell) { pCell->SetUpData(); });
+	for (auto cell : vecNewCells)
+	{
+		cell->SetUpData();
+	}
 
 	SafeReleaseTriangle(tIn);
 	SafeReleaseTriangle(tOut);
@@ -1566,14 +1590,15 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 	// 이후 static 정점 & index 추가해서 삼각형 제대로 구성하도록 해보고 navmesh y적용해서 렌더링 및 지형타기까지.
 	// 
 
-	for (_float h = 0.1f; h < 0.5f/*50.0f*/; h += 0.25f)
+	for (_int h = 0; h < 65; h += 2)
 	{
-		for (_int i = -512; i < 512; ++i)
+		//for (_int i = -512; i < 512; ++i)
+		for (_int i = -512; i < 512; i += 2)
 		{
-			cVerticalRay.position = Vec3((_float)i, h, -512.0f);
+			cVerticalRay.position = Vec3((_float)i, (_float)h + 0.2f, -512.0f);
 			cVerticalRay.direction = Vec3::Backward;
 
-			cHorizontalRay.position = Vec3(-512.0f, h, (_float)i);
+			cHorizontalRay.position = Vec3(-512.0f, (_float)h + 0.2f, (_float)i);
 			cHorizontalRay.direction = Vec3::Right;
 
 			for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
@@ -1584,14 +1609,20 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 					vecSurfaceVtx[vecSurfaceIdx[j]._2],
 					OUT fDistance))
 				{
-					Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
-
-					if (isnan(fDistance) || isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z))
+					if (isnan(fDistance))
 					{
 						continue;
 					}
 
-					vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(4.0f * (h - 0.1f));
+					Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
+
+					_int iX = (_int)floor(vPos.x);
+					_int iZ = (_int)floor(vPos.z);
+					if (iX % 2 != 0)	++iX;
+					if (iZ % 2 != 0)	++iZ;
+
+					//vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(vPos.y);
+					vecIntersected[iX + 512][iZ + 512] = (_int)round(vPos.y);
 				}
 
 				if (cHorizontalRay.Intersects(
@@ -1600,14 +1631,20 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 					vecSurfaceVtx[vecSurfaceIdx[j]._2],
 					OUT fDistance))
 				{
-					Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
-
-					if (isnan(fDistance) || isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z))
+					if (isnan(fDistance))
 					{
 						continue;
 					}
 
-					vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(4.0f * (h - 0.1f));
+					Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
+
+					_int iX = (_int)floor(vPos.x);
+					_int iZ = (_int)floor(vPos.z);
+					if (iX % 2 != 0)	++iX;
+					if (iZ % 2 != 0)	++iZ;
+
+					//vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(vPos.y);
+					vecIntersected[iX + 512][iZ + 512] = (_int)round(vPos.y);
 				}
 			}
 		}
@@ -1637,13 +1674,25 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 		RamerDouglasPeucker(vecClearOutlines[i], fEpsilon, vecOutlines[i]);
 	}
 
-	for (_int i = 0; i < vecOutlines.size(); ++i)
+	//for (_int i = 0; i < vecOutlines.size(); ++i)
+	for (auto iter = vecOutlines.begin(); iter != vecOutlines.end();)
 	{
-		for (_int j = 0; j < vecOutlines[i].size(); ++j)
+		if (iter->size() < 3)
 		{
-			vecOutlines[i][j].y = 0.25f * vecOutlines[i][j].y + 0.1f;
+			iter->clear();
+			iter = vecOutlines.erase(iter);
+			continue;
 		}
+		++iter;
 	}
+
+	//for (_int i = 0; i < vecOutlines.size(); ++i)
+	//{
+	//	for (_int j = 0; j < vecOutlines[i].size(); ++j)
+	//	{
+	//		vecOutlines[i][j].y = /*0.4f * */vecOutlines[i][j].y + 0.1f;
+	//	}
+	//}
 
 	return S_OK;
 }
@@ -1689,23 +1738,24 @@ void CNavMeshView::DfsTerrain(vector<vector<_int>>& vecPoints, OUT vector<vector
 {
 	const vector<pair<_int, _int>> vecDirections =
 	{
-		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
+		//{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
+		{2, 0}, {-2, 0}, {0, 2}, {0, -2}, {2, 2}, {-2, -2}, {2, -2}, {-2, 2}
 	};
 
 	_int iRows = vecPoints.size();
 	_int iCols = vecPoints[0].size();
 	set<iVec3> setVisited;
 
-	for (_int i = 0; i < iRows; ++i)
+	for (_int i = 0; i < iRows; i += 2)
 	{
-		for (_int j = 0; j < iCols; ++j)
+		for (_int j = 0; j < iCols; j += 2)
 		{
-			if (vecPoints[i][j] && setVisited.find({ i - 512, 0, j - 512 }) == setVisited.end())
+			if (vecPoints[i][j] && setVisited.find({ i - 512, vecPoints[i][j], j - 512 }) == setVisited.end())
 			{
 				stack<pair<iVec3, vector<iVec3>>> stkPoint;
 				vector<iVec3> vecOutline;
 				stkPoint.push({ {i - 512, vecPoints[i][j], j - 512}, {{i - 512, vecPoints[i][j], j - 512}} });
-				setVisited.emplace(i - 512, 0, j - 512);
+				setVisited.emplace(i - 512, vecPoints[i][j], j - 512);
 
 				while (!stkPoint.empty())
 				{
@@ -2180,9 +2230,155 @@ HRESULT CNavMeshView::SaveNvFile()
 	}
 
 	fs::path finalPath;
-	do 
+	do
 	{
 		finalPath = strPath.generic_string() + "ObstacleData" + to_string(iNumberofFiles++) + ".xml";
+	} while (true == fs::directory_entry(finalPath).exists());
+
+	if (tinyxml2::XML_SUCCESS == document->SaveFile(finalPath.generic_string().c_str()))
+	{
+		s2cPushBack(m_vecDataFiles, finalPath.filename().generic_string());
+	}
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::Save3DNvFile()
+{
+	fs::path strPath("../Bin/Resources/LevelData/" + m_strFilePath + "/");
+
+	fs::create_directories(strPath);
+
+	shared_ptr<tinyxml2::XMLDocument> document = make_shared<tinyxml2::XMLDocument>();
+
+	tinyxml2::XMLDeclaration* decl = document->NewDeclaration();
+	document->LinkEndChild(decl);
+
+	tinyxml2::XMLElement* root = document->NewElement("Obstacles");
+	document->LinkEndChild(root);
+
+	size_t iNumberofFiles = std::distance(fs::directory_iterator(strPath), fs::directory_iterator{});
+
+	tinyxml2::XMLElement* node = nullptr;
+	tinyxml2::XMLElement* element = nullptr;
+
+	for (_int i = 0; i < m_vecObstacles.size(); ++i)
+	{
+		string strName = "Obstacle" + to_string(i);
+		node = document->NewElement(strName.c_str());
+
+		root->LinkEndChild(node);
+		{
+			map<LAYERTAG, CLayer*>& mapLayer = m_pGameInstance->GetCurrentLevelLayers();
+			auto iter = mapLayer.find(LAYERTAG::GROUND);
+			vector<CGameObject*>* vecGroundObjects = nullptr;
+
+			if (mapLayer.end() != iter)
+			{
+				vecGroundObjects = &iter->second->GetGameObjects();
+			}
+
+			if (nullptr != vecGroundObjects && true == vecGroundObjects->empty())
+			{
+				//return E_FAIL;
+			}
+
+			element = document->NewElement("GameObject");
+			if (nullptr != vecGroundObjects)
+			{
+				element->SetText(Utils::ToString((*vecGroundObjects)[i]->GetObjectTag()).c_str());
+				node->LinkEndChild(element);
+
+				element = document->NewElement("WorldMatrix");
+				element->SetAttribute("_11", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._11);
+				element->SetAttribute("_12", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._12);
+				element->SetAttribute("_13", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._13);
+				element->SetAttribute("_14", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._14);
+				element->SetAttribute("_21", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._21);
+				element->SetAttribute("_22", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._22);
+				element->SetAttribute("_23", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._23);
+				element->SetAttribute("_24", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._24);
+				element->SetAttribute("_31", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._31);
+				element->SetAttribute("_32", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._32);
+				element->SetAttribute("_33", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._33);
+				element->SetAttribute("_34", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._34);
+				element->SetAttribute("_41", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._41);
+				element->SetAttribute("_42", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._42);
+				element->SetAttribute("_43", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._43);
+				element->SetAttribute("_44", (*vecGroundObjects)[i]->GetTransform()->WorldMatrix()._44);
+			}
+			else
+				element->SetText(".");
+
+			node->LinkEndChild(element);
+
+			element = document->NewElement("InnerPoint");
+			element->SetAttribute("X", m_vecObstacles[i]->vInnerPoint.x);
+			element->SetAttribute("Y", m_vecObstacles[i]->vInnerPoint.y);
+			element->SetAttribute("Z", m_vecObstacles[i]->vInnerPoint.z);
+			node->LinkEndChild(element);
+
+			element = document->NewElement("AABBCenter");
+			element->SetAttribute("X", m_vecObstacles[i]->tAABB.Center.x);
+			element->SetAttribute("Y", m_vecObstacles[i]->tAABB.Center.y);
+			element->SetAttribute("Z", m_vecObstacles[i]->tAABB.Center.z);
+			node->LinkEndChild(element);
+
+			element = document->NewElement("AABBExtents");
+			element->SetAttribute("X", m_vecObstacles[i]->tAABB.Extents.x);
+			element->SetAttribute("Y", m_vecObstacles[i]->tAABB.Extents.y);
+			element->SetAttribute("Z", m_vecObstacles[i]->tAABB.Extents.z);
+			node->LinkEndChild(element);
+
+			element = document->NewElement("Points");
+			tinyxml2::XMLElement* point = nullptr;
+			for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size(); ++j)
+			{
+				string strName = "Point" + to_string(j);
+				point = document->NewElement(strName.c_str());
+				point->SetAttribute("X", m_vecObstacles[i]->vecPoints[j].x);
+				point->SetAttribute("Y", m_vecObstacles[i]->vecPoints[j].y);
+				point->SetAttribute("Z", m_vecObstacles[i]->vecPoints[j].z);
+				element->LinkEndChild(point);
+			}
+			node->LinkEndChild(element);
+		}
+	}
+
+	node = document->NewElement("StaticPoints");
+	root->LinkEndChild(node);
+
+	element = document->NewElement("Points");
+	tinyxml2::XMLElement* point = nullptr;
+	for (_int i = 0; i < m_vecPoints.size(); ++i)
+	{
+		string strName = "Point" + to_string(i);
+		point = document->NewElement(strName.c_str());
+		point->SetAttribute("X", m_vecPoints[i].x);
+		point->SetAttribute("Y", m_vecPoints[i].y);
+		point->SetAttribute("Z", m_vecPoints[i].z);
+		element->LinkEndChild(point);
+	}
+	node->LinkEndChild(element);
+
+	node = document->NewElement("StaticSegments");
+	root->LinkEndChild(node);
+
+	element = document->NewElement("Segments");
+	tinyxml2::XMLElement* segment = nullptr;
+	for (_int i = 0; i < m_vecSegments.size(); ++i)
+	{
+		string strName = "Segment" + to_string(i);
+		segment = document->NewElement(strName.c_str());
+		segment->SetAttribute("Idx", m_vecSegments[i]);
+		element->LinkEndChild(segment);
+	}
+	node->LinkEndChild(element);
+
+	fs::path finalPath;
+	do
+	{
+		finalPath = strPath.generic_string() + "3DNavData" + to_string(iNumberofFiles++) + ".xml";
 	} while (true == fs::directory_entry(finalPath).exists());
 
 	if (tinyxml2::XML_SUCCESS == document->SaveFile(finalPath.generic_string().c_str()))
@@ -2644,6 +2840,11 @@ void CNavMeshView::InfoView()
 	if (ImGui::Button("RefreshFile"))
 	{
 		RefreshNvFile();
+	}ImGui::NewLine();
+
+	if (ImGui::Button("Save3DNav"))
+	{
+		Save3DNvFile();
 	}
 }
 
@@ -2713,7 +2914,11 @@ void CNavMeshView::ObstaclesGroup()
 
 				DynamicCreate(*pObst);
 
-				for_each(m_strObstaclePoints.begin(), m_strObstaclePoints.end(), [](const _char* szPoint) { delete szPoint; });
+				for (auto obst : m_strObstaclePoints)
+				{
+					delete obst;
+				}
+
 				m_strObstaclePoints.clear();
 				m_vecObstaclePoints.clear();
 			}
@@ -2814,6 +3019,7 @@ HRESULT CNavMeshView::Reset()
 	}
 
 	m_vecPoints.clear();
+	m_vecSegments.clear();
 
 	for (auto cell : m_vecCells)
 	{

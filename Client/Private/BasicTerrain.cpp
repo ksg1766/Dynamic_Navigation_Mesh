@@ -97,7 +97,7 @@ HRESULT CBasicTerrain::Ready_FixedComponents(void* pArg)
 			return E_FAIL;
 		GetShader()->SetPassIndex(0);
 
-		if (FAILED(GetShader()->Bind_RawValue("g_vMtrlDiffuse", &Colors::MediumSeaGreen, sizeof(Color))))
+		if (FAILED(GetShader()->Bind_RawValue("g_vMtrlDiffuse", &Colors::ForestGreen, sizeof(Color))))
 		//if (FAILED(GetShader()->Bind_RawValue("g_vMtrlDiffuse", &Colors::White, sizeof(Color))))
 			return E_FAIL;
 	}

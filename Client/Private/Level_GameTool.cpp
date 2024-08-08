@@ -157,7 +157,8 @@ HRESULT CLevel_GameTool::Ready_Layer_Terrain()
 {
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/cityterrain3.bmp");
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze0.bmp");
-	wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/Terrain0.bmp");
+	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/Terrain0.bmp");
+	wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/TerrainEx0.bmp");
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/TerrainBig0.bmp");
 	m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
 		LEVEL_GAMETOOL,
