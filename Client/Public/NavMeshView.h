@@ -177,4 +177,11 @@ public:
 	virtual void Free() override;
 };
 // https://www.slideshare.net/OrenKoler1/path-finding-in-hazard-terrain
+// multilayer
+// https://gamedev.stackexchange.com/questions/192183/how-does-hpahierarchical-pathfinding-a-really-work
+// https://web.archive.org/web/20190411040123/http://aigamedev.com/open/article/clearance-based-pathfinding/
+// https://webdocs.cs.ualberta.ca/%7Emmueller/ps/hpastar.pdf
+// https://gamedev.stackexchange.com/questions/99152/pathfinding-in-3d-voxel-waypoints
+// https://gamedev.stackexchange.com/questions/197895/how-would-i-actually-implement-a-pathfinding-in-a-3d-world
+// https://repositorium.sdum.uminho.pt/bitstream/1822/18769/1/SCCG08.pdf
 END
