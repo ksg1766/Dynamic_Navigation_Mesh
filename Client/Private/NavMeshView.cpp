@@ -340,14 +340,27 @@ HRESULT CNavMeshView::BakeNavMesh()
 		_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
 
 		_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
-		auto height = m_umapPointHeights.find(m_tOut.pointlist[iIdx1 * 2] + m_tOut.pointlist[iIdx1 * 2 + 1]);
-		if (m_umapPointHeights.end() != height) { y1 = height->second.first - height->second.second; }
+
+		auto [begin, end] = m_umapCellGrids.equal_range(m_tOut.pointlist[iIdx1 * 2]);
+		
+		for (auto point = begin; point != end;)
+		{
+			if( != point)
+		}
+
+		if (m_umapPointHeights.end() != height)
+		{
+			if (== height->first - height->second.first)
+			{
+				y1 = height->second.second;
+			}
+		}
 
 		height = m_umapPointHeights.find(m_tOut.pointlist[iIdx2 * 2] + m_tOut.pointlist[iIdx2 * 2 + 1]);
-		if (m_umapPointHeights.end() != height) { y2 = height->second.first - height->second.second; }
+		if (m_umapPointHeights.end() != height) { y2 = height->first - height->second.first; }
 
 		height = m_umapPointHeights.find(m_tOut.pointlist[iIdx3 * 2] + m_tOut.pointlist[iIdx3 * 2 + 1]);
-		if (m_umapPointHeights.end() != height) { y3 = height->second.first - height->second.second; }
+		if (m_umapPointHeights.end() != height) { y3 = height->first - height->second.first; }
 
 		Vec3 vtx[POINT_END] =
 		{
@@ -1590,7 +1603,7 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 	// 이후 static 정점 & index 추가해서 삼각형 제대로 구성하도록 해보고 navmesh y적용해서 렌더링 및 지형타기까지.
 	// 
 
-	for (_int h = 0; h < 65; h += 2)
+	for (_int h = 0; h < 50; h += 2)
 	{
 		//for (_int i = -512; i < 512; ++i)
 		for (_int i = -512; i < 512; i += 2)
