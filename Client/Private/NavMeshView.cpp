@@ -345,7 +345,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 		
 		for (auto point = begin; point != end;)
 		{
-			if( != point)
+			if( != point)//if (true == cell->second->isNew)
 		}
 
 		if (m_umapPointHeights.end() != height)
