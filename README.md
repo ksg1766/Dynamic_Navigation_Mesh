@@ -9,7 +9,7 @@
 * 3D 환경에서 agent가 경로를 탐색할 수 있도록 구현할 계획입니다.
   * g-Value및 휴리스틱을 계산할 때 y-axis의 거리를 함께 고려하도록 변경할 계획입니다.
   * slope와, height 차이 등을 고려해 경로를 탐색할 수 있도록 구현할 계획입니다.
-  * 현재는 아래와 같은 terrain에 대해 navigation mesh를 3D 생성할 수 있도록 구현 중입니다.
+  * 현재는 아래와 같은 높이가 일정하지 않은 terrain에 대해 navigation mesh를 3D 생성할 수 있도록 구현 중입니다.
 
     ![image](https://github.com/user-attachments/assets/e30f75d1-3c55-4f3b-bfc6-c2f6f4b06dd1)
     
