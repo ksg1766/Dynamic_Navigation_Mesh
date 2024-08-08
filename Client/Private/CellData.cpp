@@ -175,8 +175,10 @@ _float CellData::CalculateHalfWidth(LINES eLine1, LINES eLine2)
 
 _float CellData::SearchWidth(const Vec3& C, CellData* T, LINES e, _float d)
 {
-	const Vec3& U = T->vPoints[e];
-	const Vec3& V = T->vPoints[(e + 1) % 3];
+	Vec3 U = T->vPoints[e];
+	Vec3 V = T->vPoints[(e + 1) % 3];
+
+	V.y = U.y = C.y;
 
 	if (IsObtuse(C, U, V) || IsObtuse(C, V, U))
 		return d;

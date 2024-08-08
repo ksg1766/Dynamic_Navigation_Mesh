@@ -319,6 +319,25 @@ void CNavMeshView::SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_m
 
 HRESULT CNavMeshView::BakeNavMesh()
 {
+	/*for (_int i = 0; i < m_tOut.numberofpoints * 2; ++i)
+	{
+		volatile _float a = m_tIn.pointlist[i];
+		volatile _float b = m_tOut.pointlist[i];
+
+		if (a != b)
+		{
+			volatile _float c = 0;
+			c = a + b;
+		}
+
+		if (i >= 2708)
+		{
+			volatile _float d = 0;
+			d = a + b;
+		}
+	}*/
+
+
 	if (false == m_vecCells.empty())
 	{
 		for (auto iter : m_vecCells)
@@ -341,26 +360,35 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 		_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
 
-		auto [begin, end] = m_umapCellGrids.equal_range(m_tOut.pointlist[iIdx1 * 2]);
-		
-		for (auto point = begin; point != end;)
+		auto [begin1, end1] = m_umapPointHeights.equal_range(m_tOut.pointlist[iIdx1 * 2]);
+		for (auto point1 = begin1; point1 != end1; ++point1)
 		{
-			if( != point)//if (true == cell->second->isNew)
-		}
-
-		if (m_umapPointHeights.end() != height)
-		{
-			if (== height->first - height->second.first)
+			if (m_tOut.pointlist[iIdx1 * 2 + 1] == point1->second.first)
 			{
-				y1 = height->second.second;
+				y1 = point1->second.second;
+				break;
 			}
 		}
 
-		height = m_umapPointHeights.find(m_tOut.pointlist[iIdx2 * 2] + m_tOut.pointlist[iIdx2 * 2 + 1]);
-		if (m_umapPointHeights.end() != height) { y2 = height->first - height->second.first; }
+		auto [begin2, end2] = m_umapPointHeights.equal_range(m_tOut.pointlist[iIdx2 * 2]);
+		for (auto point2 = begin2; point2 != end2; ++point2)
+		{
+			if (m_tOut.pointlist[iIdx2 * 2 + 1] == point2->second.first)
+			{
+				y2 = point2->second.second;
+				break;
+			}
+		}
 
-		height = m_umapPointHeights.find(m_tOut.pointlist[iIdx3 * 2] + m_tOut.pointlist[iIdx3 * 2 + 1]);
-		if (m_umapPointHeights.end() != height) { y3 = height->first - height->second.first; }
+		auto [begin3, end3] = m_umapPointHeights.equal_range(m_tOut.pointlist[iIdx3 * 2]);
+		for (auto point3 = begin3; point3 != end3; ++point3)
+		{
+			if (m_tOut.pointlist[iIdx3 * 2 + 1] == point3->second.first)
+			{
+				y3 = point3->second.second;
+				break;
+			}
+		}
 
 		Vec3 vtx[POINT_END] =
 		{
@@ -602,22 +630,103 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 		}
 	}
 
-	if (false == m_umapPointHeights.empty()) { m_umapPointHeights.clear(); }
+	/*if (false == m_umapPointHeights.empty()) { m_umapPointHeights.clear(); }
 
 	for (_int i = 0; i < m_vecPoints.size(); ++i)
 	{
-		m_umapPointHeights.emplace(m_vecPoints[i].x + m_vecPoints[i].z, pair(m_vecPoints[i].z, m_vecPoints[i].y));
-	}
+		m_umapPointHeights.emplace(m_vecPoints[i].x, pair(m_vecPoints[i].z, m_vecPoints[i].y));
+	}*/
 
 	UpdateHoleList(m_tIn);
 	UpdateRegionList(m_tIn);
 
 	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 
-	if (FAILED(BakeNavMesh()))
+	/*if (FAILED(BakeNavMesh()))
 	{
 		return E_FAIL;
+	}*/
+
+	if (false == m_vecCells.empty())
+	{
+		for (auto iter : m_vecCells)
+		{
+			delete iter;
+		}
+
+		m_vecCells.clear();
 	}
+
+	if (false == m_umapCellGrids.empty()) { m_umapCellGrids.clear(); }
+
+	if (false == m_umapObstGrids.empty()) { m_umapObstGrids.clear(); }
+
+	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
+	{
+		_int iIdx1 = m_tOut.trianglelist[i * 3 + POINT_A];
+		_int iIdx2 = m_tOut.trianglelist[i * 3 + POINT_B];
+		_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
+
+		//_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
+
+		//////////
+
+		Vec3 vtx[POINT_END] =
+		{
+			{ m_tOut.pointlist[iIdx1 * 2], 0.0f, m_tOut.pointlist[iIdx1 * 2 + 1] },
+			{ m_tOut.pointlist[iIdx2 * 2], 0.0f, m_tOut.pointlist[iIdx2 * 2 + 1] },
+			{ m_tOut.pointlist[iIdx3 * 2], 0.0f, m_tOut.pointlist[iIdx3 * 2 + 1] },
+		};
+
+		CellData* pCellData = new CellData;
+		pCellData->vPoints[POINT_A] = vtx[POINT_A];
+		pCellData->vPoints[POINT_B] = vtx[POINT_B];
+		pCellData->vPoints[POINT_C] = vtx[POINT_C];
+		pCellData->CW();
+
+		//////////
+
+		for (uint8 p = POINT_A; p < POINT_END; ++p)
+		{
+			Ray cVerticalRay;
+
+			_float fDistance = FLT_MAX;
+
+			const vector<Vec3>& vecSurfaceVtx = m_pTerrainBuffer->GetTerrainVertices();
+			const vector<FACEINDICES32>& vecSurfaceIdx = m_pTerrainBuffer->GetTerrainIndices();
+
+			cVerticalRay.position = Vec3(pCellData->vPoints[p].x, 512.0f, pCellData->vPoints[p].z);
+			cVerticalRay.direction = Vec3::Down;
+
+			for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
+			{
+				if (cVerticalRay.Intersects(
+					vecSurfaceVtx[vecSurfaceIdx[j]._0],
+					vecSurfaceVtx[vecSurfaceIdx[j]._1],
+					vecSurfaceVtx[vecSurfaceIdx[j]._2],
+					OUT fDistance))
+				{
+					if (isnan(fDistance))
+						continue;
+
+					pCellData->vPoints[p].y = cVerticalRay.position.y + cVerticalRay.direction.y * fDistance;
+					break;
+				}
+			}
+		}
+
+		m_vecCells.push_back(pCellData);
+	}
+
+	SetUpNeighbors(m_vecCells);
+
+	for (auto cell : m_vecCells)
+	{
+		cell->SetUpData();
+	}
+
+	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
+	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
 
 	return S_OK;
 }
@@ -1419,8 +1528,6 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	const vector<FACEINDICES32>& vecSurfaceIdx = pModel->GetSurfaceIdx();
 
 	_float fDistance = FLT_MAX;
-	_float fMinDistance = FLT_MAX;
-	Vec3   vPickPosition = -Vec3::One;
 
 	Ray cVerticalRay;
 	Ray cHorizontalRay;
@@ -1500,8 +1607,6 @@ HRESULT CNavMeshView::CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutli
 	const vector<FACEINDICES32>& vecSurfaceIdx = m_pTerrainBuffer->GetTerrainIndices();
 
 	_float fDistance = FLT_MAX;
-	_float fMinDistance = FLT_MAX;
-	Vec3   vPickPosition = -Vec3::One;
 
 	Ray cVerticalRay;
 	Ray cHorizontalRay;
@@ -1590,8 +1695,6 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 	const vector<FACEINDICES32>& vecSurfaceIdx = m_pTerrainBuffer->GetTerrainIndices();
 
 	_float fDistance = FLT_MAX;
-	_float fMinDistance = FLT_MAX;
-	Vec3   vPickPosition = -Vec3::One;
 
 	Ray cVerticalRay;
 	Ray cHorizontalRay;
@@ -1603,10 +1706,10 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 	// 이후 static 정점 & index 추가해서 삼각형 제대로 구성하도록 해보고 navmesh y적용해서 렌더링 및 지형타기까지.
 	// 
 
-	for (_int h = 0; h < 50; h += 2)
+	for (_int h = 0; h < 20; h += 2)
 	{
 		//for (_int i = -512; i < 512; ++i)
-		for (_int i = -512; i < 512; i += 2)
+		for (_int i = -512; i < 512; i += 4)
 		{
 			cVerticalRay.position = Vec3((_float)i, (_float)h + 0.2f, -512.0f);
 			cVerticalRay.direction = Vec3::Backward;
@@ -1629,10 +1732,11 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 
 					Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
 
-					_int iX = (_int)floor(vPos.x);
-					_int iZ = (_int)floor(vPos.z);
-					if (iX % 2 != 0)	++iX;
-					if (iZ % 2 != 0)	++iZ;
+					_int iX = (_int)round(vPos.x / 4.0f) * 4;
+					_int iZ = (_int)round(vPos.z / 4.0f) * 4;
+
+					//if (iX % 2 != 0)	++iX;
+					//if (iZ % 2 != 0)	++iZ;
 
 					//vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(vPos.y);
 					vecIntersected[iX + 512][iZ + 512] = (_int)round(vPos.y);
@@ -1651,10 +1755,8 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 
 					Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
 
-					_int iX = (_int)floor(vPos.x);
-					_int iZ = (_int)floor(vPos.z);
-					if (iX % 2 != 0)	++iX;
-					if (iZ % 2 != 0)	++iZ;
+					_int iX = (_int)round(vPos.x / 4.0f) * 4;
+					_int iZ = (_int)round(vPos.z / 4.0f) * 4;
 
 					//vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(vPos.y);
 					vecIntersected[iX + 512][iZ + 512] = (_int)round(vPos.y);
@@ -1671,11 +1773,12 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 
 	for (_int i = 0; i < vecTightOutlines.size(); ++i)
 	{
-		_float fDistance = 0.2f;
-		vecExpandedOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
+		_float fDistance = 0.0f;
+		//vecExpandedOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
+		vecOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
 	}
 
-	for (_int i = 0; i < vecExpandedOutlines.size(); ++i)
+	/*for (_int i = 0; i < vecExpandedOutlines.size(); ++i)
 	{
 		vecClearOutlines.push_back(ProcessIntersections(vecExpandedOutlines[i]));
 	}
@@ -1685,7 +1788,7 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 	{
 		_float fEpsilon = 0.5f;
 		RamerDouglasPeucker(vecClearOutlines[i], fEpsilon, vecOutlines[i]);
-	}
+	}*/
 
 	//for (_int i = 0; i < vecOutlines.size(); ++i)
 	for (auto iter = vecOutlines.begin(); iter != vecOutlines.end();)
@@ -1752,23 +1855,23 @@ void CNavMeshView::DfsTerrain(vector<vector<_int>>& vecPoints, OUT vector<vector
 	const vector<pair<_int, _int>> vecDirections =
 	{
 		//{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
-		{2, 0}, {-2, 0}, {0, 2}, {0, -2}, {2, 2}, {-2, -2}, {2, -2}, {-2, 2}
+		{4, 0}, {-4, 0}, {0, 4}, {0, -4}, {4, 4}, {-4, -4}, {4, -4}, {-4, 4}
 	};
 
 	_int iRows = vecPoints.size();
 	_int iCols = vecPoints[0].size();
 	set<iVec3> setVisited;
 
-	for (_int i = 0; i < iRows; i += 2)
+	for (_int i = 0; i < iRows; i += 1)
 	{
-		for (_int j = 0; j < iCols; j += 2)
+		for (_int j = 0; j < iCols; j += 1)
 		{
-			if (vecPoints[i][j] && setVisited.find({ i - 512, vecPoints[i][j], j - 512 }) == setVisited.end())
+			if (vecPoints[i][j] && setVisited.find({ i - 512, 0, j - 512 }) == setVisited.end())
 			{
 				stack<pair<iVec3, vector<iVec3>>> stkPoint;
 				vector<iVec3> vecOutline;
-				stkPoint.push({ {i - 512, vecPoints[i][j], j - 512}, {{i - 512, vecPoints[i][j], j - 512}} });
-				setVisited.emplace(i - 512, vecPoints[i][j], j - 512);
+				stkPoint.push({ {i - 512, 0, j - 512}, {{i - 512, 0, j - 512}} });
+				setVisited.emplace(i - 512, 0, j - 512);
 
 				while (!stkPoint.empty())
 				{
@@ -1777,7 +1880,7 @@ void CNavMeshView::DfsTerrain(vector<vector<_int>>& vecPoints, OUT vector<vector
 
 					for (const auto& vDir : vecDirections)
 					{
-						iVec3 vNeighbor(vCurrent.x + vDir.first, vCurrent.y, vCurrent.z + vDir.second);
+						iVec3 vNeighbor(vCurrent.x + vDir.first, 0, vCurrent.z + vDir.second);
 
 						if (vNeighbor.x >= -512 && vNeighbor.x < iRows - 512 &&
 							vNeighbor.z >= -512 && vNeighbor.z < iCols - 512 &&
