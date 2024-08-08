@@ -89,6 +89,7 @@ private:
 	CellData*	FindCellByPosition(const Vec3& vPosition);
 
 	HRESULT		SaveNvFile();
+	HRESULT		Save3DNvFile();
 	HRESULT		LoadNvFile();
 	HRESULT		Load3DNvFile();
 	HRESULT		DeleteNvFile();
@@ -118,6 +119,9 @@ private:
 
 	vector<Vec3>			m_vecPoints;
 	vector<const _char*>	m_strPoints;
+	unordered_map<_float, pair<_float, _float>>	m_umapPointHeights;
+
+	vector<_int>			m_vecSegments;
 
 	vector<Obst*>			m_vecObstacles;
 	unordered_map<CGameObject*, _short>	m_hmapObstacleIndex;
