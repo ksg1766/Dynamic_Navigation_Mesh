@@ -124,7 +124,7 @@ void CPrefabsView::TapGroups()
 		{
 			static const _char* items[] =
 			{
-				"Barrel", "Bucket", "Building_a", "Building_b", "Building_c", "Building_d", "Building_f", "Cart_a", "Cart_Wheel_a", "Crate",
+				"Barrel", "BistroExterior", "BistroInterior", "BistroInterior_Wine", "Bucket", "Building_a", "Building_b", "Building_c", "Building_d", "Building_f", "Cart_a", "Cart_Wheel_a", "Crate",
 				"Fence_a", "Fence_b", "Fence_c", "Grass", "Lantern_post", "Logs_a", "Mushroom_a", "Mushroom_b", "Mushroom_c", "Mushroom_d",
 				"Rock_a", "Rock_c", "Rock_d", "Sack_a", "Sewers_entrance", "Sign_a", "Sign_b", "Sign_c", "Tent", "Well",
 				"EmeraldSquare_Day", /*"LowPolyCity", "LowPolySimpleCity", "LowPolySceneForestWaterfall", "LandscapeScene"*/
