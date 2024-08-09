@@ -1,4 +1,30 @@
 ---
+# 📅 2024.08.08
+📋 진행 사항
+  * 단순 경사 뿐 아니라 높이 차이에 의해 navigation mesh가 단절된 경우를 함께 고려하기 위한 환경을 준비하고 있습니다. 
+    * 작업 중이던 height map terrain에서 navigation mesh를 생성한 결과가 예상보다 정확도가 부족하기도 하고 남은 기간을 더 활용해 보고자 해당 작업을 잠시 중단하기로 했습니다.
+
+  * AStar의 개선된 형태 중 하나인 HPA*를 통해 단절돼있거나 높이 차이가 있는 복층 형태의 navmesh에서의 path finding을 수행할 수 있음을 알게 됐습니다.
+    * 마침 얼마전 최적화 방법등을 학습하기 위해 grid가 아닌 navigation mesh에서 수행되는 [Hierarchical Path-Finding for Navigation Meshes (HNA*)] 자료를 잠시 학습했었는데 이를 바탕으로 구현해보고자 해당 자료와 관련 자료를 추가 학습중입니다.
+      * Path Planning for Complex 3D Multilevel Environments (Leonel Deusdado et al.)
+      * Near Optimal Hierarchical Path-Finding (Adi Botea et al.)
+     
+  * navigation cell들을 그래프 형태로 저장해 사용하고 있기 때문에 계층 구조를 형성할 수 있을 것 같습니다. 아래와 같이 분리된 mesh를 low level의 node로 구성해 노드간 이동 비용을 계산할 계획입니다.
+    
+    ![image](https://github.com/user-attachments/assets/09d34c7b-beeb-4854-a2cf-4f98d30a4462)
+    ![image](https://github.com/user-attachments/assets/5ebd3a87-4a94-4070-ab0d-19b992b11db6)
+    ![image](https://github.com/user-attachments/assets/a583460b-7524-4c7e-9638-47324a3cd493)
+
+  * 최종적으로 구성할 3D mesh를 추가로 찾는 중입니다. 렌더러에서 .fbx 파일을 바이너리화해서 사용중이기 때문에 제약사항들이 조금 있었는데, 필요할 경우 추가 작업을 통해 기능부터 우선 구현해볼 생각입니다.
+
+    * 아래와 같은 이전에 제시해주셨던 오픈 리소스들을 포함해 구현할 계획입니다.
+      
+      ![image](https://github.com/user-attachments/assets/d0cd372d-76ff-488e-904c-31dec45b133b)
+
+⚽ 이후 계획
+  * 단절된 네비게이션 환경을 구성해 hierarchical navigation meshes를 적용할 계획입니다.
+
+---
 # 📅 2024.08.07
 📋 진행 사항
 * AStar 수행 시 반복적으로 수행되는 계산 횟수를 줄이기 위해 통로의 폭과 각도를 미리 계산해 저장하도록 변경했습니다.
