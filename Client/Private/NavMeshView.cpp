@@ -319,25 +319,6 @@ void CNavMeshView::SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_m
 
 HRESULT CNavMeshView::BakeNavMesh()
 {
-	/*for (_int i = 0; i < m_tOut.numberofpoints * 2; ++i)
-	{
-		volatile _float a = m_tIn.pointlist[i];
-		volatile _float b = m_tOut.pointlist[i];
-
-		if (a != b)
-		{
-			volatile _float c = 0;
-			c = a + b;
-		}
-
-		if (i >= 2708)
-		{
-			volatile _float d = 0;
-			d = a + b;
-		}
-	}*/
-
-
 	if (false == m_vecCells.empty())
 	{
 		for (auto iter : m_vecCells)
@@ -360,7 +341,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 		_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
 
-		auto [begin1, end1] = m_umapPointHeights.equal_range(m_tOut.pointlist[iIdx1 * 2]);
+		/*auto [begin1, end1] = m_umapPointHeights.equal_range(m_tOut.pointlist[iIdx1 * 2]);
 		for (auto point1 = begin1; point1 != end1; ++point1)
 		{
 			if (m_tOut.pointlist[iIdx1 * 2 + 1] == point1->second.first)
@@ -388,7 +369,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 				y3 = point3->second.second;
 				break;
 			}
-		}
+		}*/
 
 		Vec3 vtx[POINT_END] =
 		{
@@ -423,7 +404,7 @@ HRESULT CNavMeshView::BakeSingleObstacleData()
 {
 	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
 
-	map<LAYERTAG, class CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
+	map<LAYERTAG, CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
 	if (iter == mapLayers.end())
 		return E_FAIL;
 
@@ -474,14 +455,23 @@ HRESULT CNavMeshView::BakeSingleObstacleData()
 	return S_OK;
 }
 
-HRESULT CNavMeshView::BakeHeightMapObstacles()
+HRESULT CNavMeshView::BakeObstacles()
 {
 	Reset();
 	InitialSetting();
 
 	vector<vector<Vec3>> vecOutlines;
 
-	if (FAILED(CalculateTerrainOutline(vecOutlines)))
+	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
+	map<LAYERTAG, CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
+	if (iter == mapLayers.end())
+		return E_FAIL;
+
+	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
+
+	vecObjects[0]->GetTransform()->SetPosition(Vec3::Zero);
+
+	if (FAILED(CalculateObstacleOutlines(vecOutlines, vecObjects[0])))
 		return E_FAIL;
 
 	Obst* pObst = nullptr;
@@ -727,6 +717,91 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 
 	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
 	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::BakeNavMeshSingleLevel()
+{
+	Reset();
+	InitialSetting();
+
+	vector<vector<Vec3>> vecOutlines;
+
+	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
+	map<LAYERTAG, CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
+	if (iter == mapLayers.end())
+		return E_FAIL;
+
+	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
+
+	vecObjects[0]->GetTransform()->SetPosition(Vec3::Zero);
+
+	if (FAILED(CalculateObstacleOutlines(vecOutlines, vecObjects[0])))
+		return E_FAIL;
+
+	Obst* pObst = nullptr;
+
+	for (_int i = 0; i < vecOutlines.size(); ++i)
+	{
+		pObst = new Obst;
+
+		for (_int j = 0; j < vecOutlines[i].size(); ++j)
+		{
+			pObst->vecPoints.emplace_back(vecOutlines[i][j]);
+		}
+
+		TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
+		for (auto vPoint : pObst->vecPoints)
+		{
+			if (fMaxX < vPoint.x) fMaxX = vPoint.x;
+			if (fMinX > vPoint.x) fMinX = vPoint.x;
+
+			if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
+			if (fMinZ > vPoint.z) fMinZ = vPoint.z;
+		}
+
+		const _float fAABBOffset = 0.05f;
+		pObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
+		pObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
+
+		SetPolygonHoleCenter(*pObst);
+
+		m_vecObstacles.push_back(pObst);
+		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.size()));
+
+		//DynamicCreate(*pObst);
+
+		for (auto& iter : pObst->vecPoints)
+		{
+			BoundingSphere tSphere(iter, 0.1f);
+
+			m_vecObstaclePointSpheres.emplace_back(tSphere);
+		}
+	}
+
+	for (auto pObst : m_vecObstacles)
+	{
+		for (auto& vPoint : pObst->vecPoints)
+		{
+			m_vecPoints.push_back(vPoint);
+		}
+	}
+
+	SafeReleaseTriangle(m_tIn);
+	SafeReleaseTriangle(m_tOut);
+
+	UpdatePointList(m_tIn, m_vecPoints);
+	UpdateSegmentList(m_tIn, m_vecPoints);
+	UpdateHoleList(m_tIn);
+	UpdateRegionList(m_tIn);
+
+	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
+
+	if (FAILED(BakeNavMesh()))
+	{
+		return E_FAIL;
+	}
 
 	return S_OK;
 }
@@ -1596,15 +1671,33 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	return S_OK;
 }
 
-HRESULT CNavMeshView::CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutlines)
+HRESULT CNavMeshView::CalculateObstacleOutlines(OUT vector<vector<Vec3>>& vecOutlines, CGameObject* const pGameObject)
 {
-	if (nullptr == m_pTerrainBuffer)
-	{
-		return E_FAIL;
-	}
+	vector<Vec3>* vecSurfaceVtx = nullptr;
+	vector<FACEINDICES32>* vecSurfaceIdx = nullptr;
 
-	const vector<Vec3>& vecSurfaceVtx = m_pTerrainBuffer->GetTerrainVertices();
-	const vector<FACEINDICES32>& vecSurfaceIdx = m_pTerrainBuffer->GetTerrainIndices();
+	if (nullptr == pGameObject)
+	{
+		if (nullptr == m_pTerrainBuffer)
+		{
+			return E_FAIL;
+		}
+
+		vecSurfaceVtx = &const_cast<vector<Vec3>&>(m_pTerrainBuffer->GetTerrainVertices());
+		vecSurfaceIdx = &const_cast<vector<FACEINDICES32>&>(m_pTerrainBuffer->GetTerrainIndices());
+	}
+	else
+	{
+		CModel* const pModel = pGameObject->GetModel();
+
+		if (nullptr == pModel)
+		{
+			return E_FAIL;
+		}
+
+		vecSurfaceVtx = &pModel->GetSurfaceVtx();
+		vecSurfaceIdx = &pModel->GetSurfaceIdx();
+	}
 
 	_float fDistance = FLT_MAX;
 
@@ -1615,44 +1708,44 @@ HRESULT CNavMeshView::CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutli
 
 	for (_int i = -512; i < 512; ++i)
 	{
-		cVerticalRay.position = Vec3((_float)i, 0.2f, -512.0f);
+		cVerticalRay.position = Vec3((_float)i, 2.0f, -512.0f);
 		cVerticalRay.direction = Vec3::Backward;
 
-		cHorizontalRay.position = Vec3(-512.0f, 0.2f, (_float)i);
+		cHorizontalRay.position = Vec3(-512.0f, 2.0f, (_float)i);
 		cHorizontalRay.direction = Vec3::Right;
 
-		for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
+		for (_int j = 0; j < (*vecSurfaceIdx).size(); ++j)
 		{
 			if (cVerticalRay.Intersects(
-				vecSurfaceVtx[vecSurfaceIdx[j]._0],
-				vecSurfaceVtx[vecSurfaceIdx[j]._1],
-				vecSurfaceVtx[vecSurfaceIdx[j]._2],
+				(*vecSurfaceVtx)[(*vecSurfaceIdx)[j]._0],
+				(*vecSurfaceVtx)[(*vecSurfaceIdx)[j]._1],
+				(*vecSurfaceVtx)[(*vecSurfaceIdx)[j]._2],
 				OUT fDistance))
 			{
-				Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
-
-				if (isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z) || isnan(fDistance))
+				if (isnan(fDistance))
 				{
 					continue;
 				}
 
-				vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = true;
+				Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
+
+				vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = 2;
 			}
 
 			if (cHorizontalRay.Intersects(
-				vecSurfaceVtx[vecSurfaceIdx[j]._0],
-				vecSurfaceVtx[vecSurfaceIdx[j]._1],
-				vecSurfaceVtx[vecSurfaceIdx[j]._2],
+				(*vecSurfaceVtx)[(*vecSurfaceIdx)[j]._0],
+				(*vecSurfaceVtx)[(*vecSurfaceIdx)[j]._1],
+				(*vecSurfaceVtx)[(*vecSurfaceIdx)[j]._2],
 				OUT fDistance))
 			{
-				Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
-
-				if (isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z) || isnan(fDistance))
+				if (isnan(fDistance))
 				{
 					continue;
 				}
 
-				vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = true;
+				Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
+
+				vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = 2;
 			}
 		}
 	}
@@ -1684,6 +1777,99 @@ HRESULT CNavMeshView::CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutli
 	return S_OK;
 }
 
+HRESULT CNavMeshView::CalculateObstacleOutlinesTopDown(OUT vector<vector<Vec3>>& vecOutlines, CGameObject* const pGameObject)
+{
+	vector<Vec3>* vecSurfaceVtx = nullptr;
+	vector<FACEINDICES32>* vecSurfaceIdx = nullptr;
+
+	if (nullptr == pGameObject)
+	{
+		if (nullptr == m_pTerrainBuffer)
+		{
+			return E_FAIL;
+		}
+
+		vecSurfaceVtx = &const_cast<vector<Vec3>&>(m_pTerrainBuffer->GetTerrainVertices());
+		vecSurfaceIdx = &const_cast<vector<FACEINDICES32>&>(m_pTerrainBuffer->GetTerrainIndices());
+	}
+	else
+	{
+		CModel* const pModel = pGameObject->GetModel();
+
+		if (nullptr == pModel)
+		{
+			return E_FAIL;
+		}
+
+		vecSurfaceVtx = &pModel->GetSurfaceVtx();
+		vecSurfaceIdx = &pModel->GetSurfaceIdx();
+	}
+
+	Ray cVerticalRay;
+
+	vector<vector<_int>> vecIntersected(1024, vector<_int>(1024, 0));
+
+	for (_int z = -512; z < 512; ++z)
+	{
+		for (_int x = -512; x < 512; ++x)
+		{
+			_float fDistance = FLT_MAX;
+			_float fMinDistance = FLT_MAX;
+
+			cVerticalRay.position = Vec3((_float)x, 512.0f, (_float)z);
+			cVerticalRay.direction = Vec3::Down;
+
+			for (_int j = 0; j < (*vecSurfaceIdx).size(); ++j)
+			{
+				if (cVerticalRay.Intersects(
+					(*vecSurfaceVtx)[(*vecSurfaceIdx)[j]._0],
+					(*vecSurfaceVtx)[(*vecSurfaceIdx)[j]._1],
+					(*vecSurfaceVtx)[(*vecSurfaceIdx)[j]._2],
+					OUT fDistance))
+				{
+					if (isnan(fDistance))
+					{
+						continue;
+					}
+
+					if (fMinDistance > fDistance)
+						fMinDistance = fDistance;
+				}
+			}
+
+			Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
+
+			vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = vPos.y; // float¿∏∑Œ? int∑Œ?
+		}
+	}
+
+	vector<vector<Vec3>> vecExpandedOutlines;
+	vector<vector<iVec3>> vecTightOutlines;
+	vector<vector<Vec3>> vecClearOutlines;
+
+	DfsTerrain(vecIntersected, vecTightOutlines);
+
+	for (_int i = 0; i < vecTightOutlines.size(); ++i)
+	{
+		_float fDistance = 0.9f;
+		vecExpandedOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
+	}
+
+	for (_int i = 0; i < vecExpandedOutlines.size(); ++i)
+	{
+		vecClearOutlines.push_back(ProcessIntersections(vecExpandedOutlines[i]));
+	}
+
+	vecOutlines.resize(vecClearOutlines.size());
+	for (_int i = 0; i < vecClearOutlines.size(); ++i)
+	{
+		_float fEpsilon = 1.2f;
+		RamerDouglasPeucker(vecClearOutlines[i], fEpsilon, vecOutlines[i]);
+	}
+
+	return S_OK;
+}
+
 HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines)
 {
 	if (nullptr == m_pTerrainBuffer)
@@ -1708,8 +1894,7 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 
 	for (_int h = 0; h < 20; h += 2)
 	{
-		//for (_int i = -512; i < 512; ++i)
-		for (_int i = -512; i < 512; i += 4)
+		for (_int i = -512; i < 512; i += 1)
 		{
 			cVerticalRay.position = Vec3((_float)i, (_float)h + 0.2f, -512.0f);
 			cVerticalRay.direction = Vec3::Backward;
@@ -1732,14 +1917,14 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 
 					Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
 
-					_int iX = (_int)round(vPos.x / 4.0f) * 4;
-					_int iZ = (_int)round(vPos.z / 4.0f) * 4;
+					/*_int iX = (_int)round(vPos.x / 4.0f) * 4;
+					_int iZ = (_int)round(vPos.z / 4.0f) * 4;*/
 
 					//if (iX % 2 != 0)	++iX;
 					//if (iZ % 2 != 0)	++iZ;
 
-					//vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(vPos.y);
-					vecIntersected[iX + 512][iZ + 512] = (_int)round(vPos.y);
+					vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(vPos.y);
+					//vecIntersected[iX + 512][iZ + 512] = (_int)round(vPos.y);
 				}
 
 				if (cHorizontalRay.Intersects(
@@ -1755,11 +1940,11 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 
 					Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
 
-					_int iX = (_int)round(vPos.x / 4.0f) * 4;
-					_int iZ = (_int)round(vPos.z / 4.0f) * 4;
+					/*_int iX = (_int)round(vPos.x / 4.0f) * 4;
+					_int iZ = (_int)round(vPos.z / 4.0f) * 4;*/
 
-					//vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(vPos.y);
-					vecIntersected[iX + 512][iZ + 512] = (_int)round(vPos.y);
+					vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(vPos.y);
+					//vecIntersected[iX + 512][iZ + 512] = (_int)round(vPos.y);
 				}
 			}
 		}
@@ -1774,11 +1959,10 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 	for (_int i = 0; i < vecTightOutlines.size(); ++i)
 	{
 		_float fDistance = 0.0f;
-		//vecExpandedOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
-		vecOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
+		vecExpandedOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
 	}
 
-	/*for (_int i = 0; i < vecExpandedOutlines.size(); ++i)
+	for (_int i = 0; i < vecExpandedOutlines.size(); ++i)
 	{
 		vecClearOutlines.push_back(ProcessIntersections(vecExpandedOutlines[i]));
 	}
@@ -1788,7 +1972,7 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 	{
 		_float fEpsilon = 0.5f;
 		RamerDouglasPeucker(vecClearOutlines[i], fEpsilon, vecOutlines[i]);
-	}*/
+	}
 
 	//for (_int i = 0; i < vecOutlines.size(); ++i)
 	for (auto iter = vecOutlines.begin(); iter != vecOutlines.end();)
@@ -1854,8 +2038,7 @@ void CNavMeshView::DfsTerrain(vector<vector<_int>>& vecPoints, OUT vector<vector
 {
 	const vector<pair<_int, _int>> vecDirections =
 	{
-		//{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
-		{4, 0}, {-4, 0}, {0, 4}, {0, -4}, {4, 4}, {-4, -4}, {4, -4}, {-4, 4}
+		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
 	};
 
 	_int iRows = vecPoints.size();
@@ -1866,12 +2049,12 @@ void CNavMeshView::DfsTerrain(vector<vector<_int>>& vecPoints, OUT vector<vector
 	{
 		for (_int j = 0; j < iCols; j += 1)
 		{
-			if (vecPoints[i][j] && setVisited.find({ i - 512, 0, j - 512 }) == setVisited.end())
+			if (vecPoints[i][j] && setVisited.find({ i - 512, vecPoints[i][j], j - 512 }) == setVisited.end())
 			{
 				stack<pair<iVec3, vector<iVec3>>> stkPoint;
 				vector<iVec3> vecOutline;
-				stkPoint.push({ {i - 512, 0, j - 512}, {{i - 512, 0, j - 512}} });
-				setVisited.emplace(i - 512, 0, j - 512);
+				stkPoint.push({ {i - 512, vecPoints[i][j], j - 512}, {{i - 512, vecPoints[i][j], j - 512}} });
+				setVisited.emplace(i - 512, vecPoints[i][j], j - 512);
 
 				while (!stkPoint.empty())
 				{
@@ -1880,7 +2063,7 @@ void CNavMeshView::DfsTerrain(vector<vector<_int>>& vecPoints, OUT vector<vector
 
 					for (const auto& vDir : vecDirections)
 					{
-						iVec3 vNeighbor(vCurrent.x + vDir.first, 0, vCurrent.z + vDir.second);
+						iVec3 vNeighbor(vCurrent.x + vDir.first, vCurrent.y, vCurrent.z + vDir.second);
 
 						if (vNeighbor.x >= -512 && vNeighbor.x < iRows - 512 &&
 							vNeighbor.z >= -512 && vNeighbor.z < iCols - 512 &&
@@ -2913,7 +3096,7 @@ void CNavMeshView::InfoView()
 	{
 		if (ImGui::Button("BakeHeightMapObst"))
 		{
-			if (SUCCEEDED(BakeHeightMapObstacles()))
+			if (SUCCEEDED(BakeObstacles()))
 			{
 				MSG_BOX("Succeed to Bake Height Obstacles");
 			}

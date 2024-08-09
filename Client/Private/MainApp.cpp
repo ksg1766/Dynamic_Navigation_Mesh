@@ -291,11 +291,16 @@ HRESULT CMainApp::Ready_Prototype_Components()
 
 			if (TEXT("EmeraldSquare_Day") == strFileName)
 			{
-				//
 				continue;
+			}
+			else if (TEXT("EmeraldSquare_Low") == strFileName)
+			{
+				//
+				//continue;
 				//
 
-				XMStoreFloat4x4(&matPivot, XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
+				//XMStoreFloat4x4(&matPivot, XMMatrixScaling(1.169f, 1.169f,  1.169f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
+				XMStoreFloat4x4(&matPivot, XMMatrixRotationY(XMConvertToRadians(90.0f)));
 
 				if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model_" + strFileName),
 					CModel::Create(m_pDevice, m_pContext, strStaticFilePath + strFileName, desc, matPivot))))
@@ -303,6 +308,7 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			}
 			else if (TEXT("BistroExterior") == strFileName || TEXT("BistroInterior") == strFileName || TEXT("BistroInterior_Wine") == strFileName)
 			{
+				continue;
 				XMStoreFloat4x4(&matPivot, XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
 
 				if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model_" + strFileName),

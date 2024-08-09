@@ -48,8 +48,9 @@ private:
 
 	HRESULT		BakeNavMesh();
 	HRESULT		BakeSingleObstacleData();
-	HRESULT		BakeHeightMapObstacles();
+	HRESULT		BakeObstacles();
 	HRESULT		BakeHeightMap3D();
+	HRESULT		BakeNavMeshSingleLevel();
 
 	HRESULT		UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
 	HRESULT		UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
@@ -70,7 +71,8 @@ private:
 
 private:
 	HRESULT		CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
-	HRESULT		CalculateTerrainOutline(OUT vector<vector<Vec3>>& vecOutlines);
+	HRESULT		CalculateObstacleOutlines(OUT vector<vector<Vec3>>& vecOutlines, CGameObject* const pGameObject = nullptr);
+	HRESULT		CalculateObstacleOutlinesTopDown(OUT vector<vector<Vec3>>& vecOutlines, CGameObject* const pGameObject = nullptr);
 	HRESULT		CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines);
 	void		Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vector<iVec3>& vecLongest);
 	void		DfsTerrain(vector<vector<_int>>& vecPoints, OUT vector<vector<iVec3>>& vecOutlines);
