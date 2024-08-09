@@ -19,7 +19,7 @@
 
     * 아래와 같은 이전에 제시해주셨던 오픈 리소스들을 포함해 구현할 계획입니다.
       
-      ![image](https://github.com/user-attachments/assets/d0cd372d-76ff-488e-904c-31dec45b133b)
+      ![123](https://github.com/user-attachments/assets/384d6dea-15b1-4ed3-8f69-33ba24539cfa)
 
 ⚽ 이후 계획
   * 단절된 네비게이션 환경을 구성해 hierarchical navigation meshes를 적용할 계획입니다.
