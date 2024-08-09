@@ -12,7 +12,6 @@
   * navigation cell들을 그래프 형태로 저장해 사용하고 있기 때문에 계층 구조를 형성할 수 있을 것 같습니다. 아래와 같이 분리된 mesh를 low level의 node로 구성해 노드간 이동 비용을 계산할 계획입니다.
     
     ![image](https://github.com/user-attachments/assets/09d34c7b-beeb-4854-a2cf-4f98d30a4462)
-    ![image](https://github.com/user-attachments/assets/5ebd3a87-4a94-4070-ab0d-19b992b11db6)
     ![image](https://github.com/user-attachments/assets/a583460b-7524-4c7e-9638-47324a3cd493)
 
   * 최종적으로 구성할 3D mesh를 추가로 찾는 중입니다. 렌더러에서 .fbx 파일을 바이너리화해서 사용중이기 때문에 제약사항들이 조금 있었는데, 필요할 경우 추가 작업을 통해 기능부터 우선 구현해볼 생각입니다.
