@@ -293,13 +293,36 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			{
 				continue;
 			}
-			else if (TEXT("EmeraldSquare_Low") == strFileName)
+			//else if (TEXT("EmeraldSquare_Base") == strFileName)
+			else if (TEXT("Building_Kwow") == strFileName ||
+					TEXT("Building_Sheleg") == strFileName ||
+					TEXT("Building_ToyHotel") == strFileName ||
+					TEXT("bus1") == strFileName ||
+					TEXT("bus2") == strFileName ||
+					TEXT("bus3") == strFileName ||
+					TEXT("bus4") == strFileName ||
+					TEXT("bus5") == strFileName ||
+					TEXT("dumpster2") == strFileName ||
+					TEXT("dumpster3") == strFileName ||
+					TEXT("dumpster4") == strFileName ||
+					TEXT("dumpster5") == strFileName ||
+					TEXT("EmeraldSquare_Base") == strFileName ||
+					TEXT("European_Linden1") == strFileName ||
+					TEXT("European_Linden2") == strFileName ||
+					TEXT("Picnic_table1") == strFileName ||
+					TEXT("Picnic_table2") == strFileName ||
+					TEXT("Picnic_table3") == strFileName ||
+					TEXT("Picnic_table4") == strFileName ||
+					TEXT("Picnic_table5") == strFileName ||
+					TEXT("Picnic_table6") == strFileName ||
+					TEXT("Picnic_table7") == strFileName ||
+					TEXT("Picnic_table8") == strFileName ||
+					TEXT("Red_Maple_Young1") == strFileName ||
+					TEXT("Red_Maple_Young2") == strFileName ||
+					TEXT("White_Oak_13") == strFileName)
 			{
-				//
 				//continue;
-				//
 
-				//XMStoreFloat4x4(&matPivot, XMMatrixScaling(1.169f, 1.169f,  1.169f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
 				XMStoreFloat4x4(&matPivot, XMMatrixRotationY(XMConvertToRadians(90.0f)));
 
 				if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model_" + strFileName),
@@ -314,17 +337,11 @@ HRESULT CMainApp::Ready_Prototype_Components()
 				if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model_" + strFileName),
 					CModel::Create(m_pDevice, m_pContext, strStaticFilePath + strFileName, desc, matPivot))))
 					return E_FAIL;
-			}
-			else if (TEXT("Sphere") == strFileName)
-			{
-				XMStoreFloat4x4(&matPivot, XMMatrixScaling(0.05f, 0.05f, 0.05f));
-
-				if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model_" + strFileName),
-					CModel::Create(m_pDevice, m_pContext, strStaticFilePath + strFileName, desc, matPivot))))
-					return E_FAIL;
-			}
+			}			
 			else
 			{
+				continue;
+				//
 				XMStoreFloat4x4(&matPivot, XMMatrixScaling(0.02f, 0.02f, 0.02f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
 
 				if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model_" + strFileName),

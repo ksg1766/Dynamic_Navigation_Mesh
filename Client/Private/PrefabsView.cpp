@@ -124,10 +124,14 @@ void CPrefabsView::TapGroups()
 		{
 			static const _char* items[] =
 			{
+				"Building_Kwow", "Building_Sheleg", "Building_ToyHotel", "bus1", "bus2", "bus3", "bus4", "bus5",
+				"dumpster2", "dumpster3", "dumpster4", "dumpster5", "EmeraldSquare_Base", "European_Linden1", "European_Linden2",
+				"Picnic_table1", "Picnic_table2", "Picnic_table3", "Picnic_table4", "Picnic_table5", "Picnic_table6", "Picnic_table7", "Picnic_table8",
+				"Red_Maple_Young1", "Red_Maple_Young2", "White_Oak_13",
+
 				"Barrel", "BistroExterior", "BistroInterior", "BistroInterior_Wine", "Bucket", "Building_a", "Building_b", "Building_c", "Building_d", "Building_f", "Cart_a", "Cart_Wheel_a", "Crate",
 				"Fence_a", "Fence_b", "Fence_c", "Grass", "Lantern_post", "Logs_a", "Mushroom_a", "Mushroom_b", "Mushroom_c", "Mushroom_d",
-				"Rock_a", "Rock_c", "Rock_d", "Sack_a", "Sewers_entrance", "Sign_a", "Sign_b", "Sign_c", "Tent", "Well",
-				"EmeraldSquare_Low" /*,"LowPolyCity", "LowPolySimpleCity", "LowPolySceneForestWaterfall", "LandscapeScene"*/
+				"Rock_a", "Rock_c", "Rock_d", "Sack_a", "Sewers_entrance", "Sign_a", "Sign_b", "Sign_c", "Tent", "Well"				
 			};
 
 			if (m_Item_Current >= IM_ARRAYSIZE(items))

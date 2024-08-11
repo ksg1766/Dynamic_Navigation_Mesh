@@ -445,12 +445,12 @@ HRESULT CNavMeshView::BakeSingleObstacleData()
 	if (FAILED(DynamicCreate(*pObst)))
 		return E_FAIL;
 
-	for (auto& iter : pObst->vecPoints)
+	/*for (auto& iter : pObst->vecPoints)
 	{
 		BoundingSphere tSphere(iter, 0.1f);
 
 		m_vecObstaclePointSpheres.emplace_back(tSphere);
-	}
+	}*/
 
 	return S_OK;
 }
@@ -737,7 +737,7 @@ HRESULT CNavMeshView::BakeNavMeshSingleLevel()
 
 	vecObjects[0]->GetTransform()->SetPosition(Vec3::Zero);
 
-	if (FAILED(CalculateObstacleOutlines(vecOutlines, vecObjects[0])))
+	if (FAILED(CalculateObstacleOutlinesTopDown(vecOutlines, vecObjects[0])))
 		return E_FAIL;
 
 	Obst* pObst = nullptr;
@@ -770,7 +770,7 @@ HRESULT CNavMeshView::BakeNavMeshSingleLevel()
 		m_vecObstacles.push_back(pObst);
 		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.size()));
 
-		//DynamicCreate(*pObst);
+		//DynamicCreate(*pObst);	// 안되면 시도
 
 		for (auto& iter : pObst->vecPoints)
 		{
@@ -1602,21 +1602,23 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	const vector<Vec3>& vecSurfaceVtx = pModel->GetSurfaceVtx();
 	const vector<FACEINDICES32>& vecSurfaceIdx = pModel->GetSurfaceIdx();
 
-	_float fDistance = FLT_MAX;
-
 	Ray cVerticalRay;
 	Ray cHorizontalRay;
 
 	vector<iVec3> vecIntersected;
 
-	//for (_int i = -512; i < 512; ++i)
-	for (_int i = -64; i < 64; ++i)
+	for (_int i = -512; i < 512; ++i)
+	//for (_int i = -64; i < 64; ++i)
 	{
-		cVerticalRay.position = Vec3((_float)i, 0.05f, -64.0f);
+		//cVerticalRay.position = Vec3((_float)i, 2.0f, -64.0f);
+		cVerticalRay.position = Vec3((_float)i, 9.f, -512.0f);
 		cVerticalRay.direction = Vec3::Backward;
 
-		cHorizontalRay.position = Vec3(-64.0f, 0.05f, (_float)i);
+		//cHorizontalRay.position = Vec3(-64.0f, 2.0f, (_float)i);
+		cHorizontalRay.position = Vec3(-512.0f, 9.f, (_float)i);
 		cHorizontalRay.direction = Vec3::Right;
+		
+		_float fDistance = FLT_MAX;
 
 		for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
 		{
@@ -1626,12 +1628,12 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 				vecSurfaceVtx[vecSurfaceIdx[j]._2],
 				OUT fDistance))
 			{
-				Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
-
-				if (isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z) || isnan(fDistance))
+				if (isnan(fDistance))
 				{
 					continue;
 				}
+
+				Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
 
 				vecIntersected.emplace_back(iVec3(round(vPos.x), round(vPos.y), round(vPos.z)));
 			}
@@ -1642,12 +1644,13 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 				vecSurfaceVtx[vecSurfaceIdx[j]._2],
 				OUT fDistance))
 			{
-				Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
-
-				if (isnan(vPos.x) || isnan(vPos.y) || isnan(vPos.z) || isnan(fDistance))
+				
+				if (isnan(fDistance))
 				{
 					continue;
 				}
+
+				Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
 
 				vecIntersected.emplace_back(iVec3(round(vPos.x), round(vPos.y), round(vPos.z)));
 			}
@@ -1661,12 +1664,21 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	vector<iVec3> vecTightOutline;
 	vector<Vec3> vecClearOutline;
 
+	setPoints.emplace(iVec3(-330, 9, 336));
+
+	for (auto& iter : setPoints)
+	{
+		BoundingSphere tSphere(Vec3(iter.x, iter.y, iter.z), 0.1f);
+
+		m_vecObstaclePointSpheres.emplace_back(tSphere);
+	}
+
 	Dfs(vStart, setPoints, vecTightOutline);
 
-	vecExpandedOutline = ExpandOutline(vecTightOutline, 2.0f);
+	vecExpandedOutline = ExpandOutline(vecTightOutline, 0.5f);
 	vecClearOutline = ProcessIntersections(vecExpandedOutline);
 	
-	RamerDouglasPeucker(vecClearOutline, 1.0f, vecOutline);
+	RamerDouglasPeucker(vecClearOutline, 1.f, vecOutline);
 
 	return S_OK;
 }
@@ -1758,7 +1770,7 @@ HRESULT CNavMeshView::CalculateObstacleOutlines(OUT vector<vector<Vec3>>& vecOut
 
 	for (_int i = 0; i < vecTightOutlines.size(); ++i)
 	{
-		_float fDistance = 0.9f;
+		_float fDistance = 1.0f;
 		vecExpandedOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
 	}
 	
@@ -1770,7 +1782,7 @@ HRESULT CNavMeshView::CalculateObstacleOutlines(OUT vector<vector<Vec3>>& vecOut
 	vecOutlines.resize(vecClearOutlines.size());
 	for (_int i = 0; i < vecClearOutlines.size(); ++i)
 	{
-		_float fEpsilon = 1.2f;
+		_float fEpsilon = 1.0f;
 		RamerDouglasPeucker(vecClearOutlines[i], fEpsilon, vecOutlines[i]);
 	}	
 
@@ -1809,9 +1821,9 @@ HRESULT CNavMeshView::CalculateObstacleOutlinesTopDown(OUT vector<vector<Vec3>>&
 
 	vector<vector<_int>> vecIntersected(1024, vector<_int>(1024, 0));
 
-	for (_int z = -512; z < 512; ++z)
+	for (_int x = -512 + 64; x < 512 - 64; ++x)
 	{
-		for (_int x = -512; x < 512; ++x)
+		for (_int z = -512 + 64; z < 512 - 64; ++z)
 		{
 			_float fDistance = FLT_MAX;
 			_float fMinDistance = FLT_MAX;
@@ -1833,13 +1845,20 @@ HRESULT CNavMeshView::CalculateObstacleOutlinesTopDown(OUT vector<vector<Vec3>>&
 					}
 
 					if (fMinDistance > fDistance)
+					{
 						fMinDistance = fDistance;
+						if (fMinDistance < 510.0f)
+							break;
+					}
 				}
 			}
 
-			Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
-
-			vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = vPos.y; // float으로? int로?
+			//Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fMinDistance;
+			_float fMaxY = cVerticalRay.position.y + cVerticalRay.direction.y * fMinDistance;
+			if (fMaxY > 1.0f)
+			{
+				vecIntersected[x + 512][z + 512] = 1;
+			}
 		}
 	}
 
@@ -1851,7 +1870,7 @@ HRESULT CNavMeshView::CalculateObstacleOutlinesTopDown(OUT vector<vector<Vec3>>&
 
 	for (_int i = 0; i < vecTightOutlines.size(); ++i)
 	{
-		_float fDistance = 0.9f;
+		_float fDistance = 0.4f; // 이게 될까
 		vecExpandedOutlines.push_back(ExpandOutline(vecTightOutlines[i], fDistance));
 	}
 
@@ -1863,7 +1882,7 @@ HRESULT CNavMeshView::CalculateObstacleOutlinesTopDown(OUT vector<vector<Vec3>>&
 	vecOutlines.resize(vecClearOutlines.size());
 	for (_int i = 0; i < vecClearOutlines.size(); ++i)
 	{
-		_float fEpsilon = 1.2f;
+		_float fEpsilon = 0.4f;
 		RamerDouglasPeucker(vecClearOutlines[i], fEpsilon, vecOutlines[i]);
 	}
 
@@ -2021,7 +2040,7 @@ void CNavMeshView::Dfs(const iVec3& vStart, const set<iVec3>& setPoints, OUT vec
 		for (const auto& vDir : vecDirections)
 		{
 			iVec3 vNeighbor(vCurrent.x + vDir.first, 0, vCurrent.z + vDir.second);
-			
+
 			if (setPoints.find(vNeighbor) != setPoints.end() &&
 				setVisited.find(vNeighbor) == setVisited.end())
 			{
@@ -3096,7 +3115,8 @@ void CNavMeshView::InfoView()
 	{
 		if (ImGui::Button("BakeHeightMapObst"))
 		{
-			if (SUCCEEDED(BakeObstacles()))
+			//if (SUCCEEDED(BakeObstacles()))
+			if (SUCCEEDED(BakeNavMeshSingleLevel()))
 			{
 				MSG_BOX("Succeed to Bake Height Obstacles");
 			}

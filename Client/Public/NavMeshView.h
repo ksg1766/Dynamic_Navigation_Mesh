@@ -146,6 +146,7 @@ private:
 
 	// triangulate
 	triangulateio			m_tIn, m_tOut;
+	vector<triangulateio>	m_vecIn, m_vecOut;
 	_char					m_szTriswitches[3] = "pz";
 
 	// Default
