@@ -50,14 +50,12 @@ private:
 	HRESULT		BakeSingleObstacleData();
 	HRESULT		BakeObstacles();
 	HRESULT		BakeHeightMap3D();
-	HRESULT		BakeNavMeshSingleLevel();
 
 	HRESULT		UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
 	HRESULT		UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst = nullptr);
 	HRESULT		UpdateHoleList(triangulateio& tIn, const Obst* pObst = nullptr);
 	HRESULT		UpdateRegionList(triangulateio& tIn, const Obst* pObst = nullptr);
 
-	HRESULT		StaticCreate(const Obst& tObst);
 	HRESULT		DynamicCreate(const Obst& tObst);
 	HRESULT		DynamicDelete(const Obst& tObst);
 
@@ -97,6 +95,9 @@ private:
 	HRESULT		DeleteNvFile();
 	HRESULT		RefreshNvFile();
 
+	HRESULT		LoadMainScene();
+	HRESULT		LoadAnotherLevelData(const vector<Vec3>& vecPoints);
+
 	HRESULT		SaveObstacleLocalOutline(const Obst* const pObst, string strName);
 	HRESULT		LoadObstacleOutlineData();
 
@@ -120,6 +121,7 @@ private:
 	_int					m_iStaticPointCount = 0;
 
 	vector<Vec3>			m_vecPoints;
+	vector<vector<Vec3>>	m_vecPointsMultiLevel;
 	vector<const _char*>	m_strPoints;
 	unordered_multimap<_float, pair<_float, _float>>	m_umapPointHeights;
 

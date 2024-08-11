@@ -176,7 +176,7 @@ HRESULT CNavMeshView::DebugRender()
 		}
 	}
 
-	if (false == m_vecObstacles.empty())
+	/*if (false == m_vecObstacles.empty())
 	{
 		for (_int i = 0; i < m_vecObstacles.size(); ++i)
 		{
@@ -222,7 +222,7 @@ HRESULT CNavMeshView::DebugRender()
 		{
 			DX::Draw(m_pBatch, m_vecObstaclePointSpheres[i], Colors::Red);
 		}
-	}
+	}*/
 	m_pBatch->End();
 
 	if (nullptr != m_pAgent)
@@ -341,36 +341,6 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 		_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
 
-		/*auto [begin1, end1] = m_umapPointHeights.equal_range(m_tOut.pointlist[iIdx1 * 2]);
-		for (auto point1 = begin1; point1 != end1; ++point1)
-		{
-			if (m_tOut.pointlist[iIdx1 * 2 + 1] == point1->second.first)
-			{
-				y1 = point1->second.second;
-				break;
-			}
-		}
-
-		auto [begin2, end2] = m_umapPointHeights.equal_range(m_tOut.pointlist[iIdx2 * 2]);
-		for (auto point2 = begin2; point2 != end2; ++point2)
-		{
-			if (m_tOut.pointlist[iIdx2 * 2 + 1] == point2->second.first)
-			{
-				y2 = point2->second.second;
-				break;
-			}
-		}
-
-		auto [begin3, end3] = m_umapPointHeights.equal_range(m_tOut.pointlist[iIdx3 * 2]);
-		for (auto point3 = begin3; point3 != end3; ++point3)
-		{
-			if (m_tOut.pointlist[iIdx3 * 2 + 1] == point3->second.first)
-			{
-				y3 = point3->second.second;
-				break;
-			}
-		}*/
-
 		Vec3 vtx[POINT_END] =
 		{
 			{ m_tOut.pointlist[iIdx1 * 2], y1, m_tOut.pointlist[iIdx1 * 2 + 1] },
@@ -385,6 +355,35 @@ HRESULT CNavMeshView::BakeNavMesh()
 		pCellData->CW();
 
 		m_vecCells.push_back(pCellData);
+	}
+
+	// for multilayer	
+	for (_int i = 0; i < m_vecOut.size(); ++i)
+	{
+		for (_int j = 0; j < m_vecOut[i].numberoftriangles; ++j)
+		{
+			_int iIdx1 = m_vecOut[i].trianglelist[j * 3 + POINT_A];
+			_int iIdx2 = m_vecOut[i].trianglelist[j * 3 + POINT_B];
+			_int iIdx3 = m_vecOut[i].trianglelist[j * 3 + POINT_C];
+
+			_float y = m_vecPointsMultiLevel[i][0].y;
+			_float y1 = y, y2 = y, y3 = y;
+
+			Vec3 vtx[POINT_END] =
+			{
+				{ m_vecOut[i].pointlist[iIdx1 * 2], y1, m_vecOut[i].pointlist[iIdx1 * 2 + 1] },
+				{ m_vecOut[i].pointlist[iIdx2 * 2], y2, m_vecOut[i].pointlist[iIdx2 * 2 + 1] },
+				{ m_vecOut[i].pointlist[iIdx3 * 2], y3, m_vecOut[i].pointlist[iIdx3 * 2 + 1] },
+			};
+
+			CellData* pCellData = new CellData;
+			pCellData->vPoints[POINT_A] = vtx[POINT_A];
+			pCellData->vPoints[POINT_B] = vtx[POINT_B];
+			pCellData->vPoints[POINT_C] = vtx[POINT_C];
+			pCellData->CW();
+
+			m_vecCells.push_back(pCellData);
+		}
 	}
 
 	SetUpNeighbors(m_vecCells);
@@ -721,91 +720,6 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 	return S_OK;
 }
 
-HRESULT CNavMeshView::BakeNavMeshSingleLevel()
-{
-	Reset();
-	InitialSetting();
-
-	vector<vector<Vec3>> vecOutlines;
-
-	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
-	map<LAYERTAG, CLayer*>::iterator iter = mapLayers.find(LAYERTAG::GROUND);
-	if (iter == mapLayers.end())
-		return E_FAIL;
-
-	vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
-
-	vecObjects[0]->GetTransform()->SetPosition(Vec3::Zero);
-
-	if (FAILED(CalculateObstacleOutlinesTopDown(vecOutlines, vecObjects[0])))
-		return E_FAIL;
-
-	Obst* pObst = nullptr;
-
-	for (_int i = 0; i < vecOutlines.size(); ++i)
-	{
-		pObst = new Obst;
-
-		for (_int j = 0; j < vecOutlines[i].size(); ++j)
-		{
-			pObst->vecPoints.emplace_back(vecOutlines[i][j]);
-		}
-
-		TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
-		for (auto vPoint : pObst->vecPoints)
-		{
-			if (fMaxX < vPoint.x) fMaxX = vPoint.x;
-			if (fMinX > vPoint.x) fMinX = vPoint.x;
-
-			if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
-			if (fMinZ > vPoint.z) fMinZ = vPoint.z;
-		}
-
-		const _float fAABBOffset = 0.05f;
-		pObst->tAABB.Center = Vec3((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
-		pObst->tAABB.Extents = Vec3((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
-
-		SetPolygonHoleCenter(*pObst);
-
-		m_vecObstacles.push_back(pObst);
-		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.size()));
-
-		//DynamicCreate(*pObst);	// 안되면 시도
-
-		for (auto& iter : pObst->vecPoints)
-		{
-			BoundingSphere tSphere(iter, 0.1f);
-
-			m_vecObstaclePointSpheres.emplace_back(tSphere);
-		}
-	}
-
-	for (auto pObst : m_vecObstacles)
-	{
-		for (auto& vPoint : pObst->vecPoints)
-		{
-			m_vecPoints.push_back(vPoint);
-		}
-	}
-
-	SafeReleaseTriangle(m_tIn);
-	SafeReleaseTriangle(m_tOut);
-
-	UpdatePointList(m_tIn, m_vecPoints);
-	UpdateSegmentList(m_tIn, m_vecPoints);
-	UpdateHoleList(m_tIn);
-	UpdateRegionList(m_tIn);
-
-	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
-
-	if (FAILED(BakeNavMesh()))
-	{
-		return E_FAIL;
-	}
-
-	return S_OK;
-}
-
 HRESULT CNavMeshView::UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst)
 {
 	tIn.numberofpoints = vecPoints.size() + ((nullptr == pObst) ? 0 : pObst->vecPoints.size());
@@ -838,7 +752,7 @@ HRESULT CNavMeshView::UpdatePointList(triangulateio& tIn, const vector<Vec3>& ve
 HRESULT CNavMeshView::UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst)
 {
 	tIn.numberofsegments = vecPoints.size() + ((nullptr == pObst) ? 0 : pObst->vecPoints.size());
-	if (0 < tIn.numberofsegments)
+	if (0 < m_tIn.numberofsegments)
 	{
 		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
 
@@ -912,25 +826,6 @@ HRESULT CNavMeshView::UpdateRegionList(triangulateio& tIn, const Obst* pObst)
 			tIn.regionlist[4 * i + 1] = 0.f; //
 		}
 	}
-
-	return S_OK;
-}
-
-HRESULT CNavMeshView::StaticCreate(const Obst& tObst/**/)
-{
-	if (3 > m_vecPoints.size())
-	{
-		return E_FAIL;
-	}
-
-	SafeReleaseTriangle(m_tOut);
-
-	UpdatePointList(m_tIn, m_vecPoints);
-	UpdateSegmentList(m_tIn, m_vecPoints);
-	UpdateHoleList(m_tIn);
-	UpdateRegionList(m_tIn);
-
-	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 
 	return S_OK;
 }
@@ -2196,6 +2091,162 @@ _bool CNavMeshView::IntersectSegments(const Vec3& vP1, const Vec3& vQ1, const Ve
 	return false;
 }
 
+HRESULT CNavMeshView::LoadMainScene()
+{
+	m_strFilePath = "StaticObstacles";
+	for (_int i = 0; i < m_vecDataFiles.size(); ++i)
+	{
+		if (0 == strcmp("EmeraldSquare0.xml", m_vecDataFiles[i]))
+		{
+			m_file_Current = i;
+			break;
+		}
+	}
+	
+	if (FAILED(LoadNvFile()))
+		return E_FAIL;
+	
+	vector<Vec3> vecPoints0;
+	vecPoints0.push_back(Vec3(-399.0f, 95.0f, -400.0f));
+	vecPoints0.push_back(Vec3(-399.0f, 95.0f, -230.0f));
+	vecPoints0.push_back(Vec3(-61.0f, 95.0f, -230.0f));
+	vecPoints0.push_back(Vec3(-61.0f, 95.0f, -400.0f));
+	if (FAILED(LoadAnotherLevelData(vecPoints0)))
+		return E_FAIL;
+
+	vector<Vec3> vecPoints1;
+	vecPoints1.push_back(Vec3(-395.0f, 132.0f, -231.0f));
+	vecPoints1.push_back(Vec3(-395.0f, 132.0f, -66.0f));
+	vecPoints1.push_back(Vec3(-230.0f, 132.0f, -66.0f));
+	vecPoints1.push_back(Vec3(-230.0f, 132.0f, -231.0f));
+	if (FAILED(LoadAnotherLevelData(vecPoints1)))
+		return E_FAIL;
+
+	vector<Vec3> vecPoints2;
+	vecPoints2.push_back(Vec3(-238.0f, 154.0f, -237.0f));
+	vecPoints2.push_back(Vec3(-238.0f, 154.0f, -57.0f));
+	vecPoints2.push_back(Vec3(-57.0f, 154.0f, -57.0f));
+	vecPoints2.push_back(Vec3(-57.0f, 154.0f, -237.0f));
+	if (FAILED(LoadAnotherLevelData(vecPoints2)))
+		return E_FAIL;
+	//
+	vector<Vec3> vecPoints3;
+	vecPoints3.push_back(Vec3(74.0f, 108.0f, 93.0f));
+	vecPoints3.push_back(Vec3(74.0f, 108.0f, 230.0f));
+	vecPoints3.push_back(Vec3(230.0f, 108.0f, 230.0f));
+	vecPoints3.push_back(Vec3(230.0f, 108.0f, 73.0f));
+	vecPoints3.push_back(Vec3(93.0f, 108.0f, 73.0f));
+	if (FAILED(LoadAnotherLevelData(vecPoints3)))
+		return E_FAIL;
+
+	vector<Vec3> vecPoints4;
+	vecPoints4.push_back(Vec3(65.0f, 134.0f, 230.0f));
+	vecPoints4.push_back(Vec3(65.0f, 134.0f, 395.0f));
+	vecPoints4.push_back(Vec3(230.0f, 134.0f, 395.0f));
+	vecPoints4.push_back(Vec3(230.0f, 134.0f, 230.0f));
+	if (FAILED(LoadAnotherLevelData(vecPoints4)))
+		return E_FAIL;
+
+	vector<Vec3> vecPoints5;
+	vecPoints5.push_back(Vec3(230.0f, 131.0f, 395.0f));
+	vecPoints5.push_back(Vec3(395.0f, 131.0f, 395.0f));
+	vecPoints5.push_back(Vec3(395.0f, 131.0f, 65.0f));
+	vecPoints5.push_back(Vec3(230.0f, 131.0f, 65.0f));
+	if (FAILED(LoadAnotherLevelData(vecPoints5)))
+		return E_FAIL;
+	//
+	vector<Vec3> vecPoints6;
+	vecPoints6.push_back(Vec3(230.0f, 134.0f, -395.0f));
+	vecPoints6.push_back(Vec3(230.0f, 134.0f, -64.0f));
+	vecPoints6.push_back(Vec3(395.0f, 134.0f, -64.0f));
+	vecPoints6.push_back(Vec3(395.0f, 134.0f, -395.0f));
+	if (FAILED(LoadAnotherLevelData(vecPoints6)))
+		return E_FAIL;
+
+	vector<Vec3> vecPoints7;
+	vecPoints7.push_back(Vec3(230.0f, 130.0f, -396.0f));
+	vecPoints7.push_back(Vec3(65.0f, 130.0f, -396.0f));
+	vecPoints7.push_back(Vec3(65.0f, 130.0f, -232.0f));
+	vecPoints7.push_back(Vec3(230.0f, 130.0f, -232.0f));
+	if (FAILED(LoadAnotherLevelData(vecPoints7)))
+		return E_FAIL;
+
+	vector<Vec3> vecPoints8;
+	vecPoints8.push_back(Vec3(238.0f, 274.0f, -233.0f));
+	vecPoints8.push_back(Vec3(230.0f, 274.0f, -240.0f));
+	vecPoints8.push_back(Vec3(64.0f, 274.0f, -240.0f));
+	vecPoints8.push_back(Vec3(56.0f, 274.0f, -231.0f));
+	vecPoints8.push_back(Vec3(56.0f, 274.0f, -166.0f));
+	vecPoints8.push_back(Vec3(165.0f, 274.0f, -166.0f));
+	vecPoints8.push_back(Vec3(165.0f, 274.0f, -57.0f));
+	vecPoints8.push_back(Vec3(230.0f, 274.0f, -57.0f));
+	vecPoints8.push_back(Vec3(239.0f, 274.0f, -65.0f));
+	if (FAILED(LoadAnotherLevelData(vecPoints8)))
+		return E_FAIL;
+
+	if (FAILED(BakeNavMesh()))
+		return E_FAIL;
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::LoadAnotherLevelData(const vector<Vec3>& vecPoints)
+{
+	triangulateio tIn = { 0 };
+	triangulateio tOut = { 0 };
+	
+	tIn.numberofpoints = vecPoints.size();
+	if (0 < tIn.numberofpoints)
+	{
+		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
+
+		_int i = 0;
+		for (auto point : vecPoints)
+		{
+			tIn.pointlist[2 * i + 0] = point.x;
+			tIn.pointlist[2 * i + 1] = point.z;
+			++i;
+		}
+	}
+	//if (FAILED(UpdatePointList(tIn, vecPoints)))
+	//	return E_FAIL;
+
+	tIn.numberofsegments = vecPoints.size();
+	if (0 < tIn.numberofsegments)
+	{
+		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
+
+		// Points
+		_int iStartIndex = vecPoints.size();
+		for (_int i = 0; i < iStartIndex - 1; ++i)
+		{
+			tIn.segmentlist[2 * i + 0] = i + 0;
+			tIn.segmentlist[2 * i + 1] = i + 1;
+		}
+		tIn.segmentlist[2 * (iStartIndex - 1) + 0] = iStartIndex - 1;
+		tIn.segmentlist[2 * (iStartIndex - 1) + 1] = 0;
+	}
+
+	//if (FAILED(UpdateHoleList(tIn)))
+	//	return E_FAIL;
+
+	//if (FAILED(UpdateRegionList(tIn)))
+	//	return E_FAIL;
+
+	triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
+
+	m_vecIn.push_back(tIn);
+	m_vecOut.push_back(tOut);
+	m_vecPointsMultiLevel.push_back(vecPoints);
+
+	/*if (FAILED(SafeReleaseTriangle(tIn)))
+		return E_FAIL;
+	if (FAILED(SafeReleaseTriangle(tOut)))
+		return E_FAIL;*/
+
+	return S_OK;
+}
+
 vector<Vec3> CNavMeshView::ProcessIntersections(vector<Vec3>& vecExpandedOutline)
 {
 	vector<Vec3> vecResult;
@@ -3079,6 +3130,18 @@ void CNavMeshView::InfoView()
 		BakeNavMesh();
 	}
 
+	if (ImGui::Button("LoadMainScene"))
+	{
+		if (SUCCEEDED(LoadMainScene()))
+		{
+			MSG_BOX("Succeed to Load MainScene");
+		}
+		else
+		{
+			MSG_BOX("Failed to Load MainScene");
+		}
+	}ImGui::NewLine();
+
 	static _bool bBakeSingle = false;
 	if (true == bBakeSingle && 1 == m_vecObstacles.size())
 	{		
@@ -3115,8 +3178,8 @@ void CNavMeshView::InfoView()
 	{
 		if (ImGui::Button("BakeHeightMapObst"))
 		{
-			//if (SUCCEEDED(BakeObstacles()))
-			if (SUCCEEDED(BakeNavMeshSingleLevel()))
+			if (SUCCEEDED(BakeObstacles()))
+			//if (SUCCEEDED(BakeNavMeshSingleLevel()))
 			{
 				MSG_BOX("Succeed to Bake Height Obstacles");
 			}
@@ -3317,6 +3380,46 @@ HRESULT CNavMeshView::InitialSetting()
 
 	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
 
+	// for multilevel
+
+	//triangulateio tIn = { 0 }, tOut = { 0 };
+	//vector<Vec3> vecPoints;
+
+	//vecPoints.push_back(Vec3(-399.0f, 96.f, -400.0f));
+	//m_vecPointSpheres.push_back(BoundingSphere(Vec3(-399.0f, 96.f, -400.0f), 2.f));
+
+	//vecPoints.push_back(Vec3(-399.0f, 96.f, -230.0f));
+	//m_vecPointSpheres.push_back(BoundingSphere(Vec3(-399.0f, 96.f, -230.0f), 2.f));
+
+	//vecPoints.push_back(Vec3(-61.0f, 96.f, -230.0f));
+	//m_vecPointSpheres.push_back(BoundingSphere(Vec3(-61.0f, 96.f, -230.0f), 2.f));
+
+	//vecPoints.push_back(Vec3(-61.0f, 96.f, -400.0f));
+	//m_vecPointSpheres.push_back(BoundingSphere(Vec3(-61.0f, 96.f, -400.0f), 2.f));
+
+	////m_iStaticPointCount = m_vecPoints.size();
+
+	//if (FAILED(UpdatePointList(tIn, vecPoints)))
+	//	return E_FAIL;
+
+	//if (FAILED(UpdateSegmentList(tIn, vecPoints)))
+	//	return E_FAIL;
+
+	//if (FAILED(UpdateHoleList(tIn)))
+	//	return E_FAIL;
+
+	//if (FAILED(UpdateRegionList(tIn)))
+	//	return E_FAIL;
+
+	//triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
+
+	//m_vecIn.push_back(tIn);
+	//m_vecOut.push_back(tOut);
+	//m_vecPointsMultiLevel.push_back(vecPoints);
+
+	//SafeReleaseTriangle(tIn);
+	//SafeReleaseTriangle(tOut);
+
 	return S_OK;
 }
 
@@ -3324,7 +3427,7 @@ HRESULT CNavMeshView::Reset()
 {
 	SafeReleaseTriangle(m_tIn);
 	SafeReleaseTriangle(m_tOut);
-	
+
 	if (m_tIn.holelist)
 	{
 		free(m_tIn.holelist);
@@ -3336,6 +3439,29 @@ HRESULT CNavMeshView::Reset()
 		free(m_tIn.regionlist);
 		m_tIn.regionlist = nullptr;
 	}
+
+	// for multilevel
+	for (auto& in : m_vecIn)
+	{
+		SafeReleaseTriangle(in);
+		if (in.holelist)
+		{
+			free(in.holelist);
+			in.holelist = nullptr;
+		}
+
+		if (in.regionlist)
+		{
+			free(in.regionlist);
+			in.regionlist = nullptr;
+		}
+	}
+
+	for (auto& out : m_vecOut)
+	{
+		SafeReleaseTriangle(out);
+	}
+	//
 
 	m_vecPoints.clear();
 	m_vecSegments.clear();
