@@ -12,6 +12,7 @@ END
 BEGIN(Client)
 
 struct CellData;
+struct HierarchyNode;
 struct Obst;
 class CAgentController;
 class CAgent final : public CGameObject
@@ -21,7 +22,7 @@ public:
 	struct AgentDesc
 	{
 		CellData* pStartCell = nullptr;
-		vector<CellData*>* pCells = nullptr;
+		vector<HierarchyNode>* pHierarchyNodes = nullptr;
 		unordered_multimap<_int, CellData*>* pCellGrids = nullptr;
 		unordered_multimap<_int, Obst*>* pObstGrids = nullptr;
 	};

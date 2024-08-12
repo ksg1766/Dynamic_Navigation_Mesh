@@ -148,31 +148,34 @@ HRESULT CNavMeshView::DebugRender()
 	m_pContext->IASetInputLayout(m_pInputLayout);
 	
 	m_pBatch->Begin();
-	if (false == m_vecCells.empty())
+	if (false == m_vecHierarchyNodes.empty())
 	{
-		for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
+		for (auto& hierarchy : m_vecHierarchyNodes)
 		{
-			if (nullptr != (*cell) && true == (*cell)->isDead)
+			for (auto cell = hierarchy.pCells.begin(); cell != hierarchy.pCells.end();)
 			{
-				Safe_Delete(*cell);
-				cell = m_vecCells.erase(cell);
-				continue;
-			}
+				if (nullptr != (*cell) && true == (*cell)->isDead)
+				{
+					Safe_Delete(*cell);
+					cell = hierarchy.pCells.erase(cell);
+					continue;
+				}
+				
+				Vec3 vP0 = (*cell)->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
+				Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
+				Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
-			Vec3 vP0 = (*cell)->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
-			Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
-			Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
+				if (true == (*cell)->isNew)
+				{
+					DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Blue);
+				}
+				else
+				{
+					DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
+				}
 
-			if (true == (*cell)->isNew)
-			{
-				DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Blue);
+				++cell;
 			}
-			else
-			{
-				DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
-			}
-
-			++cell;
 		}
 	}
 
@@ -319,19 +322,26 @@ void CNavMeshView::SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_m
 
 HRESULT CNavMeshView::BakeNavMesh()
 {
-	if (false == m_vecCells.empty())
+	if (false == m_vecHierarchyNodes.empty())
 	{
-		for (auto iter : m_vecCells)
+		for (auto& hierarchy : m_vecHierarchyNodes)
 		{
-			delete iter;
+			for (auto cell : hierarchy.pCells)
+			{
+				delete cell;
+			}
+
+			hierarchy.pCells.clear();
 		}
 
-		m_vecCells.clear();
+		m_vecHierarchyNodes.clear();
 	}
 	
 	if (false == m_umapCellGrids.empty()) { m_umapCellGrids.clear(); }
 	
 	if (false == m_umapObstGrids.empty()) { m_umapObstGrids.clear(); }
+
+	vector<CellData*> vecCells;
 
 	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 	{
@@ -354,12 +364,27 @@ HRESULT CNavMeshView::BakeNavMesh()
 		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
 
-		m_vecCells.push_back(pCellData);
+		vecCells.push_back(pCellData);
 	}
+
+	SetUpNeighbors(vecCells);
+
+	for (auto cell : vecCells)
+	{
+		cell->SetUpData();
+	}
+
+	HierarchyNode tHierarchy;
+	tHierarchy.pCells = vecCells;
+
+	m_vecHierarchyNodes.push_back(tHierarchy);
+	SetUpCells2Grids(vecCells, m_umapCellGrids);
 
 	// for multilayer	
 	for (_int i = 0; i < m_vecOut.size(); ++i)
 	{
+		vector<CellData*> vecMultilayerCells;
+
 		for (_int j = 0; j < m_vecOut[i].numberoftriangles; ++j)
 		{
 			_int iIdx1 = m_vecOut[i].trianglelist[j * 3 + POINT_A];
@@ -382,18 +407,22 @@ HRESULT CNavMeshView::BakeNavMesh()
 			pCellData->vPoints[POINT_C] = vtx[POINT_C];
 			pCellData->CW();
 
-			m_vecCells.push_back(pCellData);
+			vecMultilayerCells.push_back(pCellData);
 		}
+
+		SetUpNeighbors(vecMultilayerCells);
+
+		for (auto cell : vecMultilayerCells)
+		{
+			cell->SetUpData();
+		}
+
+		HierarchyNode tMultiLevelHierarchy;
+		tMultiLevelHierarchy.pCells = vecMultilayerCells;
+
+		m_vecHierarchyNodes.push_back(tMultiLevelHierarchy);
 	}
 
-	SetUpNeighbors(m_vecCells);
-
-	for (auto cell : m_vecCells)
-	{
-		cell->SetUpData();
-	}
-
-	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
 	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
 
 	return S_OK;
@@ -636,19 +665,26 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 		return E_FAIL;
 	}*/
 
-	if (false == m_vecCells.empty())
+	if (false == m_vecHierarchyNodes.empty())
 	{
-		for (auto iter : m_vecCells)
+		for (auto& hierarchy : m_vecHierarchyNodes)
 		{
-			delete iter;
+			for (auto cell : hierarchy.pCells)
+			{
+				Safe_Delete(cell);
+			}
+
+			hierarchy.pCells.clear();
 		}
 
-		m_vecCells.clear();
+		m_vecHierarchyNodes.clear();
 	}
 
 	if (false == m_umapCellGrids.empty()) { m_umapCellGrids.clear(); }
 
 	if (false == m_umapObstGrids.empty()) { m_umapObstGrids.clear(); }
+
+	vector<CellData*>		vecCells;
 
 	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 	{
@@ -704,18 +740,23 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 			}
 		}
 
-		m_vecCells.push_back(pCellData);
+		vecCells.push_back(pCellData);
 	}
 
-	SetUpNeighbors(m_vecCells);
+	SetUpNeighbors(vecCells);
 
-	for (auto cell : m_vecCells)
+	for (auto cell : vecCells)
 	{
 		cell->SetUpData();
 	}
 
-	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
+	SetUpCells2Grids(vecCells, m_umapCellGrids);
 	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
+
+	HierarchyNode tHierarchy;
+	tHierarchy.pCells = vecCells;
+
+	m_vecHierarchyNodes.push_back(tHierarchy);
 
 	return S_OK;
 }
@@ -959,7 +1000,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		}
 
 		cell->isNew = true;
-		m_vecCells.emplace_back(cell);
+		m_vecHierarchyNodes[0].pCells.emplace_back(cell);
 	}
 
 	for (auto cell : vecNewCells)
@@ -1166,7 +1207,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		}
 
 		cell->isNew = true;
-		m_vecCells.emplace_back(cell);
+		m_vecHierarchyNodes[0].pCells.emplace_back(cell);
 	}
 
 	for (auto cell : vecNewCells)
@@ -1192,7 +1233,7 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 	CAgent::AgentDesc tDesc =
 	{
 		pCell,
-		&m_vecCells,
+		&m_vecHierarchyNodes,
 		&m_umapCellGrids,
 		&m_umapObstGrids
 	};
@@ -1213,7 +1254,7 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 {
 	Vec3 vSpawnPosition = Vec3::Zero;
 
-	for (auto& point : m_vecCells[iSpawnIndex]->vPoints)
+	for (auto& point : m_vecHierarchyNodes[0].pCells[iSpawnIndex]->vPoints)
 	{
 		vSpawnPosition += point;
 	}
@@ -1222,8 +1263,8 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 
 	CAgent::AgentDesc tDesc =
 	{
-		m_vecCells[iSpawnIndex],
-		&m_vecCells,
+		m_vecHierarchyNodes[0].pCells[iSpawnIndex],
+		&m_vecHierarchyNodes,
 		&m_umapCellGrids,
 		&m_umapObstGrids,
 	};
@@ -2108,7 +2149,8 @@ HRESULT CNavMeshView::LoadMainScene()
 
 	if (FAILED(LoadNvFile()))
 		return E_FAIL;
-	
+
+#pragma region MultilevelNavMesh
 	vector<Vec3> vecPoints0;
 	vecPoints0.push_back(Vec3(-399.0f, 95.0f, -400.0f));
 	vecPoints0.push_back(Vec3(-399.0f, 95.0f, -230.0f));
@@ -2189,6 +2231,7 @@ HRESULT CNavMeshView::LoadMainScene()
 
 	if (FAILED(BakeNavMesh()))
 		return E_FAIL;
+#pragma endregion MultilevelNavMesh
 
 	return S_OK;
 }
@@ -3339,11 +3382,11 @@ void CNavMeshView::CellGroup()
 		ImGui::ListBox("", &m_item_Current, m_strCells.data(), m_strCells.size(), 3);
 		if (ImGui::Button("PopBackCell"))
 		{
-			if (m_vecCells.empty())
+			if (m_vecHierarchyNodes.empty())
 				return;
 
 			m_strCells.pop_back();
-			m_vecCells.pop_back();
+			m_vecHierarchyNodes.pop_back();
 
 			auto iter = m_vecPointSpheres.end() - 3 - m_vecPoints.size();
 			for (_int i = 0; i < 3; ++i)
@@ -3469,11 +3512,15 @@ HRESULT CNavMeshView::Reset()
 	m_vecPoints.clear();
 	m_vecSegments.clear();
 
-	for (auto cell : m_vecCells)
+	for (auto hierarchy : m_vecHierarchyNodes)
 	{
-		Safe_Delete(cell);
+		for (auto cell : hierarchy.pCells)
+		{
+			Safe_Delete(cell);
+		}
+		hierarchy.pCells.clear();
 	}
-	m_vecCells.clear();
+	m_vecHierarchyNodes.clear();
 
 	for (auto cell : m_strCells)
 	{
@@ -3691,11 +3738,15 @@ void CNavMeshView::Free()
 	SafeReleaseTriangle(m_tIn);
 	SafeReleaseTriangle(m_tOut);
 
-	for (auto cell : m_vecCells)
+	for (auto hierarchy : m_vecHierarchyNodes)
 	{
-		Safe_Delete(cell);
+		for (auto cell : hierarchy.pCells)
+		{
+			Safe_Delete(cell);
+		}
+		hierarchy.pCells.clear();
 	}
-	m_vecCells.clear();
+	m_vecHierarchyNodes.clear();
 	
 	for (auto cell : m_strCells)
 	{

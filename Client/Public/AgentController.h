@@ -90,7 +90,7 @@ private:
 	deque<pair<Vec3, Vec3>>	m_dqExpandedVertices;
 	deque<pair<Vec3, Vec3>>	m_dqOffset;
 
-	vector<CellData*>* m_pCells;
+	vector<HierarchyNode>* m_pHierarchyNodes;
 	unordered_multimap<_int, CellData*>* m_pCellGrids;
 	unordered_multimap<_int, Obst*>* m_pObstGrids;
 

@@ -38,7 +38,7 @@ HRESULT CAgentController::Initialize(void* pArg)
 	{
 		CAgent::AgentDesc* pDesc = reinterpret_cast<CAgent::AgentDesc*>(pArg);
 		m_pCurrentCell = pDesc->pStartCell;
-		m_pCells = pDesc->pCells;
+		m_pHierarchyNodes = pDesc->pHierarchyNodes;
 		m_pCellGrids = pDesc->pCellGrids;
 		m_pObstGrids = pDesc->pObstGrids;
 	}

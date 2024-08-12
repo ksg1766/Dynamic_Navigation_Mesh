@@ -68,4 +68,16 @@ struct CellData
 	_bool	isNew = false;
 };
 
+struct Portal
+{
+	BoundingSphere tPortalVolume = BoundingSphere(Vec3::Zero, 0.0f); // 도착했는지 검사할 영역
+	_float fHeight = 0.0f;	// 높이(필요한지는 아직 모르겠다)
+};
+
+struct HierarchyNode
+{
+	vector<CellData*> pCells;	// 포함된 cells
+	vector<pair<Portal*, Portal*>> pPortalPairs; // 포함된 portals connections
+};
+
 END
