@@ -205,3 +205,17 @@ _float CellData::SearchWidth(const Vec3& C, CellData* T, LINES e, _float d)
 		return SearchWidth(C, _T, _e2, d);
 	}
 }
+
+_bool CellData::Pick(const Ray& ray, OUT Vec3& pickPos, OUT _float& distance, const Matrix& matWorld)
+{
+	if (ray.Intersects(vPoints[POINT_A], vPoints[POINT_B], vPoints[POINT_C], OUT distance))
+	{
+		if (isnan(distance))
+			return false;
+
+		pickPos = ray.position + ray.direction * distance;
+		return true;
+	}	
+
+	return false;
+}

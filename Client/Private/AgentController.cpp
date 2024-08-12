@@ -37,7 +37,8 @@ HRESULT CAgentController::Initialize(void* pArg)
 	if (nullptr != pArg)
 	{
 		CAgent::AgentDesc* pDesc = reinterpret_cast<CAgent::AgentDesc*>(pArg);
-		m_pCurrentCell = pDesc->pStartCell;
+		m_CurrentCell.first = pDesc->pStartCell.first;
+		m_CurrentCell.second = pDesc->pStartCell.second;
 		m_pHierarchyNodes = pDesc->pHierarchyNodes;
 		m_pCellGrids = pDesc->pCellGrids;
 		m_pObstGrids = pDesc->pObstGrids;
@@ -114,12 +115,12 @@ _float CAgentController::GetHeightOffset()
 {
 	Vec3 vPos(m_pTransform->GetPosition());
 
-	const array<Vec3, POINT_END>* vPoints = &m_pCurrentCell->vPoints;
+	const array<Vec3, POINT_END>* vPoints = &m_CurrentCell.second->vPoints;
 
 	Plane vPlane = Plane(
-		m_pCurrentCell->vPoints[POINT_A],
-		m_pCurrentCell->vPoints[POINT_B],
-		m_pCurrentCell->vPoints[POINT_C]
+		m_CurrentCell.second->vPoints[POINT_A],
+		m_CurrentCell.second->vPoints[POINT_B],
+		m_CurrentCell.second->vPoints[POINT_C]
 	);
 
 	return -((vPlane.x * vPos.x + vPlane.z * vPos.z + vPlane.w) / vPlane.y + vPos.y);
@@ -143,7 +144,7 @@ Vec3 CAgentController::Move(_float fTimeDelta)
 		{	// end
 			vMoveAmount = vDistance;
 
-			m_dqPortals.clear();
+			m_dqEntries.clear();
 			m_dqOffset.clear();
 			m_dqPath.clear();
 			m_dqWayPoints.clear();
@@ -177,7 +178,7 @@ void CAgentController::Slide(const Vec3 vPrePos)
 	CellData* pNeighbor = nullptr;
 	Vec3 vPosition = m_pTransform->GetPosition();
 
-	if (false == m_pCurrentCell->IsOut(vPosition, pNeighbor))
+	if (false == m_CurrentCell.second->IsOut(vPosition, pNeighbor))	// TODO: Hierarchy 고려 안해도 되는지
 	{
 		return;
 	}
@@ -186,24 +187,24 @@ void CAgentController::Slide(const Vec3 vPrePos)
 	{
 		if (false == pNeighbor->IsOut(vPosition, pNeighbor))
 		{
-			m_pCurrentCell = pNeighbor;
+			m_CurrentCell.second = pNeighbor;
 			return;
 		}
 	}
 
 	Vec3 vDir = vPosition - vPrePos;
-	Vec3 vPassedLine = m_pCurrentCell->GetPassedEdgeNormal(vPosition);
+	Vec3 vPassedLine = m_CurrentCell.second->GetPassedEdgeNormal(vPosition);
 
 	vPosition = vPrePos + vDir - (EPSILON + vDir.Dot(vPassedLine)) * vPassedLine;
-	m_pCurrentCell = FindCellByPosition(vPosition);
+	m_CurrentCell.second = FindCellByPosition(vPosition);
 
-	while (nullptr == m_pCurrentCell)
+	while (nullptr == m_CurrentCell.second)
 	{
 		Obst* pObst = FindObstByPosition(vPosition);
 		if (nullptr != pObst)
 		{
 			vPosition = pObst->GetClosestPoint(vPosition, m_fAgentRadius + EPSILON);
-			m_pCurrentCell = FindCellByPosition(vPosition);
+			m_CurrentCell.second = FindCellByPosition(vPosition);
 		}
 	}
 
@@ -217,7 +218,7 @@ _bool CAgentController::AStar()
 	unordered_set<CellData*> Closed;
 
 	m_dqPath.clear();
-	m_dqPortals.clear();
+	m_dqEntries.clear();
 	m_dqOffset.clear();
 	m_dqExpandedVertices.clear();
 	m_dqWayPoints.clear();
@@ -228,39 +229,40 @@ _bool CAgentController::AStar()
 	Vec3 vDistance = m_vDestPos - vStartPos;
 	_float h = vDistance.Length();
 
-	Open.push(PQNode{ h, 0.0f, m_pCurrentCell });
-	Path[m_pCurrentCell] = PATH(m_pCurrentCell, LINE_END);
+	// TODO : Hierarchy 고려 안해도 되는지
+	Open.push(PQNode{ h, 0.0f, m_CurrentCell.second });
+	Path[m_CurrentCell.second] = PATH(m_CurrentCell.second, LINE_END);
 
 	while (false == Open.empty())
 	{
 		PQNode tNode = Open.top();
 		CellData* pCurrent = tNode.pCell;
 
-		if (pCurrent == m_pDestCell)
+		if (pCurrent == m_DestCell.second)
 		{
-			pair<CellData*, LINES>& tNext = Path[m_pDestCell];
+			pair<CellData*, LINES>& tNext = Path[m_DestCell.second];
 			auto& [pNext, ePassed] = tNext;
 
-			m_dqPortals.push_front(pair(
+			m_dqEntries.push_front(pair(
 				m_vDestPos,
 				m_vDestPos
 			));
 
-			m_dqExpandedVertices.push_front(m_dqPortals.front());
+			m_dqExpandedVertices.push_front(m_dqEntries.front());
 			
 			//while (m_pCurrentCell != pNext)
 			while (true)
 			{
 				m_dqPath.push_front(tNext);
 
-				m_dqPortals.push_front(pair(
+				m_dqEntries.push_front(pair(
 					pNext->vPoints[ePassed],
 					pNext->vPoints[(ePassed + 1) % POINT_END]
 				));
 
-				m_dqExpandedVertices.push_front(m_dqPortals.front());
+				m_dqExpandedVertices.push_front(m_dqEntries.front());
 
-				if (m_pCurrentCell == pNext)
+				if (m_CurrentCell.second == pNext)
 					break;
 
 				tNext = Path[pNext];
@@ -268,12 +270,12 @@ _bool CAgentController::AStar()
 
 			const Vec3& vStartPos = m_pTransform->GetPosition();
 
-			m_dqPortals.push_front(pair(
+			m_dqEntries.push_front(pair(
 				vStartPos,
 				vStartPos
 			));
 
-			m_dqExpandedVertices.push_front(m_dqPortals.front());
+			m_dqExpandedVertices.push_front(m_dqEntries.front());
 
 			return true;
 		}
@@ -322,7 +324,7 @@ _bool CAgentController::AStar()
 			Vec3 vNextEdgeDir = pCurrent->vPoints[(i + 1) % POINT_END] - pCurrent->vPoints[i];
 			vNextEdgeDir.Normalize();
 
-			if (m_pCurrentCell == pCurrent)
+			if (m_CurrentCell.second == pCurrent) // TODO : Hierarchy 고려 안해도 되는지
 			{
 				neighbor_g = tNode.g + CellData::CostBetweenPoint2Edge(
 					vStartPos,
@@ -398,11 +400,11 @@ void CAgentController::FunnelAlgorithm()
 	//deque<pair<Vec3, Vec3>> dqOffset;
 	m_dqOffset.emplace_back(Vec3::Zero, Vec3::Zero);
 
-	for (_int i = 2; i < m_dqPortals.size(); ++i)
+	for (_int i = 2; i < m_dqEntries.size(); ++i)
 	{
-		const auto& [vLeft0, vRight0] = m_dqPortals[i - 2];
-		const auto& [vLeft1, vRight1] = m_dqPortals[i - 1];
-		const auto& [vLeft2, vRight2] = m_dqPortals[i];
+		const auto& [vLeft0, vRight0] = m_dqEntries[i - 2];
+		const auto& [vLeft1, vRight1] = m_dqEntries[i - 1];
+		const auto& [vLeft2, vRight2] = m_dqEntries[i];
 
 		Vec3 vLineL0 = vLeft1 - vLeft0;
 		Vec3 vLineL1 = vLeft2 - vLeft1;
@@ -510,7 +512,7 @@ void CAgentController::FunnelAlgorithm()
 
 	for (_int i = 1; i < m_dqOffset.size(); ++i)
 	{
-		const auto& [vLeft, vRight] = m_dqPortals[i];
+		const auto& [vLeft, vRight] = m_dqEntries[i];
 
 		//Vec3 vLeft = vOriginL;
 		//Vec3 vRight = vOriginR;
@@ -609,19 +611,51 @@ Obst* CAgentController::FindObstByPosition(const Vec3& vPosition)
 
 _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 {
+	// 여기서 hierarchy cell 검색. -> 추후에 grid 검색으로
+	Matrix V = m_pGameInstance->Get_Transform_float4x4(CPipeLine::D3DTS_VIEW);
+	Matrix P = m_pGameInstance->Get_Transform_float4x4(CPipeLine::D3DTS_PROJ);
+
+	Viewport& vp = m_pGameInstance->GetViewPort();
+
+	const Matrix& matTerrain = pTerrain->GetTransform()->WorldMatrix();
+
+	Vec3 n = vp.Unproject(Vec3(screenX, screenY, 0), P, V, matTerrain);
+	Vec3 f = vp.Unproject(Vec3(screenX, screenY, 1), P, V, matTerrain);
+
+	Vec3 start = n;
+	Vec3 direction = f - n;
+	direction.Normalize();
+
 	_float fDistance = 0.0f;
 	Vec3 vPickedPos;
-	if (false == pTerrain->Pick(screenX, screenY, vPickedPos, fDistance, pTerrain->GetTransform()->WorldMatrix()))
+
+	Ray ray = Ray(start, direction);
+
+	for (_int i = m_pHierarchyNodes->size() - 1; 0 < i; --i)
+	{
+		for (auto cell : (*m_pHierarchyNodes)[i].pCells)
+		{
+			if (true == cell->Pick(ray, vPickedPos, fDistance, matTerrain))
+			{
+				m_CurrentCell.first = &(*m_pHierarchyNodes)[i];
+				m_CurrentCell.second = cell;
+
+				return true;
+			}
+		}
+	}
+
+	if (false == pTerrain->Pick(ray, vPickedPos, fDistance, matTerrain))
 	{
 		return false;
 	}
 
 	//m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
 
-	m_pCurrentCell = FindCellByPosition(m_pTransform->GetPosition());	// TODO: ...
-	m_pDestCell = FindCellByPosition(vPickedPos);
+	m_CurrentCell = { &(*m_pHierarchyNodes)[0], FindCellByPosition(m_pTransform->GetPosition()) };	// TODO: ...
+	m_DestCell = { &(*m_pHierarchyNodes)[0], FindCellByPosition(vPickedPos) };
 
-	if (nullptr != m_pDestCell)
+	if (nullptr != m_DestCell.second)
 	{
 		m_vDestPos = vPickedPos;
 
@@ -642,7 +676,7 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 	if (nullptr != pObst)
 	{
 		m_vDestPos = pObst->GetClosestPoint(vPickedPos, m_fAgentRadius + 0.1f);
-		m_pDestCell = FindCellByPosition(m_vDestPos);
+		m_DestCell.second = FindCellByPosition(m_vDestPos);
 
 		if (true == AStar())
 		{
@@ -688,11 +722,11 @@ void CAgentController::DebugRender()
 		}
 	}
 
-	if (false == m_dqPortals.empty())
+	if (false == m_dqEntries.empty())
 	{
-		for (_int i = 0; i < m_dqPortals.size(); ++i)
+		for (_int i = 0; i < m_dqEntries.size(); ++i)
 		{
-			const auto& [vLeft, vRight] = m_dqPortals[i];
+			const auto& [vLeft, vRight] = m_dqEntries[i];
 			const auto& [vLeftOff, vRightOff] = m_dqOffset[i];
 			const auto& [vLeftP, vRightP] = m_dqExpandedVertices[i];
 
@@ -728,12 +762,12 @@ void CAgentController::PopPath()
 {
 	for (_int i = 0; i < m_dqPath.size(); ++i)
 	{
-		if (m_pCurrentCell == m_dqPath[i].first)
+		if (m_CurrentCell.second == m_dqPath[i].first)
 		{
 			for (_int j = 0; j <= i; ++j)
 			{
 				if (false == m_dqPath.empty())				m_dqPath.pop_front();
-				if (false == m_dqPortals.empty())			m_dqPortals.pop_front();
+				if (false == m_dqEntries.empty())			m_dqEntries.pop_front();
 				if (false == m_dqOffset.empty())			m_dqOffset.pop_front();
 				if (false == m_dqExpandedVertices.empty())	m_dqExpandedVertices.pop_front();
 			}
@@ -776,7 +810,7 @@ void CAgentController::Free()
 	Safe_Release(m_pInputLayout);
 
 	m_dqWayPoints.clear();
-	m_dqPortals.clear();
+	m_dqEntries.clear();
 	m_dqOffset.clear();
 	m_dqExpandedVertices.clear();
 	m_dqPath.clear();

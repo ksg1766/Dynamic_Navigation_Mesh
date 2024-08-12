@@ -75,14 +75,14 @@ private:
 	Vec3			m_vMaxLinearSpeed;
 	Vec3			m_vLinearSpeed;
 
-	CellData*		m_pCurrentCell = nullptr;
-	CellData*		m_pDestCell = nullptr;
+	pair<HierarchyNode*, CellData*> m_CurrentCell = { nullptr, nullptr };
+	pair<HierarchyNode*, CellData*> m_DestCell = { nullptr, nullptr };
 	
 	_float			m_fAgentRadius;
 
 	using PATH = pair<CellData*, LINES>;
 	deque<PATH>		m_dqPath;
-	deque<pair<Vec3, Vec3>>	m_dqPortals;
+	deque<pair<Vec3, Vec3>>	m_dqEntries;
 	deque<Vec3>		m_dqWayPoints;
 	void			PopPath();
 
@@ -104,5 +104,11 @@ public:
 	virtual CComponent* Clone(CGameObject* pGameObject, void* pArg) override;
 	virtual void Free() override;
 };
+
+// TODO : Pick했을 때, min dist level cell 반환 : 상위 층부터 검사하고 마지막에 base level 검사
+//			-> 나중에 여유가 된다면 grid에 전부 포함시키도록... 근데 지금 terrain buffer로 pick하고 있는게 문제. 바꿀게 많다.
+// 모든 cell이 자기 level 알고 있으면 좀 곤란... 그냥 pair<current level, current cell>랑 pair<dest level, dest cell>로 바꾸자.
+// 거쳐갈 portal은 waypoint 처럼 deque에 넣어두고 접근했다면 waypoint와 함께 pop_front하면서 exit portal 위치로 이동.
+// dest level이 current level과 다르다면 바로 가까운 portals 검색 후 해당 위치로 A*. 검색된 portal은 wayportalㄴ에 추가.
 
 END

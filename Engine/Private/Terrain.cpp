@@ -540,6 +540,46 @@ _bool CTerrain::Pick(_uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float
 	return false;
 }
 
+_bool CTerrain::Pick(const Ray& ray, OUT Vec3& pickPos, OUT _float& distance, const Matrix& matWorld)
+{
+	for (int32 i = 0; i < m_iNumVerticesZ - 1; i++)
+	{
+		for (int32 j = 0; j < m_iNumVerticesX - 1; j++)
+		{
+			_uint		iIndices[4] = {
+				(i + 1) * m_iNumVerticesX + j,		//2
+				(i + 1) * m_iNumVerticesX + j + 1,	//3
+				i * m_iNumVerticesX + j + 1,		//1
+				i * m_iNumVerticesX + j				//0
+			};
+
+			Vec3 p[4];
+			for (int32 i = 0; i < 4; i++)
+				p[i] = m_pVerticesPos[iIndices[i]];
+
+			if (ray.Intersects(p[1], p[2], p[0], OUT distance))// 
+			{
+				if (isnan(distance))
+					return false;
+
+				pickPos = ray.position + ray.direction * distance;
+				return true;
+			}
+
+			if (ray.Intersects(p[3], p[0], p[2], OUT distance))// 
+			{
+				if (isnan(distance))
+					return false;
+
+				pickPos = ray.position + ray.direction * distance;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 CTerrain* CTerrain::Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 {
 	CTerrain*	pInstance = new CTerrain(pDevice, pContext);

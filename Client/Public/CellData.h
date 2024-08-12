@@ -63,6 +63,8 @@ struct CellData
 	_float CalculateHalfWidth(LINES eLine1, LINES eLine2);
 	_float SearchWidth(const Vec3& C, CellData* T, LINES e, _float d);
 
+	_bool Pick(const Ray& ray, OUT Vec3& pickPos, OUT _float& distance, const Matrix& matWorld);
+
 	// cache
 	_bool	isDead = false;
 	_bool	isNew = false;
@@ -70,14 +72,20 @@ struct CellData
 
 struct Portal
 {
-	BoundingSphere tPortalVolume = BoundingSphere(Vec3::Zero, 0.0f); // 도착했는지 검사할 영역
-	_float fHeight = 0.0f;	// 높이(필요한지는 아직 모르겠다)
+	BoundingSphere tPortalVolume = BoundingSphere(Vec3::Zero, 4.0f); // 도착했는지 검사할 영역
+	set<Portal*> pExitPortals;
+
+	static void ConnectPortals(Portal* pP1, Portal* pP2)
+	{
+		pP1->pExitPortals.emplace(pP2);
+		pP2->pExitPortals.emplace(pP1);
+	}
 };
 
 struct HierarchyNode
 {
 	vector<CellData*> pCells;	// 포함된 cells
-	vector<pair<Portal*, Portal*>> pPortalPairs; // 포함된 portals connections
+	vector<Portal*> pPortals; // 포함된 portals connections
 };
 
 END

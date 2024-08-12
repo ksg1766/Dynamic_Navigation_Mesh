@@ -22,6 +22,7 @@ public:
 
 public:
 	_bool			Pick(_uint screenX, _uint screenY, OUT Vec3& pickPos, OUT _float& distance, const Matrix& matWorld);
+	_bool			Pick(const Ray & ray, OUT Vec3 & pickPos, OUT _float & distance, const Matrix & matWorld);
 
 public:
 	const vector<Vec3>& const GetTerrainVertices()		{ return m_vecVerticesCache; }

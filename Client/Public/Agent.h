@@ -21,7 +21,7 @@ class CAgent final : public CGameObject
 public:
 	struct AgentDesc
 	{
-		CellData* pStartCell = nullptr;
+		pair<HierarchyNode*, CellData*> pStartCell = { nullptr, nullptr };
 		vector<HierarchyNode>* pHierarchyNodes = nullptr;
 		unordered_multimap<_int, CellData*>* pCellGrids = nullptr;
 		unordered_multimap<_int, Obst*>* pObstGrids = nullptr;

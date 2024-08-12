@@ -176,6 +176,11 @@ HRESULT CNavMeshView::DebugRender()
 
 				++cell;
 			}
+
+			for (auto portal = hierarchy.pPortals.begin(); portal != hierarchy.pPortals.end(); ++portal)
+			{
+				DX::Draw(m_pBatch, (*portal)->tPortalVolume, Colors::Purple);
+			}
 		}
 	}
 
@@ -341,44 +346,51 @@ HRESULT CNavMeshView::BakeNavMesh()
 	
 	if (false == m_umapObstGrids.empty()) { m_umapObstGrids.clear(); }
 
-	vector<CellData*> vecCells;
-
-	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 	{
-		_int iIdx1 = m_tOut.trianglelist[i * 3 + POINT_A];
-		_int iIdx2 = m_tOut.trianglelist[i * 3 + POINT_B];
-		_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
+		vector<CellData*> vecCells;
 
-		_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
-
-		Vec3 vtx[POINT_END] =
+		for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 		{
-			{ m_tOut.pointlist[iIdx1 * 2], y1, m_tOut.pointlist[iIdx1 * 2 + 1] },
-			{ m_tOut.pointlist[iIdx2 * 2], y2, m_tOut.pointlist[iIdx2 * 2 + 1] },
-			{ m_tOut.pointlist[iIdx3 * 2], y3, m_tOut.pointlist[iIdx3 * 2 + 1] },
-		};
+			_int iIdx1 = m_tOut.trianglelist[i * 3 + POINT_A];
+			_int iIdx2 = m_tOut.trianglelist[i * 3 + POINT_B];
+			_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
 
-		CellData* pCellData = new CellData;
-		pCellData->vPoints[POINT_A] = vtx[POINT_A];
-		pCellData->vPoints[POINT_B] = vtx[POINT_B];
-		pCellData->vPoints[POINT_C] = vtx[POINT_C];
-		pCellData->CW();
+			_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
 
-		vecCells.push_back(pCellData);
+			Vec3 vtx[POINT_END] =
+			{
+				{ m_tOut.pointlist[iIdx1 * 2], y1, m_tOut.pointlist[iIdx1 * 2 + 1] },
+				{ m_tOut.pointlist[iIdx2 * 2], y2, m_tOut.pointlist[iIdx2 * 2 + 1] },
+				{ m_tOut.pointlist[iIdx3 * 2], y3, m_tOut.pointlist[iIdx3 * 2 + 1] },
+			};
+
+			CellData* pCellData = new CellData;
+			pCellData->vPoints[POINT_A] = vtx[POINT_A];
+			pCellData->vPoints[POINT_B] = vtx[POINT_B];
+			pCellData->vPoints[POINT_C] = vtx[POINT_C];
+			pCellData->CW();
+
+			vecCells.push_back(pCellData);
+		}
+
+		SetUpNeighbors(vecCells);
+
+		for (auto cell : vecCells)
+		{
+			cell->SetUpData();
+		}
+
+		HierarchyNode tHierarchy;
+		tHierarchy.pCells = vecCells;
+
+		if (false == m_vecPortalCache.empty())
+		{
+			tHierarchy.pPortals = m_vecPortalCache[0];
+		}
+
+		m_vecHierarchyNodes.push_back(tHierarchy);
+		SetUpCells2Grids(vecCells, m_umapCellGrids);
 	}
-
-	SetUpNeighbors(vecCells);
-
-	for (auto cell : vecCells)
-	{
-		cell->SetUpData();
-	}
-
-	HierarchyNode tHierarchy;
-	tHierarchy.pCells = vecCells;
-
-	m_vecHierarchyNodes.push_back(tHierarchy);
-	SetUpCells2Grids(vecCells, m_umapCellGrids);
 
 	// for multilayer	
 	for (_int i = 0; i < m_vecOut.size(); ++i)
@@ -419,6 +431,11 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 		HierarchyNode tMultiLevelHierarchy;
 		tMultiLevelHierarchy.pCells = vecMultilayerCells;
+
+		if (i < m_vecPortalCache.size())
+		{
+			tMultiLevelHierarchy.pPortals = m_vecPortalCache[i + 1];
+		}
 
 		m_vecHierarchyNodes.push_back(tMultiLevelHierarchy);
 	}
@@ -1232,7 +1249,7 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 
 	CAgent::AgentDesc tDesc =
 	{
-		pCell,
+		pair(&m_vecHierarchyNodes[0], pCell),
 		&m_vecHierarchyNodes,
 		&m_umapCellGrids,
 		&m_umapObstGrids
@@ -1263,7 +1280,7 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 
 	CAgent::AgentDesc tDesc =
 	{
-		m_vecHierarchyNodes[0].pCells[iSpawnIndex],
+		pair(&m_vecHierarchyNodes[0], m_vecHierarchyNodes[0].pCells[iSpawnIndex]),
 		&m_vecHierarchyNodes,
 		&m_umapCellGrids,
 		&m_umapObstGrids,
@@ -2151,6 +2168,21 @@ HRESULT CNavMeshView::LoadMainScene()
 		return E_FAIL;
 
 #pragma region MultilevelNavMesh
+	// Portal
+	vector<Portal*> vecPortalsBase;
+	Portal* pPortalBase0 = new Portal;
+	pPortalBase0->tPortalVolume.Center = Vec3(-65.0f, 0.0f + pPortalBase0->tPortalVolume.Radius, -333.5f);
+	vecPortalsBase.push_back(pPortalBase0);
+
+	// Building_
+	
+	// Portal
+	vector<Portal*> vecPortalsL0;
+	Portal* pPortalL0 = new Portal;
+	pPortalL0->tPortalVolume.Center = Vec3(-230.0f, 95.0f + pPortalL0->tPortalVolume.Radius, -315.0f);
+	vecPortalsL0.push_back(pPortalL0);
+	Portal::ConnectPortals(pPortalBase0, pPortalL0);
+
 	vector<Vec3> vecPoints0;
 	vecPoints0.push_back(Vec3(-399.0f, 95.0f, -400.0f));
 	vecPoints0.push_back(Vec3(-399.0f, 95.0f, -230.0f));
@@ -2158,6 +2190,9 @@ HRESULT CNavMeshView::LoadMainScene()
 	vecPoints0.push_back(Vec3(-61.0f, 95.0f, -400.0f));
 	if (FAILED(LoadAnotherLevelData(vecPoints0)))
 		return E_FAIL;
+
+	//
+	vector<Portal*> vecPortalsL1;
 
 	vector<Vec3> vecPoints1;
 	vecPoints1.push_back(Vec3(-395.0f, 132.0f, -231.0f));
@@ -2167,6 +2202,9 @@ HRESULT CNavMeshView::LoadMainScene()
 	if (FAILED(LoadAnotherLevelData(vecPoints1)))
 		return E_FAIL;
 
+	// Portal
+	vector<Portal*> vecPortalsL2;
+
 	vector<Vec3> vecPoints2;
 	vecPoints2.push_back(Vec3(-238.0f, 154.0f, -237.0f));
 	vecPoints2.push_back(Vec3(-238.0f, 154.0f, -57.0f));
@@ -2174,7 +2212,11 @@ HRESULT CNavMeshView::LoadMainScene()
 	vecPoints2.push_back(Vec3(-57.0f, 154.0f, -237.0f));
 	if (FAILED(LoadAnotherLevelData(vecPoints2)))
 		return E_FAIL;
-	//
+	// Building_
+
+	// Portal
+	vector<Portal*> vecPortalsL3;
+
 	vector<Vec3> vecPoints3;
 	vecPoints3.push_back(Vec3(74.0f, 108.0f, 93.0f));
 	vecPoints3.push_back(Vec3(74.0f, 108.0f, 230.0f));
@@ -2184,6 +2226,9 @@ HRESULT CNavMeshView::LoadMainScene()
 	if (FAILED(LoadAnotherLevelData(vecPoints3)))
 		return E_FAIL;
 
+	// Portal
+	vector<Portal*> vecPortalsL4;
+
 	vector<Vec3> vecPoints4;
 	vecPoints4.push_back(Vec3(65.0f, 134.0f, 230.0f));
 	vecPoints4.push_back(Vec3(65.0f, 134.0f, 395.0f));
@@ -2192,6 +2237,9 @@ HRESULT CNavMeshView::LoadMainScene()
 	if (FAILED(LoadAnotherLevelData(vecPoints4)))
 		return E_FAIL;
 
+	// Portal
+	vector<Portal*> vecPortalsL5;
+
 	vector<Vec3> vecPoints5;
 	vecPoints5.push_back(Vec3(230.0f, 131.0f, 395.0f));
 	vecPoints5.push_back(Vec3(395.0f, 131.0f, 395.0f));
@@ -2199,7 +2247,11 @@ HRESULT CNavMeshView::LoadMainScene()
 	vecPoints5.push_back(Vec3(230.0f, 131.0f, 65.0f));
 	if (FAILED(LoadAnotherLevelData(vecPoints5)))
 		return E_FAIL;
-	//
+	// Building_Kwow
+
+	// Portal
+	vector<Portal*> vecPortalsL6;
+
 	vector<Vec3> vecPoints6;
 	vecPoints6.push_back(Vec3(230.0f, 134.0f, -395.0f));
 	vecPoints6.push_back(Vec3(230.0f, 134.0f, -64.0f));
@@ -2208,6 +2260,9 @@ HRESULT CNavMeshView::LoadMainScene()
 	if (FAILED(LoadAnotherLevelData(vecPoints6)))
 		return E_FAIL;
 
+	// Portal
+	vector<Portal*> vecPortalsL7;
+
 	vector<Vec3> vecPoints7;
 	vecPoints7.push_back(Vec3(230.0f, 130.0f, -396.0f));
 	vecPoints7.push_back(Vec3(65.0f, 130.0f, -396.0f));
@@ -2215,6 +2270,9 @@ HRESULT CNavMeshView::LoadMainScene()
 	vecPoints7.push_back(Vec3(230.0f, 130.0f, -232.0f));
 	if (FAILED(LoadAnotherLevelData(vecPoints7)))
 		return E_FAIL;
+
+	// Portal
+	vector<Portal*> vecPortalsL8;
 
 	vector<Vec3> vecPoints8;
 	vecPoints8.push_back(Vec3(238.0f, 274.0f, -233.0f));
@@ -2228,6 +2286,18 @@ HRESULT CNavMeshView::LoadMainScene()
 	vecPoints8.push_back(Vec3(239.0f, 274.0f, -65.0f));
 	if (FAILED(LoadAnotherLevelData(vecPoints8)))
 		return E_FAIL;
+
+	// Connect Portals
+	m_vecPortalCache.push_back(vecPortalsBase);
+	m_vecPortalCache.push_back(vecPortalsL0);
+	m_vecPortalCache.push_back(vecPortalsL1);
+	m_vecPortalCache.push_back(vecPortalsL2);
+	m_vecPortalCache.push_back(vecPortalsL3);
+	m_vecPortalCache.push_back(vecPortalsL4);
+	m_vecPortalCache.push_back(vecPortalsL5);
+	m_vecPortalCache.push_back(vecPortalsL6);
+	m_vecPortalCache.push_back(vecPortalsL7);
+	m_vecPortalCache.push_back(vecPortalsL8);
 
 	if (FAILED(BakeNavMesh()))
 		return E_FAIL;

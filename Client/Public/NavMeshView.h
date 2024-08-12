@@ -21,6 +21,7 @@ struct iVec3
 struct Obst;
 struct CellData;
 struct HierarchyNode;
+struct Portal;
 class CNavMeshView final : public CView
 {
     using Super = CView;
@@ -139,8 +140,8 @@ private:
 
 	unordered_multimap<_int, CellData*> m_umapCellGrids;
 	unordered_multimap<_int, Obst*> m_umapObstGrids;
-	//vector<vector<CellData*>>	m_vecHierarchies;
 	vector<HierarchyNode>	m_vecHierarchyNodes;
+	vector<vector<Portal*>> m_vecPortalCache;
 	vector<const _char*>	m_strCells;
 
 	// Polygon (stress test)
