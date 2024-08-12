@@ -6,7 +6,7 @@
     * 해당 씬에서 추출한 obstacle을 이용해 네비게이션 메쉬를 제작하고 건물의 옥상과 같은 평평한 지형에 새로운 메쉬를 추가했습니다.
     * 현재 구성된 형태는 아래와 같습니다.
 
-      ![image](https://github.com/user-attachments/assets/b98b1020-16a9-4558-a6f5-4af22556a8c7)
+      ![image](https://github.com/user-attachments/assets/045043a6-96e4-4642-b557-2a77f4fe936a)
 
     * 위에서 base level를 제외한 분리된 메쉬의 형태입니다. 환경 구성에 예상보다 시간을 많이 사용하게 돼 우선 단순한 형태로 구성하기로 했습니다.
 
