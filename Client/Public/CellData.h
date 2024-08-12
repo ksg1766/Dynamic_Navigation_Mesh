@@ -74,6 +74,7 @@ struct Portal
 {
 	BoundingSphere tPortalVolume = BoundingSphere(Vec3::Zero, 4.0f); // 도착했는지 검사할 영역
 	set<Portal*> pExitPortals;
+	struct HierarchyNode* pHierarchyNode = nullptr;
 
 	static void ConnectPortals(Portal* pP1, Portal* pP2)
 	{

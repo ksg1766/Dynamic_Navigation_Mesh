@@ -22,7 +22,7 @@ public:
 	struct AgentDesc
 	{
 		pair<HierarchyNode*, CellData*> pStartCell = { nullptr, nullptr };
-		vector<HierarchyNode>* pHierarchyNodes = nullptr;
+		vector<HierarchyNode*>* pHierarchyNodes = nullptr;
 		unordered_multimap<_int, CellData*>* pCellGrids = nullptr;
 		unordered_multimap<_int, Obst*>* pObstGrids = nullptr;
 	};

@@ -140,7 +140,7 @@ private:
 
 	unordered_multimap<_int, CellData*> m_umapCellGrids;
 	unordered_multimap<_int, Obst*> m_umapObstGrids;
-	vector<HierarchyNode>	m_vecHierarchyNodes;
+	vector<HierarchyNode*>	m_vecHierarchyNodes;
 	vector<vector<Portal*>> m_vecPortalCache;
 	vector<const _char*>	m_strCells;
 

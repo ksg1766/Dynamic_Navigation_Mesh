@@ -15,6 +15,17 @@ BEGIN(Client)
 
 struct CellData;
 struct Obst;
+
+struct PQHNode
+{
+	_bool operator<(const PQHNode& other) const { return f < other.f; }
+	_bool operator>(const PQHNode& other) const { return f > other.f; }
+
+	_float f = FLT_MAX; // f = g + h
+	_float g = FLT_MAX;
+	HierarchyNode* pHNode = nullptr;
+};
+
 struct PQNode
 {
 	_bool operator<(const PQNode& other) const { return f < other.f; }
@@ -52,7 +63,8 @@ public:
 	void	Slide(const Vec3 vPrePos);
 	Vec3	Move(_float fTimeDelta);
 
-	_bool	AStar();
+	_bool	HNAStar();
+	_bool	AStar(const Vec3& vStartPos, const Vec3& vDestPos);
 	void	FunnelAlgorithm();
 
 	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
@@ -80,6 +92,10 @@ private:
 	
 	_float			m_fAgentRadius;
 
+	using HPATH = pair<HierarchyNode*, pair<Portal*, Portal*>>;
+	//deque<HPATH>	m_dqHPath;
+	deque<pair<Portal*, Portal*>>	m_dqWayPortals;
+
 	using PATH = pair<CellData*, LINES>;
 	deque<PATH>		m_dqPath;
 	deque<pair<Vec3, Vec3>>	m_dqEntries;
@@ -90,7 +106,7 @@ private:
 	deque<pair<Vec3, Vec3>>	m_dqExpandedVertices;
 	deque<pair<Vec3, Vec3>>	m_dqOffset;
 
-	vector<HierarchyNode>* m_pHierarchyNodes;
+	vector<HierarchyNode*>* m_pHierarchyNodes;
 	unordered_multimap<_int, CellData*>* m_pCellGrids;
 	unordered_multimap<_int, Obst*>* m_pObstGrids;
 
