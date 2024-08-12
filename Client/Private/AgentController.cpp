@@ -631,35 +631,45 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 	Ray ray = Ray(start, direction);
 
+	_bool bOtherLevel = false;
 	for (_int i = m_pHierarchyNodes->size() - 1; 0 < i; --i)
 	{
 		for (auto cell : (*m_pHierarchyNodes)[i].pCells)
 		{
+			if (true == bOtherLevel)
+				break;
+
 			if (true == cell->Pick(ray, vPickedPos, fDistance, matTerrain))
 			{
-				m_CurrentCell.first = &(*m_pHierarchyNodes)[i];
-				m_CurrentCell.second = cell;
+				m_DestCell = { &(*m_pHierarchyNodes)[i], cell };
+				m_vDestPos = vPickedPos;
 
-				return true;
+				bOtherLevel = true;
+				break;
 			}
 		}
 	}
 
-	if (false == pTerrain->Pick(ray, vPickedPos, fDistance, matTerrain))
+	if (false == bOtherLevel)
 	{
-		return false;
+		if (false == pTerrain->Pick(ray, vPickedPos, fDistance, matTerrain))
+		{
+			return false;
+		}
+		else
+		{
+			m_CurrentCell = { &(*m_pHierarchyNodes)[0], FindCellByPosition(m_pTransform->GetPosition()) };	// TODO: ...
+			m_DestCell = { &(*m_pHierarchyNodes)[0], FindCellByPosition(vPickedPos) };
+		}
 	}
 
 	//m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-
-	m_CurrentCell = { &(*m_pHierarchyNodes)[0], FindCellByPosition(m_pTransform->GetPosition()) };	// TODO: ...
-	m_DestCell = { &(*m_pHierarchyNodes)[0], FindCellByPosition(vPickedPos) };
-
+		
 	if (nullptr != m_DestCell.second)
 	{
 		m_vDestPos = vPickedPos;
 
-		if (true == AStar())
+		if (true == AStar())	// TODO : level이 다를경우 어떻게 wayportal까지 나눠서 할지...
 		{
 			FunnelAlgorithm();
 
