@@ -176,7 +176,7 @@ HRESULT CNavMeshView::DebugRender()
 		}
 	}
 
-	/*if (false == m_vecObstacles.empty())
+	if (false == m_vecObstacles.empty())
 	{
 		for (_int i = 0; i < m_vecObstacles.size(); ++i)
 		{
@@ -222,7 +222,7 @@ HRESULT CNavMeshView::DebugRender()
 		{
 			DX::Draw(m_pBatch, m_vecObstaclePointSpheres[i], Colors::Red);
 		}
-	}*/
+	}
 	m_pBatch->End();
 
 	if (nullptr != m_pAgent)
@@ -2103,6 +2103,9 @@ HRESULT CNavMeshView::LoadMainScene()
 		}
 	}
 	
+	if (nullptr == m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_EmeraldSquare_Base"), LAYERTAG::GROUND))
+		return E_FAIL;
+
 	if (FAILED(LoadNvFile()))
 		return E_FAIL;
 	
