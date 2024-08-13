@@ -959,8 +959,8 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	SetUpCells2Grids(vecNewCells, m_umapCellGrids);
 	SetUpObsts2Grids(vecObst, m_umapObstGrids);
 
-	//SafeReleaseTriangle(tIn);
-	//SafeReleaseTriangle(tOut);
+	SafeReleaseTriangle(tIn);
+	SafeReleaseTriangle(tOut);
 
 	return S_OK;
 }
