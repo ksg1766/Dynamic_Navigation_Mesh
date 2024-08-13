@@ -70,23 +70,4 @@ struct CellData
 	_bool	isNew = false;
 };
 
-struct Portal
-{
-	BoundingSphere tPortalVolume = BoundingSphere(Vec3::Zero, 4.0f); // 도착했는지 검사할 영역
-	set<Portal*> pExitPortals;
-	struct HierarchyNode* pHierarchyNode = nullptr;
-
-	static void ConnectPortals(Portal* pP1, Portal* pP2)
-	{
-		pP1->pExitPortals.emplace(pP2);
-		pP2->pExitPortals.emplace(pP1);
-	}
-};
-
-struct HierarchyNode
-{
-	vector<CellData*> pCells;	// 포함된 cells
-	vector<Portal*> pPortals; // 포함된 portals connections
-};
-
 END
