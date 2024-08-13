@@ -1,4 +1,24 @@
 ---
+6주차 진행 내용 : https://equal-paw-e8f.notion.site/6-c6516ea0a7e140be9f5663cc934ab07e?pvs=4
+
+---
+# 📅 2024.08.12
+📋 진행 사항
+  * 두 메쉬를 연결하는 경사면을 구성하는 대신 아예 단절된 형태로 두고 특정 portal 지점을 통해서만 서로 이동 가능하도록 구현했습니다.
+
+    ![image](https://github.com/user-attachments/assets/90dcee77-011e-41fe-ab8b-509fba35d677)
+    
+    ![image (1)](https://github.com/user-attachments/assets/60ca7137-9500-4258-8ef1-5d2247b5a1fa)
+
+ * Portal은 1:N으로 연결돼있으며, 목적지가 다른 level에 있을 경우 다음 노드와 연결된 Portal의 쌍을 찾아 waypoint로 정하는 방식으로 AStar를 수행해 Navigation Mesh간 이동가능한 경로를 탐색하고, 각 waypoint 사이 구간에서 AStar를 다시 수행해 세부 경로를 탐색하도록 구현했습니다.
+
+⚠️ 발견된 문제
+  * 현재 도착지점까지의 Node는 정상적으로 탐색이 되지만 agent의 level 이동이 정상적으로 작동하지 않아 있어 수정 중입니다.
+ 
+⚽ 이후 계획
+  * 오늘은 위의 문제를 해결해 agent가 정상적으로 level을 이동을 경로탐색과 함께 고려할 수 있도록 수정할 계획입니다.
+    
+---
 # 📅 2024.08.09
 📋 진행 사항
   * 씬을 구성하고 단절된 형태의 네비게이션 메쉬를 구성했습니다.
