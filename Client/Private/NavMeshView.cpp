@@ -149,40 +149,30 @@ HRESULT CNavMeshView::DebugRender()
 	m_pContext->IASetInputLayout(m_pInputLayout);
 	
 	m_pBatch->Begin();
-	if (false == m_vecHierarchyNodes.empty())
+	
+	for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
 	{
-		for (auto hierarchy : m_vecHierarchyNodes)
+		if (nullptr != (*cell) && true == (*cell)->isDead)
 		{
-			for (auto cell = hierarchy->pCells.begin(); cell != hierarchy->pCells.end();)
-			{
-				if (nullptr != (*cell) && true == (*cell)->isDead)
-				{
-					Safe_Delete(*cell);
-					cell = hierarchy->pCells.erase(cell);
-					continue;
-				}
-				
-				Vec3 vP0 = (*cell)->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
-				Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
-				Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
-
-				if (true == (*cell)->isNew)
-				{
-					DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Blue);
-				}
-				else
-				{
-					DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
-				}
-
-				++cell;
-			}
-
-			for (auto portal = hierarchy->pPortals.begin(); portal != hierarchy->pPortals.end(); ++portal)
-			{
-				DX::Draw(m_pBatch, (*portal)->tPortalVolume, Colors::Purple);
-			}
+			Safe_Delete(*cell);
+			cell = m_vecCells.erase(cell);
+			continue;
 		}
+
+		Vec3 vP0 = (*cell)->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
+		Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
+		Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
+
+		if (true == (*cell)->isNew)
+		{
+			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Blue);
+		}
+		else
+		{
+			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
+		}
+
+		++cell;
 	}
 
 	if (false == m_vecObstacles.empty())
@@ -328,78 +318,71 @@ void CNavMeshView::SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_m
 
 HRESULT CNavMeshView::BakeNavMesh()
 {
-	if (false == m_vecHierarchyNodes.empty())
+	if (false == m_vecCells.empty())
 	{
-		for (auto& hierarchy : m_vecHierarchyNodes)
+		for (auto cell : m_vecCells)
 		{
-			for (auto cell : hierarchy->pCells)
-			{
-				delete cell;
-			}
-
-			hierarchy->pCells.clear();
+			delete cell;
 		}
 
-		m_vecHierarchyNodes.clear();
+		m_vecCells.clear();
 	}
 	
 	if (false == m_umapCellGrids.empty()) { m_umapCellGrids.clear(); }
 	
 	if (false == m_umapObstGrids.empty()) { m_umapObstGrids.clear(); }
 
+	//vector<CellData*> vecCells;
+
+	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 	{
-		vector<CellData*> vecCells;
+		_int iIdx1 = m_tOut.trianglelist[i * 3 + POINT_A];
+		_int iIdx2 = m_tOut.trianglelist[i * 3 + POINT_B];
+		_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
 
-		for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
+		_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
+
+		Vec3 vtx[POINT_END] =
 		{
-			_int iIdx1 = m_tOut.trianglelist[i * 3 + POINT_A];
-			_int iIdx2 = m_tOut.trianglelist[i * 3 + POINT_B];
-			_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
+			{ m_tOut.pointlist[iIdx1 * 2], y1, m_tOut.pointlist[iIdx1 * 2 + 1] },
+			{ m_tOut.pointlist[iIdx2 * 2], y2, m_tOut.pointlist[iIdx2 * 2 + 1] },
+			{ m_tOut.pointlist[iIdx3 * 2], y3, m_tOut.pointlist[iIdx3 * 2 + 1] },
+		};
 
-			_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
+		CellData* pCellData = new CellData;
+		pCellData->vPoints[POINT_A] = vtx[POINT_A];
+		pCellData->vPoints[POINT_B] = vtx[POINT_B];
+		pCellData->vPoints[POINT_C] = vtx[POINT_C];
+		pCellData->CW();
 
-			Vec3 vtx[POINT_END] =
-			{
-				{ m_tOut.pointlist[iIdx1 * 2], y1, m_tOut.pointlist[iIdx1 * 2 + 1] },
-				{ m_tOut.pointlist[iIdx2 * 2], y2, m_tOut.pointlist[iIdx2 * 2 + 1] },
-				{ m_tOut.pointlist[iIdx3 * 2], y3, m_tOut.pointlist[iIdx3 * 2 + 1] },
-			};
-
-			CellData* pCellData = new CellData;
-			pCellData->vPoints[POINT_A] = vtx[POINT_A];
-			pCellData->vPoints[POINT_B] = vtx[POINT_B];
-			pCellData->vPoints[POINT_C] = vtx[POINT_C];
-			pCellData->CW();
-
-			vecCells.push_back(pCellData);
-		}
-
-		SetUpNeighbors(vecCells);
-
-		for (auto cell : vecCells)
-		{
-			cell->SetUpData();
-		}
-
-		HierarchyNode* pHierarchy = new HierarchyNode;
-		pHierarchy->pCells = vecCells;
-
-		if (false == m_vecPortalCache.empty())
-		{
-			pHierarchy->pPortals = m_vecPortalCache[0];
-			
-			for (auto portal : pHierarchy->pPortals)
-			{
-				portal->pHierarchyNode = pHierarchy;
-			}
-		}
-
-		m_vecHierarchyNodes.push_back(pHierarchy);
-		SetUpCells2Grids(vecCells, m_umapCellGrids);
+		m_vecCells.push_back(pCellData);
 	}
 
+	SetUpNeighbors(m_vecCells);
+
+	for (auto cell : m_vecCells)
+	{
+		cell->SetUpData();
+	}
+
+	/*HierarchyNode* pHierarchy = new HierarchyNode;
+	pHierarchy->pCells = vecCells;
+
+	if (false == m_vecPortalCache.empty())
+	{
+		pHierarchy->pPortals = m_vecPortalCache[0];
+
+		for (auto portal : pHierarchy->pPortals)
+		{
+			portal->pHierarchyNode = pHierarchy;
+		}
+	}
+
+	m_vecHierarchyNodes.push_back(pHierarchy);*/
+	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
+
 	// for multilayer	
-	for (_int i = 0; i < m_vecOut.size(); ++i)
+	/*for (_int i = 0; i < m_vecOut.size(); ++i)
 	{
 		vector<CellData*> vecMultilayerCells;
 
@@ -449,7 +432,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 		}
 
 		m_vecHierarchyNodes.push_back(pMultiLevelHierarchy);
-	}
+	}*/
 
 	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
 
@@ -693,26 +676,19 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 		return E_FAIL;
 	}*/
 
-	if (false == m_vecHierarchyNodes.empty())
+	if (false == m_vecCells.empty())
 	{
-		for (auto& hierarchy : m_vecHierarchyNodes)
+		for (auto cell : m_vecCells)
 		{
-			for (auto cell : hierarchy->pCells)
-			{
-				Safe_Delete(cell);
-			}
-
-			hierarchy->pCells.clear();
+			Safe_Delete(cell);
 		}
 
-		m_vecHierarchyNodes.clear();
+		m_vecCells.clear();
 	}
 
 	if (false == m_umapCellGrids.empty()) { m_umapCellGrids.clear(); }
 
 	if (false == m_umapObstGrids.empty()) { m_umapObstGrids.clear(); }
-
-	vector<CellData*>		vecCells;
 
 	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 	{
@@ -768,23 +744,18 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 			}
 		}
 
-		vecCells.push_back(pCellData);
+		m_vecCells.push_back(pCellData);
 	}
 
-	SetUpNeighbors(vecCells);
+	SetUpNeighbors(m_vecCells);
 
-	for (auto cell : vecCells)
+	for (auto cell : m_vecCells)
 	{
 		cell->SetUpData();
 	}
 
-	SetUpCells2Grids(vecCells, m_umapCellGrids);
+	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
 	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
-
-	HierarchyNode* pHierarchyNode = new HierarchyNode;
-	pHierarchyNode->pCells = vecCells;
-
-	m_vecHierarchyNodes.push_back(pHierarchyNode);
 
 	return S_OK;
 }
@@ -1028,7 +999,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		}
 
 		cell->isNew = true;
-		m_vecHierarchyNodes[0]->pCells.emplace_back(cell);
+		m_vecCells.emplace_back(cell);
 	}
 
 	for (auto cell : vecNewCells)
@@ -1235,7 +1206,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		}
 
 		cell->isNew = true;
-		m_vecHierarchyNodes[0]->pCells.emplace_back(cell);
+		m_vecCells.emplace_back(cell);
 	}
 
 	for (auto cell : vecNewCells)
@@ -1260,8 +1231,7 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 
 	CAgent::AgentDesc tDesc =
 	{
-		pair(m_vecHierarchyNodes[0], pCell),
-		&m_vecHierarchyNodes,
+		pCell,
 		&m_umapCellGrids,
 		&m_umapObstGrids
 	};
@@ -1282,7 +1252,7 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 {
 	Vec3 vSpawnPosition = Vec3::Zero;
 
-	for (auto& point : m_vecHierarchyNodes[0]->pCells[iSpawnIndex]->vPoints)
+	for (auto& point : m_vecCells[iSpawnIndex]->vPoints)
 	{
 		vSpawnPosition += point;
 	}
@@ -1291,8 +1261,7 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 
 	CAgent::AgentDesc tDesc =
 	{
-		pair(m_vecHierarchyNodes[0], m_vecHierarchyNodes[0]->pCells[iSpawnIndex]),
-		&m_vecHierarchyNodes,
+		m_vecCells[iSpawnIndex],
 		&m_umapCellGrids,
 		&m_umapObstGrids,
 	};
@@ -2179,174 +2148,174 @@ HRESULT CNavMeshView::LoadMainScene()
 		return E_FAIL;
 
 #pragma region MultilevelNavMesh
-	// Portal
-	vector<Portal*> vecPortalsBase;
-	Portal* pPortalBase0 = new Portal;
-	pPortalBase0->tPortalVolume.Center = Vec3(-65.0f, 0.0f + pPortalBase0->tPortalVolume.Radius, -334.0f);
-	Portal* pPortalBase1 = new Portal;
-	pPortalBase1->tPortalVolume.Center = Vec3(-65.0f, 0.0f + pPortalBase1->tPortalVolume.Radius, -292.5f);
-	Portal* pPortalBase2 = new Portal;
-	pPortalBase2->tPortalVolume.Center = Vec3(-128.0f, 0.0f + pPortalBase2->tPortalVolume.Radius, -395.0f);
-	Portal* pPortalBase3 = new Portal;
-	pPortalBase3->tPortalVolume.Center = Vec3(-168.5f, 0.0f + pPortalBase3->tPortalVolume.Radius, -395.0f);
-	Portal* pPortalBase4 = new Portal;
-	pPortalBase4->tPortalVolume.Center = Vec3(-293.0f, 0.0f + pPortalBase4->tPortalVolume.Radius, -395.0f);
-	Portal* pPortalBase5 = new Portal;
-	pPortalBase5->tPortalVolume.Center = Vec3(-334.5f, 0.0f + pPortalBase5->tPortalVolume.Radius, -395.0f);
+	//// Portal
+	//vector<Portal*> vecPortalsBase;
+	//Portal* pPortalBase0 = new Portal;
+	//pPortalBase0->tPortalVolume.Center = Vec3(-65.0f, 0.0f + pPortalBase0->tPortalVolume.Radius, -334.0f);
+	//Portal* pPortalBase1 = new Portal;
+	//pPortalBase1->tPortalVolume.Center = Vec3(-65.0f, 0.0f + pPortalBase1->tPortalVolume.Radius, -292.5f);
+	//Portal* pPortalBase2 = new Portal;
+	//pPortalBase2->tPortalVolume.Center = Vec3(-128.0f, 0.0f + pPortalBase2->tPortalVolume.Radius, -395.0f);
+	//Portal* pPortalBase3 = new Portal;
+	//pPortalBase3->tPortalVolume.Center = Vec3(-168.5f, 0.0f + pPortalBase3->tPortalVolume.Radius, -395.0f);
+	//Portal* pPortalBase4 = new Portal;
+	//pPortalBase4->tPortalVolume.Center = Vec3(-293.0f, 0.0f + pPortalBase4->tPortalVolume.Radius, -395.0f);
+	//Portal* pPortalBase5 = new Portal;
+	//pPortalBase5->tPortalVolume.Center = Vec3(-334.5f, 0.0f + pPortalBase5->tPortalVolume.Radius, -395.0f);
+	////
+	//Portal* pPortalBase6 = new Portal;
+	//pPortalBase6->tPortalVolume.Center = Vec3(-127.5f, 0.0f + pPortalBase6->tPortalVolume.Radius, -59.0f);
+	//Portal* pPortalBase7 = new Portal;
+	//pPortalBase7->tPortalVolume.Center = Vec3(-168.5f, 0.0f + pPortalBase6->tPortalVolume.Radius, -59.0f);
+
+	//vecPortalsBase.push_back(pPortalBase0);
+	//vecPortalsBase.push_back(pPortalBase1);
+	//vecPortalsBase.push_back(pPortalBase2);
+	//vecPortalsBase.push_back(pPortalBase3);
+	//vecPortalsBase.push_back(pPortalBase4);
+	//vecPortalsBase.push_back(pPortalBase5);
+	////
+	//vecPortalsBase.push_back(pPortalBase6);
+	//vecPortalsBase.push_back(pPortalBase7);
+
+	//// Building_
 	//
-	Portal* pPortalBase6 = new Portal;
-	pPortalBase6->tPortalVolume.Center = Vec3(-127.5f, 0.0f + pPortalBase6->tPortalVolume.Radius, -59.0f);
-	Portal* pPortalBase7 = new Portal;
-	pPortalBase7->tPortalVolume.Center = Vec3(-168.5f, 0.0f + pPortalBase6->tPortalVolume.Radius, -59.0f);
+	//// Portal
+	//vector<Portal*> vecPortalsL0;
+	//Portal* pPortalL0 = new Portal;
+	//pPortalL0->tPortalVolume.Center = Vec3(-230.0f, 95.0f + pPortalL0->tPortalVolume.Radius, -315.0f);
+	//vecPortalsL0.push_back(pPortalL0);
+	//Portal::ConnectPortals(pPortalBase0, pPortalL0);
+	//Portal::ConnectPortals(pPortalBase1, pPortalL0);
+	//Portal::ConnectPortals(pPortalBase2, pPortalL0);
+	//Portal::ConnectPortals(pPortalBase3, pPortalL0);
+	//Portal::ConnectPortals(pPortalBase4, pPortalL0);
+	//Portal::ConnectPortals(pPortalBase5, pPortalL0);
 
-	vecPortalsBase.push_back(pPortalBase0);
-	vecPortalsBase.push_back(pPortalBase1);
-	vecPortalsBase.push_back(pPortalBase2);
-	vecPortalsBase.push_back(pPortalBase3);
-	vecPortalsBase.push_back(pPortalBase4);
-	vecPortalsBase.push_back(pPortalBase5);
+	//vector<Vec3> vecPoints0;
+	//vecPoints0.push_back(Vec3(-399.0f, 95.0f, -400.0f));
+	//vecPoints0.push_back(Vec3(-399.0f, 95.0f, -230.0f));
+	//vecPoints0.push_back(Vec3(-61.0f, 95.0f, -230.0f));
+	//vecPoints0.push_back(Vec3(-61.0f, 95.0f, -400.0f));
+	//if (FAILED(LoadAnotherLevelData(vecPoints0)))
+	//	return E_FAIL;
+
+	////
+	//vector<Portal*> vecPortalsL1;
 	//
-	vecPortalsBase.push_back(pPortalBase6);
-	vecPortalsBase.push_back(pPortalBase7);
+	//vector<Vec3> vecPoints1;
+	//vecPoints1.push_back(Vec3(-395.0f, 132.0f, -231.0f));
+	//vecPoints1.push_back(Vec3(-395.0f, 132.0f, -66.0f));
+	//vecPoints1.push_back(Vec3(-230.0f, 132.0f, -66.0f));
+	//vecPoints1.push_back(Vec3(-230.0f, 132.0f, -231.0f));
+	//if (FAILED(LoadAnotherLevelData(vecPoints1)))
+	//	return E_FAIL;
 
-	// Building_
-	
-	// Portal
-	vector<Portal*> vecPortalsL0;
-	Portal* pPortalL0 = new Portal;
-	pPortalL0->tPortalVolume.Center = Vec3(-230.0f, 95.0f + pPortalL0->tPortalVolume.Radius, -315.0f);
-	vecPortalsL0.push_back(pPortalL0);
-	Portal::ConnectPortals(pPortalBase0, pPortalL0);
-	Portal::ConnectPortals(pPortalBase1, pPortalL0);
-	Portal::ConnectPortals(pPortalBase2, pPortalL0);
-	Portal::ConnectPortals(pPortalBase3, pPortalL0);
-	Portal::ConnectPortals(pPortalBase4, pPortalL0);
-	Portal::ConnectPortals(pPortalBase5, pPortalL0);
+	//// Portal
+	//vector<Portal*> vecPortalsL2;
+	//Portal* pPortalL2 = new Portal;
+	//pPortalL2->tPortalVolume.Center = Vec3(-147.5f, 154.0f + pPortalL2->tPortalVolume.Radius, -146.5f);
+	//vecPortalsL2.push_back(pPortalL2);
+	//Portal::ConnectPortals(pPortalBase6, pPortalL2);
+	//Portal::ConnectPortals(pPortalBase7, pPortalL2);
 
-	vector<Vec3> vecPoints0;
-	vecPoints0.push_back(Vec3(-399.0f, 95.0f, -400.0f));
-	vecPoints0.push_back(Vec3(-399.0f, 95.0f, -230.0f));
-	vecPoints0.push_back(Vec3(-61.0f, 95.0f, -230.0f));
-	vecPoints0.push_back(Vec3(-61.0f, 95.0f, -400.0f));
-	if (FAILED(LoadAnotherLevelData(vecPoints0)))
-		return E_FAIL;
+	//vector<Vec3> vecPoints2;
+	//vecPoints2.push_back(Vec3(-238.0f, 154.0f, -237.0f));
+	//vecPoints2.push_back(Vec3(-238.0f, 154.0f, -57.0f));
+	//vecPoints2.push_back(Vec3(-57.0f, 154.0f, -57.0f));
+	//vecPoints2.push_back(Vec3(-57.0f, 154.0f, -237.0f));
+	//if (FAILED(LoadAnotherLevelData(vecPoints2)))
+	//	return E_FAIL;
+	//// Building_
 
-	//
-	vector<Portal*> vecPortalsL1;
-	
-	vector<Vec3> vecPoints1;
-	vecPoints1.push_back(Vec3(-395.0f, 132.0f, -231.0f));
-	vecPoints1.push_back(Vec3(-395.0f, 132.0f, -66.0f));
-	vecPoints1.push_back(Vec3(-230.0f, 132.0f, -66.0f));
-	vecPoints1.push_back(Vec3(-230.0f, 132.0f, -231.0f));
-	if (FAILED(LoadAnotherLevelData(vecPoints1)))
-		return E_FAIL;
+	//// Portal
+	//vector<Portal*> vecPortalsL3;
 
-	// Portal
-	vector<Portal*> vecPortalsL2;
-	Portal* pPortalL2 = new Portal;
-	pPortalL2->tPortalVolume.Center = Vec3(-147.5f, 154.0f + pPortalL2->tPortalVolume.Radius, -146.5f);
-	vecPortalsL2.push_back(pPortalL2);
-	Portal::ConnectPortals(pPortalBase6, pPortalL2);
-	Portal::ConnectPortals(pPortalBase7, pPortalL2);
+	//vector<Vec3> vecPoints3;
+	//vecPoints3.push_back(Vec3(74.0f, 108.0f, 93.0f));
+	//vecPoints3.push_back(Vec3(74.0f, 108.0f, 230.0f));
+	//vecPoints3.push_back(Vec3(230.0f, 108.0f, 230.0f));
+	//vecPoints3.push_back(Vec3(230.0f, 108.0f, 73.0f));
+	//vecPoints3.push_back(Vec3(93.0f, 108.0f, 73.0f));
+	//if (FAILED(LoadAnotherLevelData(vecPoints3)))
+	//	return E_FAIL;
 
-	vector<Vec3> vecPoints2;
-	vecPoints2.push_back(Vec3(-238.0f, 154.0f, -237.0f));
-	vecPoints2.push_back(Vec3(-238.0f, 154.0f, -57.0f));
-	vecPoints2.push_back(Vec3(-57.0f, 154.0f, -57.0f));
-	vecPoints2.push_back(Vec3(-57.0f, 154.0f, -237.0f));
-	if (FAILED(LoadAnotherLevelData(vecPoints2)))
-		return E_FAIL;
-	// Building_
+	//// Portal
+	//vector<Portal*> vecPortalsL4;
 
-	// Portal
-	vector<Portal*> vecPortalsL3;
+	//vector<Vec3> vecPoints4;
+	//vecPoints4.push_back(Vec3(65.0f, 134.0f, 230.0f));
+	//vecPoints4.push_back(Vec3(65.0f, 134.0f, 395.0f));
+	//vecPoints4.push_back(Vec3(230.0f, 134.0f, 395.0f));
+	//vecPoints4.push_back(Vec3(230.0f, 134.0f, 230.0f));
+	//if (FAILED(LoadAnotherLevelData(vecPoints4)))
+	//	return E_FAIL;
 
-	vector<Vec3> vecPoints3;
-	vecPoints3.push_back(Vec3(74.0f, 108.0f, 93.0f));
-	vecPoints3.push_back(Vec3(74.0f, 108.0f, 230.0f));
-	vecPoints3.push_back(Vec3(230.0f, 108.0f, 230.0f));
-	vecPoints3.push_back(Vec3(230.0f, 108.0f, 73.0f));
-	vecPoints3.push_back(Vec3(93.0f, 108.0f, 73.0f));
-	if (FAILED(LoadAnotherLevelData(vecPoints3)))
-		return E_FAIL;
+	//// Portal
+	//vector<Portal*> vecPortalsL5;
 
-	// Portal
-	vector<Portal*> vecPortalsL4;
+	//vector<Vec3> vecPoints5;
+	//vecPoints5.push_back(Vec3(230.0f, 131.0f, 395.0f));
+	//vecPoints5.push_back(Vec3(395.0f, 131.0f, 395.0f));
+	//vecPoints5.push_back(Vec3(395.0f, 131.0f, 65.0f));
+	//vecPoints5.push_back(Vec3(230.0f, 131.0f, 65.0f));
+	//if (FAILED(LoadAnotherLevelData(vecPoints5)))
+	//	return E_FAIL;
+	//// Building_Kwow
 
-	vector<Vec3> vecPoints4;
-	vecPoints4.push_back(Vec3(65.0f, 134.0f, 230.0f));
-	vecPoints4.push_back(Vec3(65.0f, 134.0f, 395.0f));
-	vecPoints4.push_back(Vec3(230.0f, 134.0f, 395.0f));
-	vecPoints4.push_back(Vec3(230.0f, 134.0f, 230.0f));
-	if (FAILED(LoadAnotherLevelData(vecPoints4)))
-		return E_FAIL;
+	//// Portal
+	//vector<Portal*> vecPortalsL6;
 
-	// Portal
-	vector<Portal*> vecPortalsL5;
+	//vector<Vec3> vecPoints6;
+	//vecPoints6.push_back(Vec3(230.0f, 134.0f, -395.0f));
+	//vecPoints6.push_back(Vec3(230.0f, 134.0f, -64.0f));
+	//vecPoints6.push_back(Vec3(395.0f, 134.0f, -64.0f));
+	//vecPoints6.push_back(Vec3(395.0f, 134.0f, -395.0f));
+	//if (FAILED(LoadAnotherLevelData(vecPoints6)))
+	//	return E_FAIL;
 
-	vector<Vec3> vecPoints5;
-	vecPoints5.push_back(Vec3(230.0f, 131.0f, 395.0f));
-	vecPoints5.push_back(Vec3(395.0f, 131.0f, 395.0f));
-	vecPoints5.push_back(Vec3(395.0f, 131.0f, 65.0f));
-	vecPoints5.push_back(Vec3(230.0f, 131.0f, 65.0f));
-	if (FAILED(LoadAnotherLevelData(vecPoints5)))
-		return E_FAIL;
-	// Building_Kwow
+	//// Portal
+	//vector<Portal*> vecPortalsL7;
+	////Portal* pPortalL7 = new Portal;
+	////pPortalL7->tPortalVolume.Center = Vec3(-230.0f, 95.0f + pPortalL7->tPortalVolume.Radius, -315.0f);
+	////vecPortalsL7.push_back(pPortalL7);
+	////Portal::ConnectPortals(pPortalBase6, pPortalL7);
 
-	// Portal
-	vector<Portal*> vecPortalsL6;
+	//vector<Vec3> vecPoints7;
+	//vecPoints7.push_back(Vec3(230.0f, 130.0f, -396.0f));
+	//vecPoints7.push_back(Vec3(65.0f, 130.0f, -396.0f));
+	//vecPoints7.push_back(Vec3(65.0f, 130.0f, -232.0f));
+	//vecPoints7.push_back(Vec3(230.0f, 130.0f, -232.0f));
+	//if (FAILED(LoadAnotherLevelData(vecPoints7)))
+	//	return E_FAIL;
 
-	vector<Vec3> vecPoints6;
-	vecPoints6.push_back(Vec3(230.0f, 134.0f, -395.0f));
-	vecPoints6.push_back(Vec3(230.0f, 134.0f, -64.0f));
-	vecPoints6.push_back(Vec3(395.0f, 134.0f, -64.0f));
-	vecPoints6.push_back(Vec3(395.0f, 134.0f, -395.0f));
-	if (FAILED(LoadAnotherLevelData(vecPoints6)))
-		return E_FAIL;
+	//// Portal
+	//vector<Portal*> vecPortalsL8;
 
-	// Portal
-	vector<Portal*> vecPortalsL7;
-	//Portal* pPortalL7 = new Portal;
-	//pPortalL7->tPortalVolume.Center = Vec3(-230.0f, 95.0f + pPortalL7->tPortalVolume.Radius, -315.0f);
-	//vecPortalsL7.push_back(pPortalL7);
-	//Portal::ConnectPortals(pPortalBase6, pPortalL7);
+	//vector<Vec3> vecPoints8;
+	//vecPoints8.push_back(Vec3(238.0f, 274.0f, -233.0f));
+	//vecPoints8.push_back(Vec3(230.0f, 274.0f, -240.0f));
+	//vecPoints8.push_back(Vec3(64.0f, 274.0f, -240.0f));
+	//vecPoints8.push_back(Vec3(56.0f, 274.0f, -231.0f));
+	//vecPoints8.push_back(Vec3(56.0f, 274.0f, -166.0f));
+	//vecPoints8.push_back(Vec3(165.0f, 274.0f, -166.0f));
+	//vecPoints8.push_back(Vec3(165.0f, 274.0f, -57.0f));
+	//vecPoints8.push_back(Vec3(230.0f, 274.0f, -57.0f));
+	//vecPoints8.push_back(Vec3(239.0f, 274.0f, -65.0f));
+	//if (FAILED(LoadAnotherLevelData(vecPoints8)))
+	//	return E_FAIL;
 
-	vector<Vec3> vecPoints7;
-	vecPoints7.push_back(Vec3(230.0f, 130.0f, -396.0f));
-	vecPoints7.push_back(Vec3(65.0f, 130.0f, -396.0f));
-	vecPoints7.push_back(Vec3(65.0f, 130.0f, -232.0f));
-	vecPoints7.push_back(Vec3(230.0f, 130.0f, -232.0f));
-	if (FAILED(LoadAnotherLevelData(vecPoints7)))
-		return E_FAIL;
-
-	// Portal
-	vector<Portal*> vecPortalsL8;
-
-	vector<Vec3> vecPoints8;
-	vecPoints8.push_back(Vec3(238.0f, 274.0f, -233.0f));
-	vecPoints8.push_back(Vec3(230.0f, 274.0f, -240.0f));
-	vecPoints8.push_back(Vec3(64.0f, 274.0f, -240.0f));
-	vecPoints8.push_back(Vec3(56.0f, 274.0f, -231.0f));
-	vecPoints8.push_back(Vec3(56.0f, 274.0f, -166.0f));
-	vecPoints8.push_back(Vec3(165.0f, 274.0f, -166.0f));
-	vecPoints8.push_back(Vec3(165.0f, 274.0f, -57.0f));
-	vecPoints8.push_back(Vec3(230.0f, 274.0f, -57.0f));
-	vecPoints8.push_back(Vec3(239.0f, 274.0f, -65.0f));
-	if (FAILED(LoadAnotherLevelData(vecPoints8)))
-		return E_FAIL;
-
-	// Connect Portals
-	m_vecPortalCache.push_back(vecPortalsBase);
-	m_vecPortalCache.push_back(vecPortalsL0);
-	m_vecPortalCache.push_back(vecPortalsL1);
-	m_vecPortalCache.push_back(vecPortalsL2);
-	m_vecPortalCache.push_back(vecPortalsL3);
-	m_vecPortalCache.push_back(vecPortalsL4);
-	m_vecPortalCache.push_back(vecPortalsL5);
-	m_vecPortalCache.push_back(vecPortalsL6);
-	m_vecPortalCache.push_back(vecPortalsL7);
-	m_vecPortalCache.push_back(vecPortalsL8);
+	//// Connect Portals
+	//m_vecPortalCache.push_back(vecPortalsBase);
+	//m_vecPortalCache.push_back(vecPortalsL0);
+	//m_vecPortalCache.push_back(vecPortalsL1);
+	//m_vecPortalCache.push_back(vecPortalsL2);
+	//m_vecPortalCache.push_back(vecPortalsL3);
+	//m_vecPortalCache.push_back(vecPortalsL4);
+	//m_vecPortalCache.push_back(vecPortalsL5);
+	//m_vecPortalCache.push_back(vecPortalsL6);
+	//m_vecPortalCache.push_back(vecPortalsL7);
+	//m_vecPortalCache.push_back(vecPortalsL8);
 
 	if (FAILED(BakeNavMesh()))
 		return E_FAIL;
@@ -2355,62 +2324,62 @@ HRESULT CNavMeshView::LoadMainScene()
 	return S_OK;
 }
 
-HRESULT CNavMeshView::LoadAnotherLevelData(const vector<Vec3>& vecPoints)
-{
-	triangulateio tIn = { 0 };
-	triangulateio tOut = { 0 };
-	
-	tIn.numberofpoints = vecPoints.size();
-	if (0 < tIn.numberofpoints)
-	{
-		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
-
-		_int i = 0;
-		for (auto point : vecPoints)
-		{
-			tIn.pointlist[2 * i + 0] = point.x;
-			tIn.pointlist[2 * i + 1] = point.z;
-			++i;
-		}
-	}
-	//if (FAILED(UpdatePointList(tIn, vecPoints)))
-	//	return E_FAIL;
-
-	tIn.numberofsegments = vecPoints.size();
-	if (0 < tIn.numberofsegments)
-	{
-		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
-
-		// Points
-		_int iStartIndex = vecPoints.size();
-		for (_int i = 0; i < iStartIndex - 1; ++i)
-		{
-			tIn.segmentlist[2 * i + 0] = i + 0;
-			tIn.segmentlist[2 * i + 1] = i + 1;
-		}
-		tIn.segmentlist[2 * (iStartIndex - 1) + 0] = iStartIndex - 1;
-		tIn.segmentlist[2 * (iStartIndex - 1) + 1] = 0;
-	}
-
-	//if (FAILED(UpdateHoleList(tIn)))
-	//	return E_FAIL;
-
-	//if (FAILED(UpdateRegionList(tIn)))
-	//	return E_FAIL;
-
-	triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
-
-	m_vecIn.push_back(tIn);
-	m_vecOut.push_back(tOut);
-	m_vecPointsMultiLevel.push_back(vecPoints);
-
-	/*if (FAILED(SafeReleaseTriangle(tIn)))
-		return E_FAIL;
-	if (FAILED(SafeReleaseTriangle(tOut)))
-		return E_FAIL;*/
-
-	return S_OK;
-}
+//HRESULT CNavMeshView::LoadAnotherLevelData(const vector<Vec3>& vecPoints)
+//{
+//	triangulateio tIn = { 0 };
+//	triangulateio tOut = { 0 };
+//	
+//	tIn.numberofpoints = vecPoints.size();
+//	if (0 < tIn.numberofpoints)
+//	{
+//		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
+//
+//		_int i = 0;
+//		for (auto point : vecPoints)
+//		{
+//			tIn.pointlist[2 * i + 0] = point.x;
+//			tIn.pointlist[2 * i + 1] = point.z;
+//			++i;
+//		}
+//	}
+//	//if (FAILED(UpdatePointList(tIn, vecPoints)))
+//	//	return E_FAIL;
+//
+//	tIn.numberofsegments = vecPoints.size();
+//	if (0 < tIn.numberofsegments)
+//	{
+//		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
+//
+//		// Points
+//		_int iStartIndex = vecPoints.size();
+//		for (_int i = 0; i < iStartIndex - 1; ++i)
+//		{
+//			tIn.segmentlist[2 * i + 0] = i + 0;
+//			tIn.segmentlist[2 * i + 1] = i + 1;
+//		}
+//		tIn.segmentlist[2 * (iStartIndex - 1) + 0] = iStartIndex - 1;
+//		tIn.segmentlist[2 * (iStartIndex - 1) + 1] = 0;
+//	}
+//
+//	//if (FAILED(UpdateHoleList(tIn)))
+//	//	return E_FAIL;
+//
+//	//if (FAILED(UpdateRegionList(tIn)))
+//	//	return E_FAIL;
+//
+//	triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
+//
+//	m_vecIn.push_back(tIn);
+//	m_vecOut.push_back(tOut);
+//	m_vecPointsMultiLevel.push_back(vecPoints);
+//
+//	/*if (FAILED(SafeReleaseTriangle(tIn)))
+//		return E_FAIL;
+//	if (FAILED(SafeReleaseTriangle(tOut)))
+//		return E_FAIL;*/
+//
+//	return S_OK;
+//}
 
 vector<Vec3> CNavMeshView::ProcessIntersections(vector<Vec3>& vecExpandedOutline)
 {
@@ -3501,11 +3470,11 @@ void CNavMeshView::CellGroup()
 		ImGui::ListBox("", &m_item_Current, m_strCells.data(), m_strCells.size(), 3);
 		if (ImGui::Button("PopBackCell"))
 		{
-			if (m_vecHierarchyNodes.empty())
+			if (m_vecCells.empty())
 				return;
 
 			m_strCells.pop_back();
-			m_vecHierarchyNodes.pop_back();
+			m_vecCells.pop_back();
 
 			auto iter = m_vecPointSpheres.end() - 3 - m_vecPoints.size();
 			for (_int i = 0; i < 3; ++i)
@@ -3544,46 +3513,6 @@ HRESULT CNavMeshView::InitialSetting()
 		return E_FAIL;
 
 	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
-
-	// for multilevel
-
-	//triangulateio tIn = { 0 }, tOut = { 0 };
-	//vector<Vec3> vecPoints;
-
-	//vecPoints.push_back(Vec3(-399.0f, 96.f, -400.0f));
-	//m_vecPointSpheres.push_back(BoundingSphere(Vec3(-399.0f, 96.f, -400.0f), 2.f));
-
-	//vecPoints.push_back(Vec3(-399.0f, 96.f, -230.0f));
-	//m_vecPointSpheres.push_back(BoundingSphere(Vec3(-399.0f, 96.f, -230.0f), 2.f));
-
-	//vecPoints.push_back(Vec3(-61.0f, 96.f, -230.0f));
-	//m_vecPointSpheres.push_back(BoundingSphere(Vec3(-61.0f, 96.f, -230.0f), 2.f));
-
-	//vecPoints.push_back(Vec3(-61.0f, 96.f, -400.0f));
-	//m_vecPointSpheres.push_back(BoundingSphere(Vec3(-61.0f, 96.f, -400.0f), 2.f));
-
-	////m_iStaticPointCount = m_vecPoints.size();
-
-	//if (FAILED(UpdatePointList(tIn, vecPoints)))
-	//	return E_FAIL;
-
-	//if (FAILED(UpdateSegmentList(tIn, vecPoints)))
-	//	return E_FAIL;
-
-	//if (FAILED(UpdateHoleList(tIn)))
-	//	return E_FAIL;
-
-	//if (FAILED(UpdateRegionList(tIn)))
-	//	return E_FAIL;
-
-	//triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
-
-	//m_vecIn.push_back(tIn);
-	//m_vecOut.push_back(tOut);
-	//m_vecPointsMultiLevel.push_back(vecPoints);
-
-	//SafeReleaseTriangle(tIn);
-	//SafeReleaseTriangle(tOut);
 
 	return S_OK;
 }
@@ -3631,15 +3560,11 @@ HRESULT CNavMeshView::Reset()
 	m_vecPoints.clear();
 	m_vecSegments.clear();
 
-	for (auto hierarchy : m_vecHierarchyNodes)
+	for (auto cell : m_vecCells)
 	{
-		for (auto cell : hierarchy->pCells)
-		{
-			Safe_Delete(cell);
-		}
-		hierarchy->pCells.clear();
+		Safe_Delete(cell);
 	}
-	m_vecHierarchyNodes.clear();
+	m_vecCells.clear();
 
 	for (auto cell : m_strCells)
 	{
@@ -3857,15 +3782,11 @@ void CNavMeshView::Free()
 	SafeReleaseTriangle(m_tIn);
 	SafeReleaseTriangle(m_tOut);
 
-	for (auto hierarchy : m_vecHierarchyNodes)
+	for (auto cell : m_vecCells)
 	{
-		for (auto cell : hierarchy->pCells)
-		{
-			Safe_Delete(cell);
-		}
-		hierarchy->pCells.clear();
+		Safe_Delete(cell);
 	}
-	m_vecHierarchyNodes.clear();
+	m_vecCells.clear();
 	
 	for (auto cell : m_strCells)
 	{

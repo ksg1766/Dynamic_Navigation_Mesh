@@ -98,7 +98,7 @@ private:
 	HRESULT		RefreshNvFile();
 
 	HRESULT		LoadMainScene();
-	HRESULT		LoadAnotherLevelData(const vector<Vec3>& vecPoints);
+	//HRESULT		LoadAnotherLevelData(const vector<Vec3>& vecPoints);
 
 	HRESULT		SaveObstacleLocalOutline(const Obst* const pObst, string strName);
 	HRESULT		LoadObstacleOutlineData();
@@ -140,7 +140,7 @@ private:
 
 	unordered_multimap<_int, CellData*> m_umapCellGrids;
 	unordered_multimap<_int, Obst*> m_umapObstGrids;
-	vector<HierarchyNode*>	m_vecHierarchyNodes;
+	vector<CellData*>		m_vecCells;
 	vector<vector<Portal*>> m_vecPortalCache;
 	vector<const _char*>	m_strCells;
 

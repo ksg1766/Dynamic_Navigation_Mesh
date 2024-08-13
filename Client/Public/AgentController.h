@@ -16,16 +16,6 @@ BEGIN(Client)
 struct CellData;
 struct Obst;
 
-struct PQHNode
-{
-	_bool operator<(const PQHNode& other) const { return f < other.f; }
-	_bool operator>(const PQHNode& other) const { return f > other.f; }
-
-	_float f = FLT_MAX; // f = g + h
-	_float g = FLT_MAX;
-	HierarchyNode* pHNode = nullptr;
-};
-
 struct PQNode
 {
 	_bool operator<(const PQNode& other) const { return f < other.f; }
@@ -63,8 +53,7 @@ public:
 	void	Slide(const Vec3 vPrePos);
 	Vec3	Move(_float fTimeDelta);
 
-	_bool	HNAStar();
-	_bool	AStar(const Vec3& vStartPos, const Vec3& vDestPos);
+	_bool	AStar();
 	void	FunnelAlgorithm();
 
 	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
@@ -87,14 +76,10 @@ private:
 	Vec3			m_vMaxLinearSpeed;
 	Vec3			m_vLinearSpeed;
 
-	pair<HierarchyNode*, CellData*> m_CurrentCell = { nullptr, nullptr };
-	pair<HierarchyNode*, CellData*> m_DestCell = { nullptr, nullptr };
+	CellData* m_pCurrentCell = nullptr;
+	CellData* m_pDestCell = nullptr;
 	
 	_float			m_fAgentRadius;
-
-	using HPATH = pair<HierarchyNode*, pair<Portal*, Portal*>>;
-	//deque<HPATH>	m_dqHPath;
-	deque<pair<Portal*, Portal*>>	m_dqWayPortals;
 
 	using PATH = pair<CellData*, LINES>;
 	deque<PATH>		m_dqPath;
@@ -106,7 +91,7 @@ private:
 	deque<pair<Vec3, Vec3>>	m_dqExpandedVertices;
 	deque<pair<Vec3, Vec3>>	m_dqOffset;
 
-	vector<HierarchyNode*>* m_pHierarchyNodes;
+	vector<CellData*>* m_pHierarchyNodes;
 	unordered_multimap<_int, CellData*>* m_pCellGrids;
 	unordered_multimap<_int, Obst*>* m_pObstGrids;
 
@@ -120,11 +105,5 @@ public:
 	virtual CComponent* Clone(CGameObject* pGameObject, void* pArg) override;
 	virtual void Free() override;
 };
-
-// TODO : Pick했을 때, min dist level cell 반환 : 상위 층부터 검사하고 마지막에 base level 검사
-//			-> 나중에 여유가 된다면 grid에 전부 포함시키도록... 근데 지금 terrain buffer로 pick하고 있는게 문제. 바꿀게 많다.
-// 모든 cell이 자기 level 알고 있으면 좀 곤란... 그냥 pair<current level, current cell>랑 pair<dest level, dest cell>로 바꾸자.
-// 거쳐갈 portal은 waypoint 처럼 deque에 넣어두고 접근했다면 waypoint와 함께 pop_front하면서 exit portal 위치로 이동.
-// dest level이 current level과 다르다면 바로 가까운 portals 검색 후 해당 위치로 A*. 검색된 portal은 wayportalㄴ에 추가.
 
 END
