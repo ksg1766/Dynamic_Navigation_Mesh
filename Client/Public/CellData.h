@@ -25,7 +25,7 @@ struct CellData
 	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
 	array<CellData*, LINE_END> pNeighbors = { nullptr, nullptr, nullptr };
 	array<Vec3, LINE_END> vNormals = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
-	array<_float, LINE_END> fHalfWidths = { FLT_MAX, FLT_MAX, FLT_MAX };
+	//array<_float, LINE_END> fHalfWidths = { FLT_MAX, FLT_MAX, FLT_MAX };
 	array<_float, LINE_END> fTheta = { FLT_MAX, FLT_MAX, FLT_MAX };
 	
 	void	CW();

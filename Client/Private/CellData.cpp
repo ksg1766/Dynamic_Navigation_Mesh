@@ -34,7 +34,7 @@ void CellData::SetUpData()
 
 	for (uint8 i = 0; i < LINE_END; i++)
 	{
-		fHalfWidths[i] = CalculateHalfWidth((LINES)((i + 2) % 3), (LINES)i);
+		//fHalfWidths[i] = CalculateHalfWidth((LINES)((i + 2) % 3), (LINES)i);
 		vLines[i].Normalize();
 	}
 	

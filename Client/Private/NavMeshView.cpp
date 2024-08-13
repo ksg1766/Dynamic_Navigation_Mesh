@@ -163,13 +163,13 @@ HRESULT CNavMeshView::DebugRender()
 		Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
 		Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
-		if (true == (*cell)->isNew)
+		/*if (true == (*cell)->isNew)
 		{
 			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Blue);
 		}
-		else
+		else*/
 		{
-			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
+			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, { 0.196078449f, 0.803921640f, 0.196078449f, 0.500000000f } /*Colors::LimeGreen*/);
 		}
 
 		++cell;
@@ -380,60 +380,6 @@ HRESULT CNavMeshView::BakeNavMesh()
 
 	m_vecHierarchyNodes.push_back(pHierarchy);*/
 	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
-
-	// for multilayer	
-	/*for (_int i = 0; i < m_vecOut.size(); ++i)
-	{
-		vector<CellData*> vecMultilayerCells;
-
-		for (_int j = 0; j < m_vecOut[i].numberoftriangles; ++j)
-		{
-			_int iIdx1 = m_vecOut[i].trianglelist[j * 3 + POINT_A];
-			_int iIdx2 = m_vecOut[i].trianglelist[j * 3 + POINT_B];
-			_int iIdx3 = m_vecOut[i].trianglelist[j * 3 + POINT_C];
-
-			_float y = m_vecPointsMultiLevel[i][0].y;
-			_float y1 = y, y2 = y, y3 = y;
-
-			Vec3 vtx[POINT_END] =
-			{
-				{ m_vecOut[i].pointlist[iIdx1 * 2], y1, m_vecOut[i].pointlist[iIdx1 * 2 + 1] },
-				{ m_vecOut[i].pointlist[iIdx2 * 2], y2, m_vecOut[i].pointlist[iIdx2 * 2 + 1] },
-				{ m_vecOut[i].pointlist[iIdx3 * 2], y3, m_vecOut[i].pointlist[iIdx3 * 2 + 1] },
-			};
-
-			CellData* pCellData = new CellData;
-			pCellData->vPoints[POINT_A] = vtx[POINT_A];
-			pCellData->vPoints[POINT_B] = vtx[POINT_B];
-			pCellData->vPoints[POINT_C] = vtx[POINT_C];
-			pCellData->CW();
-
-			vecMultilayerCells.push_back(pCellData);
-		}
-
-		SetUpNeighbors(vecMultilayerCells);
-
-		for (auto cell : vecMultilayerCells)
-		{
-			cell->SetUpData();
-		}
-
-		HierarchyNode* pMultiLevelHierarchy = new HierarchyNode;
-		pMultiLevelHierarchy->pCells = vecMultilayerCells;
-
-		if (i < m_vecPortalCache.size())
-		{
-			pMultiLevelHierarchy->pPortals = m_vecPortalCache[i + 1];
-
-			for (auto portal : pMultiLevelHierarchy->pPortals)
-			{
-				portal->pHierarchyNode = pMultiLevelHierarchy;
-			}
-		}
-
-		m_vecHierarchyNodes.push_back(pMultiLevelHierarchy);
-	}*/
-
 	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
 
 	return S_OK;
@@ -914,10 +860,10 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		}
 	}
 
-	for (auto tCell : setIntersected)
+	/*for (auto tCell : setIntersected)
 	{
 		tCell->isDead = true;
-	}
+	}*/
 
 	triangulateio tIn = { 0 }, tOut = { 0 };
 
@@ -956,9 +902,9 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		pCellData->vPoints[POINT_B] = vtx[POINT_B];
 		pCellData->vPoints[POINT_C] = vtx[POINT_C];
 		pCellData->CW();
-		pCellData->SetUpData();
+		//pCellData->SetUpData();
 
-		vecNewCells.emplace_back(pCellData);
+		vecNewCells.push_back(pCellData);
 	}
 
 	SetUpNeighbors(vecNewCells);
@@ -998,17 +944,23 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 			}
 		}
 
-		cell->isNew = true;
-		m_vecCells.emplace_back(cell);
+		//cell->isNew = true;
+		m_vecCells.push_back(cell);
 	}
 
 	for (auto cell : vecNewCells)
 	{
 		cell->SetUpData();
 	}
+	
+	vector<Obst*> vecObst;
+	vecObst.push_back(const_cast<Obst*>(&tObst));
 
-	SafeReleaseTriangle(tIn);
-	SafeReleaseTriangle(tOut);
+	SetUpCells2Grids(vecNewCells, m_umapCellGrids);
+	SetUpObsts2Grids(vecObst, m_umapObstGrids);
+
+	//SafeReleaseTriangle(tIn);
+	//SafeReleaseTriangle(tOut);
 
 	return S_OK;
 }
@@ -1024,7 +976,7 @@ HRESULT CNavMeshView::DynamicCreate(CGameObject* const pGameObject)
 			return E_FAIL;
 		}
 
-		m_hmapObstacleIndex[pGameObject] = m_vecObstacles.size();	// 불편하지만 트랜스촘 변환을 위해... 일단은 이렇게 해두자.
+		m_hmapObstacleIndex[pGameObject] = m_vecObstacles.size();	// 불편하지만 트랜스폼 변환을 위해... 일단은 이렇게 해두자.
 		m_vecObstacles.push_back(pObst);
 	}
 
@@ -1205,7 +1157,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 			}
 		}
 
-		cell->isNew = true;
+		//cell->isNew = true;
 		m_vecCells.emplace_back(cell);
 	}
 
@@ -1420,21 +1372,22 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 		{
 			_int iKey = iKeyZ * gGridX + iKeyX;
 
-			auto [begin, end] = m_umapCellGrids.equal_range(iKey);
+			auto iter = m_umapCellGrids.equal_range(iKey);
 
-			for (auto cell = begin; cell != end;)
+			for (auto cell = iter.first; cell != iter.second;)
 			{
-				if (true == cell->second->isNew)
+				/*if (true == cell->second->isNew)
 				{
 					cell->second->isNew = false;
-				}
+				}*/
 
-				if (false == cell->second->isDead && true == tObst.tAABB.Intersects(cell->second->vPoints[POINT_A], cell->second->vPoints[POINT_B], cell->second->vPoints[POINT_C]))
+				if (/*false == cell->second->isDead && */true == tObst.tAABB.Intersects(cell->second->vPoints[POINT_A], cell->second->vPoints[POINT_B], cell->second->vPoints[POINT_C]))
 				{
 					setIntersected.emplace(cell->second);
 
 					if (true == bPop)
 					{
+						cell->second->isDead = true;
 						cell = m_umapCellGrids.erase(cell);
 						continue;
 					}
@@ -3565,6 +3518,9 @@ HRESULT CNavMeshView::Reset()
 		Safe_Delete(cell);
 	}
 	m_vecCells.clear();
+
+	m_umapCellGrids.clear();
+	m_umapObstGrids.clear();
 
 	for (auto cell : m_strCells)
 	{

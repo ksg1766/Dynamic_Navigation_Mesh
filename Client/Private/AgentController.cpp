@@ -12,8 +12,8 @@ CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* p
 	:Super(pDevice, pContext)
 	, m_vLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
 	, m_vMaxLinearSpeed(Vec3(200.0f, 200.0f, 200.0f))
-	, m_fAgentRadius(3.3f)
-	//, m_fAgentRadius(5.0f)
+	//, m_fAgentRadius(3.3f)
+	, m_fAgentRadius(5.0f)
 {
 }
 
@@ -126,7 +126,7 @@ void CAgentController::Tick(_float fTimeDelta)
 			}
 		}
 	}*/
-	if (true == IsMoving() && false == IsOutOfWorld())
+	if (true == IsMoving() || false == IsOutOfWorld())
 	{
 		Slide(Move(fTimeDelta));
 	} PopPath();
@@ -228,9 +228,6 @@ void CAgentController::Slide(const Vec3 vPrePos)
 {
 	CellData* pNeighbor = nullptr;
 	Vec3 vPosition = m_pTransform->GetPosition();
-
-	if (vPosition == vPrePos)
-		return;
 
 	if (false == m_pCurrentCell->IsOut(vPosition, pNeighbor))	// TODO: Hierarchy 고려 안해도 되는지
 	{
@@ -424,8 +421,8 @@ _bool CAgentController::AStar()
 
 			m_dqExpandedVertices.push_front(m_dqEntries.front());
 			
-			//while (m_pCurrentCell != pNext)
-			while (true)
+			while (m_pCurrentCell != pNext)
+			//while (true)
 			{
 				m_dqPath.push_front(tNext);
 
@@ -436,8 +433,8 @@ _bool CAgentController::AStar()
 
 				m_dqExpandedVertices.push_front(m_dqEntries.front());
 
-				if (m_pCurrentCell == pNext)
-					break;
+				/*if (m_pCurrentCell == pNext)
+					break;*/
 
 				tNext = Path[pNext];
 			}
@@ -482,7 +479,7 @@ _bool CAgentController::AStar()
 					}
 				}
 
-				_float fHalfWidth = pCurrent->fHalfWidths[POINTS((5 - eLine1 - i) % 3)];
+				_float fHalfWidth = pCurrent->CalculateHalfWidth(eLine1, (LINES)(i));
 				if (fHalfWidth < m_fAgentRadius)
 				{
 					continue;
@@ -752,12 +749,23 @@ CellData* CAgentController::FindCellByPosition(const Vec3& vPosition)
 
 	auto [begin, end] = m_pCellGrids->equal_range(iKey);
 	
-	for (auto cell = begin; cell != end; ++cell)
+	for (auto cell = begin; cell != end;)
 	{
-		if (false == cell->second->IsOut(vPosition, pCell))
+		if (true == cell->second->isDead || nullptr == cell->second)
 		{
-			return cell->second;
+			Safe_Delete(cell->second);
+			cell = m_pCellGrids->erase(cell);
+			continue;
 		}
+		else
+		{
+			if (false == cell->second->IsOut(vPosition, pCell))
+			{
+				return cell->second;
+			}
+		}
+
+		++cell;
 	}
 
 	return nullptr;
@@ -813,8 +821,6 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 			fAStarPerformance = fAStarPerformance;*/
 			return true;
 		}
-		
-		return false;
 	}
 
 	Obst* pObst = FindObstByPosition(vPickedPos);
