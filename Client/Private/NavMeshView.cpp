@@ -298,7 +298,7 @@ void CNavMeshView::SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_m
 	BoundingBox tAABB;
 	tAABB.Extents = Vec3(iGridCX * 0.5f, 10.0f, iGridCZ * 0.5f);
 
-	for (auto pObst : vecObstacles)
+	for (auto pObst : vecObstacles)	// TODO : 불필요한 영역 거사 배제
 	{
 		for (_int iX = 0; iX < 1024 / iGridCX; ++iX)
 		{
@@ -1360,11 +1360,11 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 	_int iLB_X = (vLB.x + gWorldCX * 0.5f) / gGridCX;
 	_int iLB_Z = (vLB.z + gWorldCZ * 0.5f) / gGridCZ;
 
-	_int iRT_X = (vRT.x + gWorldCX * 0.5f) / gGridCX;
-	_int iRT_Z = (vRT.z + gWorldCZ * 0.5f) / gGridCZ;
+	_int iRT_X = (vRT.x + gWorldCX * 0.5f) / gGridCX + 1;
+	_int iRT_Z = (vRT.z + gWorldCZ * 0.5f) / gGridCZ + 1;
 
-	_int iLB_Key = iLB_Z * gGridX + iLB_X;
-	_int iRT_Key = iRT_Z * gGridX + iRT_X;
+	_float fMinX = FLT_MAX, fMinZ = FLT_MAX;
+	_float fMaxX = -FLT_MAX, fMaxZ = -FLT_MAX;
 
 	for (_int iKeyZ = iLB_Z; iKeyZ <= iRT_Z; ++iKeyZ)
 	{
@@ -1376,21 +1376,45 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 
 			for (auto cell = iter.first; cell != iter.second;)
 			{
-				/*if (true == cell->second->isNew)
+				if (true == tObst.tAABB.Intersects(cell->second->vPoints[POINT_A], cell->second->vPoints[POINT_B], cell->second->vPoints[POINT_C]))
 				{
-					cell->second->isNew = false;
-				}*/
+					fMinX = ::min(fMinX, ::min( cell->second->vPoints[POINT_A].x, ::min(cell->second->vPoints[POINT_B].x, cell->second->vPoints[POINT_C].x )));
+					fMinZ = ::min(fMinZ, ::min( cell->second->vPoints[POINT_A].z, ::min(cell->second->vPoints[POINT_B].z, cell->second->vPoints[POINT_C].z )));
+					fMaxX = ::max(fMaxX, ::max( cell->second->vPoints[POINT_A].x, ::max(cell->second->vPoints[POINT_B].x, cell->second->vPoints[POINT_C].x )));
+					fMaxZ = ::max(fMaxZ, ::max( cell->second->vPoints[POINT_A].z, ::max(cell->second->vPoints[POINT_B].z, cell->second->vPoints[POINT_C].z )));
 
-				if (/*false == cell->second->isDead && */true == tObst.tAABB.Intersects(cell->second->vPoints[POINT_A], cell->second->vPoints[POINT_B], cell->second->vPoints[POINT_C]))
-				{
 					setIntersected.emplace(cell->second);
 
 					if (true == bPop)
 					{
 						cell->second->isDead = true;
-						cell = m_umapCellGrids.erase(cell);
-						continue;
 					}
+				}
+
+				++cell;
+			}
+		}
+	}
+
+	iLB_X = (fMinX + gWorldCX * 0.5f) / gGridCX;
+	iLB_Z = (fMinZ + gWorldCZ * 0.5f) / gGridCZ;
+
+	iRT_X = (fMaxX + gWorldCX * 0.5f) / gGridCX + 1;
+	iRT_Z = (fMaxZ + gWorldCZ * 0.5f) / gGridCZ + 1;
+
+	for (_int iKeyZ = iLB_Z; iKeyZ <= iRT_Z; ++iKeyZ)
+	{
+		for (_int iKeyX = iLB_X; iKeyX <= iRT_X; ++iKeyX)
+		{
+			_int iKey = iKeyZ * gGridX + iKeyX;
+			auto iter = m_umapCellGrids.equal_range(iKey);
+
+			for (auto cell = iter.first; cell != iter.second;)
+			{
+				if (true == cell->second->isDead)
+				{
+					cell = m_umapCellGrids.erase(cell);
+					continue;
 				}
 
 				++cell;
