@@ -1,4 +1,31 @@
 ---
+# 📅 2024.08.13
+📋 진행 사항
+  * 주간 회의 피드백에 따라 어제까지 작업하던 HNAStar 구현에 대해 한 번 더 재고해 보았습니다.
+    * agent의 움직임에 대한 문제를 추가로 수정해 보려 했으나 많은 부분을 수정해야 할 것 같았습니다.
+    * HNAStar를 지금까지의 과정 중 예상하지 못했던 문제를 해결하는데 많은 시간이 들었던 것을 생각했을 때 우선 이전의 작업들을 마무리한 뒤 추가 사항을 생각해보는 것이 좋을 것 같습니다.
+    * 따라서 우선 보류하고 구현된 Dynamic Obstacle과 관련된 부분을 우선 마무리해 보려 합니다.
+      
+  * 실행 중에 dynamic obstacle 추가 시 변경되는 navigation mesh 정보를 agent가 이용할 수 있도록 수정했습니다.
+    * obstacle이 추가되는 영역에 새롭게 생성된 cell을 추가하기 전에 이미 존재 하던 cell을 삭제하는 방식을 수정했습니다.
+      * 현재 검색 속도를 높이기 위해 grid 형태로 cell을 저장하고 있으므로, 해당 cell을 포함하는 모든 grid에서 중복으로 저장돼 있는 cell정보를 삭제해야 이후의 검색 작업을 정상적으로 수행할 수 있습니다.
+      * 이전에는 아래와 같이 obstacle을 포함하는 영역에서 cell의 정보를 제거했는데, cell의 크기에 따라 다른 grid에도 걸쳐있는 경우가 많으므로 좀 더 넓은 grid에서 cell을 전부 삭제해야 했습니다.
+        
+        ![image](https://github.com/user-attachments/assets/1d2a6ab1-1754-4108-b022-f8076f2537ba)
+
+      * 따라서 아래와같이 새로 생성된 cell들이 걸쳐 있는 더 넓은 영역의 grid에 대해 중복된 cell 정보를 삭제했습니다.
+
+        ![image](https://github.com/user-attachments/assets/37ad9e92-1a27-4fd6-aed1-e2d9f417af33)
+
+      * 적용된 결과는 아래와 같습니다.
+
+        ![FPS_61-DEBUG2024-08-1411-07-09-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/a102a427-8080-47f1-ba4f-7b5bcd5265e1)
+  
+⚽ 이후 계획
+  * obstacle 생성보다 삭제 과정이 조금 더 복잡한데, 우선 연동할 계획입니다.
+  * 경로 탐색 과정 중 navigation mesh 변동에 따라 경로를 수정할 수 있도록 구현할 계획입니다.
+  
+---
 6주차 진행 내용 : https://equal-paw-e8f.notion.site/6-c6516ea0a7e140be9f5663cc934ab07e?pvs=4
 
 ---
