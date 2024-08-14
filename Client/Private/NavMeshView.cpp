@@ -1363,10 +1363,10 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 			if (true == tObst.tAABB.Intersects(tGridAABB))
 			{
 				auto [begin, end] = m_umapObstGrids.equal_range(iKey);
-
-				if (true == bPopObst)
+				
+				for (auto& obst = begin; obst != end; ++obst)
 				{
-					for (auto& obst = begin; obst != end; ++obst)
+					if (true == bPopObst)
 					{
 						if (&tObst == obst->second)
 						{
@@ -1374,11 +1374,11 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 							break;
 						}
 					}
-				}
-				else
-				{
-					// TODO : 
-				}
+					else
+					{
+						// TODO : 
+					}
+				}				
 			}
 		}
 	}
