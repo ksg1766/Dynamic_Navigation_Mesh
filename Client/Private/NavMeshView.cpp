@@ -792,8 +792,8 @@ HRESULT CNavMeshView::UpdateRegionList(triangulateio& tIn, const Obst* pObst)
 		{
 			tIn.regionlist[4 * i + 0] = m_vecRegions[i].x;
 			tIn.regionlist[4 * i + 1] = m_vecRegions[i].z;
-			tIn.regionlist[4 * i + 1] = 0.f; //
-			tIn.regionlist[4 * i + 1] = 0.f; //
+			tIn.regionlist[4 * i + 1] = 0.0f; //
+			tIn.regionlist[4 * i + 1] = 0.0f; //
 		}
 	}
 
@@ -801,11 +801,11 @@ HRESULT CNavMeshView::UpdateRegionList(triangulateio& tIn, const Obst* pObst)
 }
 
 HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
-{
+{	
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
-	if (FAILED(GetIntersectedCells(tObst, setIntersected, true, true)))
+	if (FAILED(GetIntersectedCells(tObst, setIntersected, true, false)))
 	{
 		return E_FAIL;
 	}
@@ -1341,7 +1341,7 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 
 			auto [begin, end] = m_umapCellGrids.equal_range(iKey);
 
-			for (auto cell = begin; cell != end; ++cell)
+			for (auto& cell = begin; cell != end; ++cell)
 			{
 				if (true == tObst.tAABB.Intersects(cell->second->vPoints[POINT_A], cell->second->vPoints[POINT_B], cell->second->vPoints[POINT_C]))
 				{
@@ -1359,15 +1359,14 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 				}
 			}
 
-			if (true == bPopObst)
+			BoundingBox tGridAABB = BoundingBox(Vec3(0.5f * (iLB_X * gGridCX + iRT_X * gGridCX), 0.f, 0.5f * (iLB_X * gGridCZ + iRT_X * gGridCZ)), Vec3(0.5f * gGridCX, 10.0f, 0.5f * gGridCZ));
+			if (true == tObst.tAABB.Intersects(tGridAABB))
 			{
-				BoundingBox tGridAABB = BoundingBox(Vec3(0.5f * (iLB_X * gGridCX + iRT_X * gGridCX), 0.f, 0.5f * (iLB_X * gGridCZ + iRT_X * gGridCZ)), Vec3(0.5f * gGridCX, 10.0f, 0.5f * gGridCZ));
+				auto [begin, end] = m_umapObstGrids.equal_range(iKey);
 
-				if (true == tObst.tAABB.Intersects(tGridAABB))
+				if (true == bPopObst)
 				{
-					auto [begin, end] = m_umapObstGrids.equal_range(iKey);
-
-					for (auto obst = begin; obst != end; ++obst)
+					for (auto& obst = begin; obst != end; ++obst)
 					{
 						if (&tObst == obst->second)
 						{
@@ -1375,6 +1374,10 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 							break;
 						}
 					}
+				}
+				else
+				{
+					// TODO : 
 				}
 			}
 		}
