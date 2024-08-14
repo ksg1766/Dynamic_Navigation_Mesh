@@ -2857,9 +2857,9 @@ HRESULT CNavMeshView::LoadNvFile()
 		pObst->tAABB.Center.z = element->FloatAttribute("Z");
 
 		element = element->NextSiblingElement();
-		pObst->tAABB.Extents.x = element->FloatAttribute("X") + 0.05f;
+		pObst->tAABB.Extents.x = element->FloatAttribute("X");
 		pObst->tAABB.Extents.y = element->FloatAttribute("Y");
-		pObst->tAABB.Extents.z = element->FloatAttribute("Z") + 0.05f;
+		pObst->tAABB.Extents.z = element->FloatAttribute("Z");
 		
 		// Points
 		element = element->NextSiblingElement();
@@ -2990,9 +2990,9 @@ HRESULT CNavMeshView::Load3DNvFile()
 		pObst->tAABB.Center.z = element->FloatAttribute("Z");
 
 		element = element->NextSiblingElement();
-		pObst->tAABB.Extents.x = element->FloatAttribute("X") + 0.05f;
+		pObst->tAABB.Extents.x = element->FloatAttribute("X");
 		pObst->tAABB.Extents.y = element->FloatAttribute("Y");
-		pObst->tAABB.Extents.z = element->FloatAttribute("Z") + 0.05f;
+		pObst->tAABB.Extents.z = element->FloatAttribute("Z");
 
 		// Points
 		element = element->NextSiblingElement();
