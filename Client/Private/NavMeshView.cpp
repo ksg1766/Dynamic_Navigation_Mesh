@@ -1360,8 +1360,8 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 	_int iLB_X = (vLB.x + gWorldCX * 0.5f) / gGridCX;
 	_int iLB_Z = (vLB.z + gWorldCZ * 0.5f) / gGridCZ;
 
-	_int iRT_X = (vRT.x + gWorldCX * 0.5f) / gGridCX + 1;
-	_int iRT_Z = (vRT.z + gWorldCZ * 0.5f) / gGridCZ + 1;
+	_int iRT_X = (vRT.x + gWorldCX * 0.5f) / gGridCX;
+	_int iRT_Z = (vRT.z + gWorldCZ * 0.5f) / gGridCZ;
 
 	_float fMinX = FLT_MAX, fMinZ = FLT_MAX;
 	_float fMaxX = -FLT_MAX, fMaxZ = -FLT_MAX;
@@ -1372,9 +1372,9 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 		{
 			_int iKey = iKeyZ * gGridX + iKeyX;
 
-			auto iter = m_umapCellGrids.equal_range(iKey);
+			auto [begin, end] = m_umapCellGrids.equal_range(iKey);
 
-			for (auto cell = iter.first; cell != iter.second;)
+			for (auto cell = begin; cell != end; ++cell)
 			{
 				if (true == tObst.tAABB.Intersects(cell->second->vPoints[POINT_A], cell->second->vPoints[POINT_B], cell->second->vPoints[POINT_C]))
 				{
@@ -1390,8 +1390,6 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 						cell->second->isDead = true;
 					}
 				}
-
-				++cell;
 			}
 		}
 	}
@@ -1399,17 +1397,17 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 	iLB_X = (fMinX + gWorldCX * 0.5f) / gGridCX;
 	iLB_Z = (fMinZ + gWorldCZ * 0.5f) / gGridCZ;
 
-	iRT_X = (fMaxX + gWorldCX * 0.5f) / gGridCX + 1;
-	iRT_Z = (fMaxZ + gWorldCZ * 0.5f) / gGridCZ + 1;
+	iRT_X = (fMaxX + gWorldCX * 0.5f) / gGridCX;
+	iRT_Z = (fMaxZ + gWorldCZ * 0.5f) / gGridCZ;
 
 	for (_int iKeyZ = iLB_Z; iKeyZ <= iRT_Z; ++iKeyZ)
 	{
 		for (_int iKeyX = iLB_X; iKeyX <= iRT_X; ++iKeyX)
 		{
 			_int iKey = iKeyZ * gGridX + iKeyX;
-			auto iter = m_umapCellGrids.equal_range(iKey);
+			auto [begin, end] = m_umapCellGrids.equal_range(iKey);
 
-			for (auto cell = iter.first; cell != iter.second;)
+			for (auto cell = begin; cell != end;)
 			{
 				if (true == cell->second->isDead)
 				{
