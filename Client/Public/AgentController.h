@@ -62,8 +62,9 @@ private:
 	void	Input(_float fTimeDelta);
 
 private:
+	_bool	AdjustLocation();
 	CellData* FindCellByPosition(const Vec3& vPosition);
-	Obst* FindObstByPosition(const Vec3& vPosition);
+	Obst*	FindObstByPosition(const Vec3& vPosition);
 
 private:
 	CTransform*		m_pTransform = nullptr;

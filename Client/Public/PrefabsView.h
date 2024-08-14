@@ -5,6 +5,7 @@
 BEGIN(Engine)
 
 class CTerrain;
+class CGameObject;
 
 END
 
@@ -24,7 +25,7 @@ public:
 	virtual HRESULT	DebugRender()			override;
 
 public:
-	HRESULT	PlaceObstacle(const wstring& strObjectTag, const Matrix& matWorld);
+	HRESULT	PlaceObstacle(const wstring& strObjectTag, const Matrix& matWorld, OUT CGameObject*& pGameObjectRet);
 
 private:
 	void	Input();

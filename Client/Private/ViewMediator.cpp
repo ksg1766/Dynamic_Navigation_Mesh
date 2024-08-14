@@ -39,9 +39,9 @@ void CViewMediator::OnNotifiedPickingOn(CView* pSender)
 	}
 }
 
-void CViewMediator::OnNotifiedPlaceObject(const wstring& strObjectTag, const Matrix& matWorld)
+void CViewMediator::OnNotifiedPlaceObject(const wstring& strObjectTag, const Matrix& matWorld, OUT CGameObject*& pGameObject)
 {
-	m_pPrefabsView->PlaceObstacle(strObjectTag, matWorld);
+	m_pPrefabsView->PlaceObstacle(strObjectTag, matWorld, pGameObject);
 }
 
 void CViewMediator::OnNotifiedPlaceObstacle(CGameObject* const pGameObject)

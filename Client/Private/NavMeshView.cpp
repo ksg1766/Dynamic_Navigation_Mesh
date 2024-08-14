@@ -89,13 +89,8 @@ HRESULT CNavMeshView::Tick()
 
 	if (ImGui::Button("CreateAgent"))
 	{
-		if (nullptr != m_pAgent)
-		{			
-			m_pGameInstance->DeleteObject(m_pAgent);
-		}
-
-		if (FAILED(CreateAgent(Vec3::Zero)))
 		//if (FAILED(CreateAgent(0)))
+		if (FAILED(CreateAgent(Vec3::Zero)))
 		{
 			ImGui::End();
 			return E_FAIL;
@@ -107,16 +102,7 @@ HRESULT CNavMeshView::Tick()
 	const _char* szStressButon = (true == m_bStressTest) ? "Stop Stress Test" : "Start Stress Test";
 	if (ImGui::Button(szStressButon))
 	{
-		if (true == m_bStressTest)
-		{
-			m_bStressTest = false;
-			//m_fStressRadian = 0.f;
-			//m_vStressPosition = Vec3::Zero;
-		}
-		else
-		{
-			m_bStressTest = true;
-		}
+		(true == m_bStressTest) ? m_bStressTest = false : m_bStressTest = true;
 	}
 
 	if (true == m_bStressTest)
@@ -169,51 +155,49 @@ HRESULT CNavMeshView::DebugRender()
 		}
 		else*/
 		{
-			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, { 0.196078449f, 0.803921640f, 0.196078449f, 0.500000000f } /*Colors::LimeGreen*/);
+			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
 		}
 
 		++cell;
 	}
 
-	if (false == m_vecObstacles.empty())
+	for (_int i = 0; i < m_vecObstacles.size(); ++i)
 	{
-		for (_int i = 0; i < m_vecObstacles.size(); ++i)
+		for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size() - 1; ++j)
 		{
-			for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size() - 1; ++j)
-			{
-				Vec3 vLine1 =
-				{
-					m_vecObstacles[i]->vecPoints[j].x,
-					0.0f,
-					m_vecObstacles[i]->vecPoints[j].z
-				};
-				Vec3 vLine2 =
-				{
-					m_vecObstacles[i]->vecPoints[j + 1].x,
-					0.0f,
-					m_vecObstacles[i]->vecPoints[j + 1].z,
-				};
-
-				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
-			}
-
 			Vec3 vLine1 =
 			{
-				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].x,
+				m_vecObstacles[i]->vecPoints[j].x,
 				0.0f,
-				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].z
-
+				m_vecObstacles[i]->vecPoints[j].z
 			};
 			Vec3 vLine2 =
 			{
-				m_vecObstacles[i]->vecPoints[0].x,
+				m_vecObstacles[i]->vecPoints[j + 1].x,
 				0.0f,
-				m_vecObstacles[i]->vecPoints[0].z
+				m_vecObstacles[i]->vecPoints[j + 1].z,
 			};
 
 			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
 		}
+
+		Vec3 vLine1 =
+		{
+			m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].x,
+			0.0f,
+			m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].z
+
+		};
+		Vec3 vLine2 =
+		{
+			m_vecObstacles[i]->vecPoints[0].x,
+			0.0f,
+			m_vecObstacles[i]->vecPoints[0].z
+		};
+
+		m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
 	}
+	
 
 	if (false == m_vecObstaclePointSpheres.empty())
 	{
@@ -821,7 +805,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
-	if (FAILED(GetIntersectedCells(tObst, setIntersected, true)))
+	if (FAILED(GetIntersectedCells(tObst, setIntersected, true, true)))
 	{
 		return E_FAIL;
 	}
@@ -859,11 +843,6 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 			vecOutlineCW.push_back(pair->second.first);
 		}
 	}
-
-	/*for (auto tCell : setIntersected)
-	{
-		tCell->isDead = true;
-	}*/
 
 	triangulateio tIn = { 0 }, tOut = { 0 };
 
@@ -970,13 +949,13 @@ HRESULT CNavMeshView::DynamicCreate(CGameObject* const pGameObject)
 	auto ObstPrefab = m_mapObstaclePrefabs.find(pGameObject->GetObjectTag());
 	if (m_mapObstaclePrefabs.end() != ObstPrefab)
 	{
-		Obst* pObst = new Obst(ObstPrefab->second, pGameObject->GetTransform()->WorldMatrix());
+		Obst* pObst = new Obst(ObstPrefab->second, pGameObject->GetTransform()->WorldMatrix(), pGameObject);
 		if (FAILED(DynamicCreate(*pObst)))
 		{
 			return E_FAIL;
 		}
 
-		m_hmapObstacleIndex[pGameObject] = m_vecObstacles.size();	// 불편하지만 트랜스폼 변환을 위해... 일단은 이렇게 해두자.
+		//m_hmapObstacleIndex[pGameObject] = m_vecObstacles.size();	// 불편하지만 트랜스폼 변환을 위해... 일단은 이렇게 해두자.
 		m_vecObstacles.push_back(pObst);
 	}
 
@@ -1018,7 +997,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	set<CellData*> setIntersected;
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
-	if (FAILED(GetIntersectedCells(tObst, setIntersected)))
+	if (FAILED(GetIntersectedCells(tObst, setIntersected, true, true)))
 	{
 		return E_FAIL;
 	}
@@ -1053,11 +1032,6 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		{
 			vecOutlineCW.emplace_back(pair->second.first);
 		}
-	}
-
-	for (auto tCell : setIntersected)
-	{
-		tCell->isDead = true;
 	}
 
 	triangulateio tIn = { 0 }, tOut = { 0 };
@@ -1161,10 +1135,21 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		m_vecCells.emplace_back(cell);
 	}
 
+	/*CellData* pDummy = nullptr;
+	_bool bFound = false;*/
 	for (auto cell : vecNewCells)
 	{
 		cell->SetUpData();
+		/*if (false == bFound && false == cell->IsOut(m_pAgent->GetTransform()->GetPosition(), pDummy))
+		{
+			if (false == m_pAgent->AdjustLocation())
+				return E_FAIL;
+
+			bFound = true;
+		}*/
 	}
+
+	SetUpCells2Grids(vecNewCells, m_umapCellGrids);
 
 	SafeReleaseTriangle(tIn);
 	SafeReleaseTriangle(tOut);
@@ -1174,6 +1159,11 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 
 HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 {
+	if (nullptr != m_pAgent)
+	{
+		m_pGameInstance->DeleteObject(m_pAgent);
+	}
+
 	CellData* pCell = FindCellByPosition(vSpawnPosition);
 
 	if (nullptr == pCell)
@@ -1196,6 +1186,8 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 	}
 
 	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
+
+	m_IsPickingActivated = true;
 
 	return S_OK;
 }
@@ -1327,33 +1319,8 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 	}
 }
 
-HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected, _bool bPop)
+HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected, _bool bPop, _bool bPopObst)
 {
-#pragma region CPU
-	/*for (_int i = 0; i < m_vecCells.size(); ++i)
-	{
-		if (true == m_vecCells[i]->isDead)
-		{
-			auto iter = m_vecCells.begin() + i;
-			m_vecCells.erase(iter);
-			--i;
-
-			continue;
-		}
-
-		if (true == m_vecCells[i]->isNew)
-		{
-			m_vecCells[i]->isNew = false;
-		}
-
-		if (false == m_vecCells[i]->isDead && true == tObst.tAABB.Intersects(m_vecCells[i]->vPoints[POINT_A], m_vecCells[i]->vPoints[POINT_B], m_vecCells[i]->vPoints[POINT_C]))
-		{
-			setIntersected.emplace(m_vecCells[i]);
-		}
-	}
-
-	return S_OK;*/
-
 	Vec3 vLB = tObst.tAABB.Center - tObst.tAABB.Extents;
 	Vec3 vRT = tObst.tAABB.Center + tObst.tAABB.Extents;
 
@@ -1388,10 +1355,34 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 					if (true == bPop)
 					{
 						cell->second->isDead = true;
+					}					
+				}
+			}
+
+			if (true == bPopObst)
+			{
+				BoundingBox tGridAABB = BoundingBox(Vec3(0.5f * (iLB_X * gGridCX + iRT_X * gGridCX), 0.f, 0.5f * (iLB_X * gGridCZ + iRT_X * gGridCZ)), Vec3(0.5f * gGridCX, 10.0f, 0.5f * gGridCZ));
+
+				if (true == tObst.tAABB.Intersects(tGridAABB))
+				{
+					auto [begin, end] = m_umapObstGrids.equal_range(iKey);
+
+					for (auto obst = begin; obst != end; ++obst)
+					{
+						if (&tObst == obst->second)
+						{
+							m_umapObstGrids.erase(obst);
+							break;
+						}
 					}
 				}
 			}
 		}
+	}
+
+	if (true == bPopObst)
+	{
+		m_pGameInstance->DeleteObject(tObst.pGameObject);
 	}
 
 	iLB_X = (fMinX + gWorldCX * 0.5f) / gGridCX;
@@ -1421,81 +1412,6 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 	}
 
 	return S_OK;
-#pragma endregion CPU
-
-#pragma region GPU
-	//vector<array<Vec3, 3>> vecTriangle(m_vecCells.size());
-	//CStructuredBuffer* pStructuredBuffer = nullptr;
-
-	//for (_int i = 0; i < m_vecCells.size(); ++i)
-	//{
-	//	if (true == m_vecCells[i]->isDead)
-	//	{
-	//		auto iter = m_vecCells.begin() + i;
-	//		m_vecCells.erase(iter);
-	//		--i;
-
-	//		continue;
-	//	}
-
-	//	if (true == m_vecCells[i]->isNew)
-	//	{
-	//		m_vecCells[i]->isNew = false;
-	//	}
-
-	//	vecTriangle[i] = m_vecCells[i]->vPoints;	// CellData를 경량화 해서 복사 없이 바로 전달하도록 만들어보자.
-	//}
-
-	//vecTriangle.shrink_to_fit();
-	//vector<BOOL> vecTriTestResult(m_vecCells.size());
-
-	//pStructuredBuffer =
-	//	CStructuredBuffer::Create(
-	//	m_pDevice,
-	//	m_pContext,
-	//	vecTriangle.data(),
-	//	3 * sizeof(Vec3),
-	//	m_vecCells.size(),
-	//	sizeof(BOOL),
-	//	m_vecCells.size()
-	//	);
-
-	//if (FAILED(m_pCS_TriTest->Bind_RawValue("gObstCenter", &tObst.tAABB.Center, sizeof(Vec3))) || 
-	//	FAILED(m_pCS_TriTest->Bind_RawValue("gObstExtents", &tObst.tAABB.Extents, sizeof(Vec3))))
-	//{
-	//	return E_FAIL;
-	//}
-	//
-	//if (FAILED(m_pCS_TriTest->Bind_Resource("InputCell", pStructuredBuffer->GetSRV())))
-	//{
-	//	return E_FAIL;
-	//}
-	//
-	//if (FAILED(m_pCS_TriTest->Get_UAV("Output", pStructuredBuffer->GetUAV())))
-	//{
-	//	return E_FAIL;
-	//}
-
-	//if(FAILED(m_pCS_TriTest->Dispatch(0, ceil(m_vecCells.size() / 128.0), 1, 1)))
-	//{
-	//	return E_FAIL;
-	//}
-
-	//if (FAILED(pStructuredBuffer->CopyFromOutput(vecTriTestResult.data())))
-	//{
-	//	return E_FAIL;
-	//}
-
-	//for (_int i = 0; i < vecTriTestResult.size(); ++i)
-	//{
-	//	if (false != vecTriTestResult[i])
-	//	{
-	//		setIntersected.emplace(m_vecCells[i]);
-	//	}
-	//}
-
-	//Safe_Release(pStructuredBuffer);
-#pragma endregion GPU
 }
 
 HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline)
@@ -2484,25 +2400,17 @@ void CNavMeshView::Input()
 	}
 
 	const POINT& p = CGameInstance::GetInstance()->GetMousePos();
-	if (p.x > 1440 || p.x < 0 || p.y > 810 || p.y < 0)
+	if (p.x > 1440L || p.x < 0L || p.y > 810L || p.y < 0L)
 	{
 		return;
 	}
 
 	if (m_pGameInstance->Mouse_Down(DIM_LB))
 	{
-		if (m_IsPickingActivated)
+		if (true == m_IsPickingActivated && nullptr != m_pAgent)
 		{
 			const POINT& p = m_pGameInstance->GetMousePos();
-			Pick(p.x, p.y);
-		}
-		else
-		{
-			if (nullptr != m_pAgent)
-			{
-				const POINT& p = m_pGameInstance->GetMousePos();
-				m_pAgent->Pick(m_pTerrainBuffer, p.x, p.y);
-			}
+			m_pAgent->Pick(m_pTerrainBuffer, p.x, p.y);
 		}
 	}
 }
@@ -2907,6 +2815,8 @@ HRESULT CNavMeshView::LoadNvFile()
 		element = node->FirstChildElement();
 		strObjectTag = Utils::ToWString(element->GetText());
 
+		CGameObject* pGameObjectRet = nullptr;
+
 		if (TEXT(".") != strObjectTag)
 		{
 			element = element->NextSiblingElement();
@@ -2927,10 +2837,12 @@ HRESULT CNavMeshView::LoadNvFile()
 			matWorld._43 = element->FloatAttribute("_43");
 			matWorld._44 = element->FloatAttribute("_44");
 
-			m_pMediator->OnNotifiedPlaceObject(strObjectTag, matWorld);			
+			m_pMediator->OnNotifiedPlaceObject(strObjectTag, matWorld, pGameObjectRet);
 		}
 
 		Obst* pObst = new Obst;
+
+		pObst->pGameObject = pGameObjectRet;
 
 		// InnerPoint
 		element = element->NextSiblingElement();
@@ -3036,6 +2948,8 @@ HRESULT CNavMeshView::Load3DNvFile()
 		element = node->FirstChildElement();
 		strObjectTag = Utils::ToWString(element->GetText());
 
+		CGameObject* pGameObjectRet = nullptr;
+
 		if (TEXT(".") != strObjectTag)
 		{
 			element = element->NextSiblingElement();
@@ -3056,10 +2970,12 @@ HRESULT CNavMeshView::Load3DNvFile()
 			matWorld._43 = element->FloatAttribute("_43");
 			matWorld._44 = element->FloatAttribute("_44");
 
-			m_pMediator->OnNotifiedPlaceObject(strObjectTag, matWorld);
+			m_pMediator->OnNotifiedPlaceObject(strObjectTag, matWorld, pGameObjectRet);
 		}
 
 		Obst* pObst = new Obst;
+
+		pObst->pGameObject = pGameObjectRet;
 
 		// InnerPoint
 		element = element->NextSiblingElement();

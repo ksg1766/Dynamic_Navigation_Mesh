@@ -14,12 +14,13 @@ struct Obst
 {
 	Vec3 vInnerPoint = Vec3::Zero;
 	BoundingBox tAABB;
+	CGameObject* pGameObject = nullptr;
 
 	vector<Vec3> vecPoints;
 
 	explicit Obst() = default;
 	explicit Obst(const Obst& rhs) = default;
-	Obst(const Obst& rhs, const Matrix& matWorld)
+	Obst(const Obst& rhs, const Matrix& matWorld, CGameObject* pGameObject) : pGameObject(pGameObject)
 	{
 		vInnerPoint = Vec3::Transform(rhs.vInnerPoint, matWorld);
 		tAABB.Center = Vec3::Transform(rhs.tAABB.Center, matWorld);

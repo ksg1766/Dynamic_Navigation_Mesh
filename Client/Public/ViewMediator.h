@@ -30,7 +30,7 @@ public:
 public:
 	void	OnNotifiedSelected(CGameObject* pGameObject);
 	void	OnNotifiedPickingOn(CView* pSender);
-	void	OnNotifiedPlaceObject(const wstring& strObjectTag, const Matrix& matWorld);
+	void	OnNotifiedPlaceObject(const wstring& strObjectTag, const Matrix& matWorld, OUT CGameObject*& pGameObject);
 	void	OnNotifiedPlaceObstacle(CGameObject* const pGameObject);
 	void	OnNotifiedTransformChanged(CGameObject* const pGameObject);
 

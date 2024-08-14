@@ -48,18 +48,18 @@ HRESULT CPrefabsView::DebugRender()
 	return S_OK;
 }
 
-HRESULT CPrefabsView::PlaceObstacle(const wstring& strObjectTag, const Matrix& matWorld)
+HRESULT CPrefabsView::PlaceObstacle(const wstring& strObjectTag, const Matrix& matWorld, OUT CGameObject*& pGameObjectRet)
 {
 	const wstring strPrototypeTag = TEXT("Prototype_GameObject_") + strObjectTag;
 
-	CGameObject* pGameObject = m_pGameInstance->CreateObject(strPrototypeTag, LAYERTAG::WALL);
+	pGameObjectRet = m_pGameInstance->CreateObject(strPrototypeTag, LAYERTAG::WALL);
 
-	if (nullptr == pGameObject)
+	if (nullptr == pGameObjectRet)
 	{
 		return E_FAIL;
 	}
 
-	pGameObject->GetTransform()->Set_WorldMatrix(matWorld);
+	pGameObjectRet->GetTransform()->Set_WorldMatrix(matWorld);
 
 	return S_OK;
 }

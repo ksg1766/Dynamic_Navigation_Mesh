@@ -74,58 +74,6 @@ HRESULT CAgentController::Initialize(void* pArg)
 
 void CAgentController::Tick(_float fTimeDelta)
 {
-	/*if (1 <= m_dqWayPortals.size())
-	{
-		auto [pEnter, pExit] = m_dqWayPortals.front();
-
-		if ((pEnter->tPortalVolume.Center - m_pTransform->GetPosition()).LengthSquared()
-			<= powf(pEnter->tPortalVolume.Radius + m_fAgentRadius, 2.0f))
-		{
-			m_pTransform->SetPosition(pExit->tPortalVolume.Center);
-
-			m_CurrentCell.first = pExit->pHierarchyNode;
-			m_dqWayPortals.pop_front();
-
-			if ((*m_pHierarchyNodes)[0] == m_CurrentCell.first)
-			{
-				m_CurrentCell.second = FindCellByPosition(m_pTransform->GetPosition());
-			}
-			else
-			{
-				for (auto cell : m_CurrentCell.first->pCells)
-				{
-					_bool isOut = true;
-
-					CellData* pNeighbor = nullptr;
-
-					if (false == cell->IsOut(m_pTransform->GetPosition(), pNeighbor))
-					{
-						m_CurrentCell.second = cell;
-						break;
-					}
-				}
-			}
-
-			if (true != m_dqWayPortals.empty())
-			{
-				m_dqWayPoints.clear();
-				m_dqPath.clear();
-				m_dqEntries.clear();
-				m_dqOffset.clear();
-				m_dqExpandedVertices.clear();
-
-				Vec3 vCurrentPos = m_pTransform->GetPosition();
-
-				m_vDestPos = m_dqWayPortals.front().first->tPortalVolume.Center;
-				if (true == AStar(vCurrentPos, m_vDestPos))
-				{
-					FunnelAlgorithm();
-
-					m_isMoving = true;
-				}
-			}
-		}
-	}*/
 	if (true == IsMoving() || false == IsOutOfWorld())
 	{
 		Slide(Move(fTimeDelta));
@@ -134,6 +82,8 @@ void CAgentController::Tick(_float fTimeDelta)
 
 void CAgentController::LateTick(_float fTimeDelta)
 {
+	AdjustLocation();
+
 	m_vPrePos = m_pTransform->GetPosition();
 }
 
@@ -229,7 +179,7 @@ void CAgentController::Slide(const Vec3 vPrePos)
 	CellData* pNeighbor = nullptr;
 	Vec3 vPosition = m_pTransform->GetPosition();
 
-	if (false == m_pCurrentCell->IsOut(vPosition, pNeighbor))	// TODO: Hierarchy 고려 안해도 되는지
+	if (false == m_pCurrentCell->IsOut(vPosition, pNeighbor))
 	{
 		return;
 	}
@@ -262,126 +212,6 @@ void CAgentController::Slide(const Vec3 vPrePos)
 	m_pTransform->SetPosition(vPosition);
 }
 
-//_bool CAgentController::HNAStar()
-//{
-//	priority_queue<PQHNode, vector<PQHNode>, greater<PQHNode>> Open;
-//	unordered_map<HierarchyNode*, HPATH> Path;
-//	unordered_set<HierarchyNode*> Closed;
-//
-//	m_dqWayPortals.clear();
-//
-//	// start node
-//	const Vec3& vStartPos = m_pTransform->GetPosition();
-//
-//	_float fDistSqStart = FLT_MAX;
-//	Portal* pPortalStart = nullptr;
-//	for (auto portal : m_CurrentCell.first->pPortals)
-//	{
-//		_float fDistSq = (m_vDestPos - portal->tPortalVolume.Center).LengthSquared();
-//		if (fDistSq < fDistSqStart)
-//		{
-//			fDistSqStart = fDistSq;
-//			pPortalStart = portal;
-//		}
-//	}
-//
-//	_float fDistSqDest = FLT_MAX;
-//	Portal* pPortalDest = nullptr;
-//	for (auto portal : m_DestCell.first->pPortals)
-//	{
-//		_float fDistSq = (m_vDestPos - portal->tPortalVolume.Center).LengthSquared();
-//		if (fDistSq < fDistSqDest)
-//		{
-//			fDistSqDest = fDistSq;
-//			pPortalDest = portal;
-//		}
-//	}
-//
-//	Vec3 vDistance = m_vDestPos - vStartPos;
-//	_float h = vDistance.Length();
-//
-//	// TODO : Hierarchy 고려 안해도 되는지
-//	Open.push(PQHNode{ h, 0.0f, m_CurrentCell.first });
-//	Path[m_CurrentCell.first] = HPATH(m_CurrentCell.first, pair(pPortalStart, pPortalStart));
-//
-//	while (false == Open.empty())
-//	{
-//		PQHNode tHNode = Open.top();
-//		HierarchyNode* pCurrent = tHNode.pHNode;
-//
-//		if (pCurrent == m_DestCell.first)
-//		{
-//			HPATH& tHNext = Path[m_DestCell.first];
-//			auto& [pHNext, portals] = tHNext;
-//
-//			Portal* pDest = new Portal;	// TODO : 누수 해결해야함
-//			pDest->tPortalVolume.Center = m_vDestPos;
-//			pDest->pExitPortals.emplace(pDest); // or nothing
-//			pDest->pHierarchyNode = m_DestCell.first;
-//
-//			//m_dqWayPortals.push_front(pair(pDest, pDest));	// 위치에 해당하는 가상의 portal을 만들어야하나
-//			m_dqWayPortals.push_front(pair(pPortalDest, pPortalDest));
-//
-//			while (true)
-//			{
-//				m_dqWayPortals.push_front(portals);
-//
-//				if (m_CurrentCell.first == pHNext)
-//					break;
-//
-//				tHNext = Path[pHNext];
-//			}
-//
-//			Portal* pStart = new Portal;
-//			pStart->tPortalVolume.Center = vStartPos;
-//			pStart->pExitPortals.emplace(pStart); // or nothing
-//			pStart->pHierarchyNode = m_CurrentCell.first;
-//
-//			m_dqWayPortals.push_front(pair(pStart, pStart));
-//
-//			return true;
-//		}
-//
-//		Open.pop();
-//		Closed.emplace(pCurrent);
-//
-//		for (_int i = 0; i < pCurrent->pPortals.size(); ++i)
-//		{
-//			for (auto pExit : pCurrent->pPortals[i]->pExitPortals)
-//			{
-//				if (nullptr == pExit || nullptr == pExit->pHierarchyNode)
-//				{
-//					continue;
-//				}
-//
-//				_float neighbor_g = 0.0f;
-//
-//				if (m_CurrentCell.first == pCurrent) // TODO : Hierarchy 고려 안해도 되는지
-//				{
-//					neighbor_g = tHNode.g + sqrt(fDistSqStart);
-//				}
-//				else
-//				{
-//					neighbor_g = tHNode.g + Vec3::Distance(pCurrent->pPortals[i]->tPortalVolume.Center, pExit->tPortalVolume.Center);
-//				}
-//
-//				if (Closed.end() == Closed.find(pExit->pHierarchyNode))
-//				{
-//					Path[pExit->pHierarchyNode] = HPATH(pCurrent, pair(pCurrent->pPortals[i], pExit));	// pCurrent의 i번째 line을 통과한 노드가 pNeighbor
-//
-//					Open.push(PQHNode{
-//						neighbor_g + CellData::HeuristicCostEuclidean(pExit->tPortalVolume.Center, m_vDestPos),
-//						neighbor_g,
-//						pExit->pHierarchyNode
-//					});
-//				}
-//			}
-//		}
-//	}
-//
-//	return false;
-//}
-
 _bool CAgentController::AStar()
 {
 	priority_queue<PQNode, vector<PQNode>, greater<PQNode>> Open;
@@ -400,7 +230,11 @@ _bool CAgentController::AStar()
 	 Vec3 vDistance = m_vDestPos - vStartPos;
 	_float h = vDistance.Length();
 
-	// TODO : Hierarchy 고려 안해도 되는지
+	if (false == AdjustLocation())
+	{
+		return false;
+	}
+
 	Open.push(PQNode{ h, 0.0f, m_pCurrentCell });
 	Path[m_pCurrentCell] = PATH(m_pCurrentCell, LINE_END);
 
@@ -495,7 +329,7 @@ _bool CAgentController::AStar()
 			Vec3 vNextEdgeDir = pCurrent->vPoints[(i + 1) % POINT_END] - pCurrent->vPoints[i];
 			vNextEdgeDir.Normalize();
 
-			if (m_pCurrentCell == pCurrent) // TODO : Hierarchy 고려 안해도 되는지
+			if (m_pCurrentCell == pCurrent)
 			{
 				neighbor_g = tNode.g + CellData::CostBetweenPoint2Edge(
 					vStartPos,
@@ -847,6 +681,33 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 	/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
 	fAStarPerformance = fAStarPerformance;*/
 	return false;
+}
+
+_bool CAgentController::AdjustLocation()
+{
+	if (true == m_pCurrentCell->isDead || nullptr == m_pCurrentCell)
+	{
+		Vec3 vPosition = m_pTransform->GetPosition();
+		m_pCurrentCell = FindCellByPosition(vPosition);
+		if (nullptr == m_pCurrentCell)
+		{
+			Obst* pObst = FindObstByPosition(vPosition);
+			if (nullptr != pObst)
+			{
+				vPosition = pObst->GetClosestPoint(vPosition, m_fAgentRadius + EPSILON);
+				m_pCurrentCell = FindCellByPosition(vPosition);
+				m_pTransform->SetPosition(vPosition);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
+	return true;
 }
 
 void CAgentController::Input(_float fTimeDelta)
