@@ -77,8 +77,8 @@ private:
 	Vec3			m_vMaxLinearSpeed;
 	Vec3			m_vLinearSpeed;
 
-	CellData* m_pCurrentCell = nullptr;
-	CellData* m_pDestCell = nullptr;
+	CellData*		m_pCurrentCell = nullptr;
+	CellData*		m_pDestCell = nullptr;
 	
 	_float			m_fAgentRadius;
 
@@ -98,7 +98,7 @@ private:
 
 	// DebugDraw
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;
-	BasicEffect* m_pEffect = nullptr;
+	BasicEffect*	m_pEffect = nullptr;
 	ID3D11InputLayout* m_pInputLayout = nullptr;
 
 public:

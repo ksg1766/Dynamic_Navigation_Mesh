@@ -12,8 +12,8 @@ CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* p
 	:Super(pDevice, pContext)
 	, m_vLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
 	, m_vMaxLinearSpeed(Vec3(200.0f, 200.0f, 200.0f))
-	//, m_fAgentRadius(3.3f)
-	, m_fAgentRadius(5.0f)
+	, m_fAgentRadius(3.3f)
+	//, m_fAgentRadius(5.0f)
 {
 }
 
@@ -83,6 +83,18 @@ void CAgentController::Tick(_float fTimeDelta)
 void CAgentController::LateTick(_float fTimeDelta)
 {
 	AdjustLocation();
+
+	for (_int i = 0; i < m_dqPath.size(); ++i)
+	{
+		if (true == m_dqPath[i].first->isDead)
+		{
+			if (true == AStar())
+			{
+				FunnelAlgorithm();
+				break;
+			}
+		}
+	}
 
 	m_vPrePos = m_pTransform->GetPosition();
 }
@@ -232,6 +244,10 @@ _bool CAgentController::AStar()
 
 	if (false == AdjustLocation())
 	{
+		m_dqPath.clear();
+		m_dqEntries.clear();
+		m_dqExpandedVertices.clear();
+
 		return false;
 	}
 
@@ -256,7 +272,6 @@ _bool CAgentController::AStar()
 			m_dqExpandedVertices.push_front(m_dqEntries.front());
 			
 			while (m_pCurrentCell != pNext)
-			//while (true)
 			{
 				m_dqPath.push_front(tNext);
 
@@ -302,6 +317,8 @@ _bool CAgentController::AStar()
 
 			LINES eLine1 = LINE_END;
 
+			_float fHalfWidth = -FLT_MAX;
+
 			if (LINE_END != ePassedLine)
 			{				
 				for (uint8 j = LINE_AB; j < LINE_END; ++j)
@@ -313,7 +330,7 @@ _bool CAgentController::AStar()
 					}
 				}
 
-				_float fHalfWidth = pCurrent->CalculateHalfWidth(eLine1, (LINES)(i));
+				fHalfWidth = pCurrent->CalculateHalfWidth(eLine1, (LINES)(i));
 				if (fHalfWidth < m_fAgentRadius)
 				{
 					continue;
@@ -397,13 +414,17 @@ _bool CAgentController::AStar()
 		}
 	}
 
+	m_dqPath.clear();
+	m_dqEntries.clear();
+	m_dqExpandedVertices.clear();
+
 	return false;
 }
 
 void CAgentController::FunnelAlgorithm()
 {
 	//deque<pair<Vec3, Vec3>> dqOffset;
-	m_dqOffset.emplace_back(Vec3::Zero, Vec3::Zero);
+	m_dqOffset.emplace_back(Vec3::Zero, Vec3::Zero); // for DebugRender
 
 	for (_int i = 2; i < m_dqEntries.size(); ++i)
 	{
@@ -419,16 +440,9 @@ void CAgentController::FunnelAlgorithm()
 
 		if (Vec3::Zero == vLineL0)
 		{
-			if (Vec3::Zero == vLineL1)
-			{
-				//vLineL0 = m_dqOffset.back().first;
-				//vLineL0.Normalize();
-				//vLineL1 = vLineL0;
-			}
-			else
+			if (Vec3::Zero != vLineL1)
 			{
 				vLineL1.Normalize();
-				//vLineL0 = vLineL1;
 			}			
 		}
 		else
@@ -436,7 +450,6 @@ void CAgentController::FunnelAlgorithm()
 			if (Vec3::Zero == vLineL1)
 			{
 				vLineL0.Normalize();
-				//vLineL1 = vLineL0;
 			}
 			else
 			{
@@ -449,14 +462,7 @@ void CAgentController::FunnelAlgorithm()
 		{
 			if (Vec3::Zero == vLineR1)
 			{
-				//vLineR0 = m_dqOffset.back().second;
-				//vLineR0.Normalize();
-				//vLineR1 = vLineR0;
-			}
-			else
-			{
 				vLineR1.Normalize();
-				//vLineR0 = vLineR1;
 			}
 		}
 		else
@@ -464,7 +470,6 @@ void CAgentController::FunnelAlgorithm()
 			if (Vec3::Zero == vLineR1)
 			{
 				vLineR0.Normalize();
-				//vLineR1 = vLineR0;
 			}
 			else
 			{
@@ -519,9 +524,6 @@ void CAgentController::FunnelAlgorithm()
 	{
 		const auto& [vLeft, vRight] = m_dqEntries[i];
 
-		//Vec3 vLeft = vOriginL;
-		//Vec3 vRight = vOriginR;
-
 		if (TriArea2x(vPortalApex, vPortalRight, vRight) <= 0.0f)
 		{
 			if (vPortalApex == vPortalRight || TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
@@ -531,8 +533,7 @@ void CAgentController::FunnelAlgorithm()
 			}
 			else
 			{
-				//if (Vec3::Zero != m_dqOffset[iLeftIndex].first)
-					m_dqWayPoints.push_back(vPortalLeft + m_dqOffset[iLeftIndex].first);	// Right가 Left를 넘었다면 Left를 waypoint에 추가				
+				m_dqWayPoints.push_back(vPortalLeft + m_dqOffset[iLeftIndex].first);	// Right가 Left를 넘었다면 Left를 waypoint에 추가				
 
 				vPortalApex = vPortalLeft;				// L을 새로운 시작점으로
 				iApexIndex = iLeftIndex;
@@ -554,8 +555,7 @@ void CAgentController::FunnelAlgorithm()
 			}
 			else
 			{
-				//if (Vec3::Zero != m_dqOffset[iRightIndex].second)
-					m_dqWayPoints.push_back(vPortalRight + m_dqOffset[iRightIndex].second);
+				m_dqWayPoints.push_back(vPortalRight + m_dqOffset[iRightIndex].second);
 
 				vPortalApex = vPortalRight;
 				iApexIndex = iRightIndex;
@@ -645,7 +645,7 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 	{
 		m_vDestPos = vPickedPos;
 
-		if (true == AStar())	// TODO : level이 다를경우 어떻게 wayportal까지 나눠서 할지...
+		if (true == AStar())
 		{
 			FunnelAlgorithm();
 

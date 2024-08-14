@@ -340,7 +340,7 @@ HRESULT CMainApp::Ready_Prototype_Components()
 			}			
 			else
 			{
-				continue;
+				//continue;
 				//
 				XMStoreFloat4x4(&matPivot, XMMatrixScaling(0.02f, 0.02f, 0.02f) * XMMatrixRotationY(XMConvertToRadians(90.0f)));
 
