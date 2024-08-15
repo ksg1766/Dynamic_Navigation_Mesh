@@ -693,7 +693,7 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 HRESULT CNavMeshView::UpdatePointList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst)
 {
 	tIn.numberofpoints = vecPoints.size() + ((nullptr == pObst) ? 0 : pObst->vecPoints.size());
-	if (0 < m_tIn.numberofpoints)
+	if (0 < tIn.numberofpoints)
 	{
 		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
 
@@ -722,7 +722,7 @@ HRESULT CNavMeshView::UpdatePointList(triangulateio& tIn, const vector<Vec3>& ve
 HRESULT CNavMeshView::UpdateSegmentList(triangulateio& tIn, const vector<Vec3>& vecPoints, const Obst* pObst)
 {
 	tIn.numberofsegments = vecPoints.size() + ((nullptr == pObst) ? 0 : pObst->vecPoints.size());
-	if (0 < m_tIn.numberofsegments)
+	if (0 < tIn.numberofsegments)
 	{
 		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
 
@@ -795,6 +795,31 @@ HRESULT CNavMeshView::UpdateRegionList(triangulateio& tIn, const Obst* pObst)
 			tIn.regionlist[4 * i + 1] = 0.0f; //
 			tIn.regionlist[4 * i + 1] = 0.0f; //
 		}
+	}
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::DynamicCreate(const wstring& strObjectTag, const Vec3& vPickPos)
+{
+	auto ObstPrefab = m_mapObstaclePrefabs.find(strObjectTag);
+	if (m_mapObstaclePrefabs.end() != ObstPrefab)
+	{
+		Matrix matworld = Matrix::Identity;
+		matworld.Translation(vPickPos);
+
+		Obst* pObst = new Obst(ObstPrefab->second, matworld, nullptr);
+		if (FAILED(DynamicCreate(*pObst)))
+		{
+			Safe_Delete(pObst);
+			return E_FAIL;
+		}
+
+		const wstring strPrototypeTag = TEXT("Prototype_GameObject_") + strObjectTag;
+		pObst->pGameObject = m_pGameInstance->CreateObject(strPrototypeTag, LAYERTAG::WALL);
+		pObst->pGameObject->GetTransform()->SetPosition(vPickPos);
+
+		m_vecObstacles.push_back(pObst);
 	}
 
 	return S_OK;
@@ -1319,7 +1344,7 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 	}
 }
 
-HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected, _bool bPop, _bool bPopObst)
+HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected, _bool bPop, _bool bDelete)
 {
 	Vec3 vLB = tObst.tAABB.Center - tObst.tAABB.Extents;
 	Vec3 vRT = tObst.tAABB.Center + tObst.tAABB.Extents;
@@ -1329,6 +1354,57 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 
 	_int iRT_X = (vRT.x + gWorldCX * 0.5f) / gGridCX;
 	_int iRT_Z = (vRT.z + gWorldCZ * 0.5f) / gGridCZ;
+
+	for (_int iKeyZ = iLB_Z; iKeyZ <= iRT_Z; ++iKeyZ)
+	{
+		for (_int iKeyX = iLB_X; iKeyX <= iRT_X; ++iKeyX)
+		{
+			_int iKey = iKeyZ * gGridX + iKeyX;
+
+			//BoundingBox tGridAABB = BoundingBox(Vec3(0.5f * (iLB_X * gGridCX + iRT_X * gGridCX), 0.f, 0.5f * (iLB_X * gGridCZ + iRT_X * gGridCZ)), Vec3(0.5f * gGridCX, 10.0f, 0.5f * gGridCZ));
+			//if (true == tObst.tAABB.Intersects(tGridAABB))
+			//{
+			auto [begin, end] = m_umapObstGrids.equal_range(iKey);
+
+			for (auto& obst = begin; obst != end; ++obst)
+			{
+				if (true == bDelete)
+				{
+					if (&tObst == obst->second)
+					{
+						m_umapObstGrids.erase(obst);
+						break;
+					}
+				}
+				else
+				{
+					const vector<Vec3>& vecSour = obst->second->vecPoints;
+					const vector<Vec3>& vecDest = tObst.vecPoints;
+
+					_int iSizeSour = vecSour.size();
+					_int iSizeDest = vecDest.size();
+
+					for (_int i = 0; i < iSizeSour; ++i)
+					{
+						const Vec3& vP1 = vecSour[i];
+						const Vec3& vQ1 = vecSour[(i + 1) % iSizeSour];
+
+						for (_int j = 0; j < iSizeDest; ++j)
+						{
+							const Vec3& vP2 = vecDest[j];
+							const Vec3& vQ2 = vecDest[(j + 1) % iSizeDest];
+
+							if (-1 == IntersectSegments(vP1, vQ1, vP2, vQ2, nullptr))
+							{
+								return E_FAIL;
+							}
+						}
+					}
+				}
+			}
+			//}
+		}
+	}
 
 	_float fMinX = FLT_MAX, fMinZ = FLT_MAX;
 	_float fMaxX = -FLT_MAX, fMaxZ = -FLT_MAX;
@@ -1358,32 +1434,10 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 					}					
 				}
 			}
-
-			BoundingBox tGridAABB = BoundingBox(Vec3(0.5f * (iLB_X * gGridCX + iRT_X * gGridCX), 0.f, 0.5f * (iLB_X * gGridCZ + iRT_X * gGridCZ)), Vec3(0.5f * gGridCX, 10.0f, 0.5f * gGridCZ));
-			if (true == tObst.tAABB.Intersects(tGridAABB))
-			{
-				auto [begin, end] = m_umapObstGrids.equal_range(iKey);
-				
-				for (auto& obst = begin; obst != end; ++obst)
-				{
-					if (true == bPopObst)
-					{
-						if (&tObst == obst->second)
-						{
-							m_umapObstGrids.erase(obst);
-							break;
-						}
-					}
-					else
-					{
-						// TODO : 
-					}
-				}				
-			}
 		}
 	}
 
-	if (true == bPopObst)
+	if (true == bDelete)
 	{
 		m_pGameInstance->DeleteObject(tObst.pGameObject);
 	}
@@ -1994,7 +2048,7 @@ vector<Vec3> CNavMeshView::ExpandOutline(const vector<iVec3>& vecOutline, _float
 	return vecExpandedOutline;
 }
 
-_bool CNavMeshView::IntersectSegments(const Vec3& vP1, const Vec3& vQ1, const Vec3& vP2, const Vec3& vQ2, Vec3& vIntersection)
+_int CNavMeshView::IntersectSegments(const Vec3& vP1, const Vec3& vQ1, const Vec3& vP2, const Vec3& vQ2, Vec3* pIntersection)
 {
 	Vec3 vSour = { vQ1.x - vP1.x, 0.0f, vQ1.z - vP1.z };
 	Vec3 vDest = { vQ2.x - vP2.x, 0.0f, vQ2.z - vP2.z };
@@ -2002,13 +2056,9 @@ _bool CNavMeshView::IntersectSegments(const Vec3& vP1, const Vec3& vQ1, const Ve
 	_float fSxD = vSour.x * vDest.z - vSour.z * vDest.x;
 	_float fPQxR = (vP2.x - vP1.x) * vSour.z - (vP2.z - vP1.z) * vSour.x;
 
-	//if (fabs(fSxD) < 1e-5f && fabs(fPQxR) < 1e-5f)
-	//{
-	//	return false; // Collinear
-	//}
 	if (fabs(fSxD) < 1e-5f)
 	{
-		return false; // Parallel
+		return 0; // Parallel
 	}
 
 	_float fT = ((vP2.x - vP1.x) * vDest.z - (vP2.z - vP1.z) * vDest.x) / fSxD;
@@ -2016,11 +2066,15 @@ _bool CNavMeshView::IntersectSegments(const Vec3& vP1, const Vec3& vQ1, const Ve
 
 	if (fT >= 0.0f && fT <= 1.0f && fU >= 0.0f && fU <= 1.0f)
 	{
-		vIntersection = { vP1.x + fT * vSour.x, 0.0f, vP1.z + fT * vSour.z };
-		return true;
+		if (nullptr != pIntersection)
+		{
+			*pIntersection = { vP1.x + fT * vSour.x, 0.0f, vP1.z + fT * vSour.z };
+		}
+
+		return 1;
 	}
 
-	return false;
+	return -1;
 }
 
 HRESULT CNavMeshView::LoadMainScene()
@@ -2292,7 +2346,7 @@ vector<Vec3> CNavMeshView::ProcessIntersections(vector<Vec3>& vecExpandedOutline
 			const Vec3& vQ2 = vecExpandedOutline[(j + 1) % iSize];
 			Vec3 vIntersection;
 
-			if (true == IntersectSegments(vP1, vQ1, vP2, vQ2, vIntersection))
+			if (1 == IntersectSegments(vP1, vQ1, vP2, vQ2, &vIntersection))
 			{
 				vecResult.push_back(vIntersection);
 				i = j; // 교차 구간 skip
@@ -2307,7 +2361,7 @@ vector<Vec3> CNavMeshView::ProcessIntersections(vector<Vec3>& vecExpandedOutline
 			const Vec3& vQ2 = vecExpandedOutline[1];
 			Vec3 vIntersection;
 
-			if (true == IntersectSegments(vP1, vQ1, vP2, vQ2, vIntersection))
+			if (1 == IntersectSegments(vP1, vQ1, vP2, vQ2, &vIntersection))
 			{
 				vecResult.push_back(vIntersection);
 				isIntersected = true;

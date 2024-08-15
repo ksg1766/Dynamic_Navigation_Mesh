@@ -49,6 +49,11 @@ void CViewMediator::OnNotifiedPlaceObstacle(CGameObject* const pGameObject)
 	m_pNavMeshView->DynamicCreate(pGameObject);
 }
 
+void CViewMediator::OnNotifiedPlaceObstacle(const wstring& strObjectTag, const Vec3& vPickPos)
+{
+	m_pNavMeshView->DynamicCreate(strObjectTag, vPickPos);
+}
+
 void CViewMediator::OnNotifiedTransformChanged(CGameObject* const pGameObject)
 {
 	m_pNavMeshView->UpdateObstacleTransform(pGameObject);

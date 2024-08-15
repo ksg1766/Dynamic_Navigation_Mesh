@@ -40,6 +40,7 @@ public:
 
 public:
 	HRESULT		DynamicCreate(CGameObject* const pGameObject);
+	HRESULT		DynamicCreate(const wstring& strObjectTag, const Vec3& vPickPos);
 	HRESULT		UpdateObstacleTransform(CGameObject* const pGameObject);
 
 private:
@@ -67,7 +68,7 @@ private:
 
 private:
 	void		SetPolygonHoleCenter(Obst& tObst);
-	HRESULT		GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected, _bool bPop = false, _bool bPopObst = false);
+	HRESULT		GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected, _bool bPop = false, _bool bDelete = false);
 
 private:
 	HRESULT		CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
@@ -79,7 +80,7 @@ private:
 	Vec3		CalculateNormal(const iVec3& vPrev, const iVec3& vCurrent, const iVec3& vNext);
 	_bool		IsClockwise(const vector<iVec3>& vecPoints);
 	vector<Vec3> ExpandOutline(const vector<iVec3>& vecOutline, _float fDistance);
-	_bool		IntersectSegments(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, Vec3& vIntersection);
+	_int		IntersectSegments(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, Vec3* pIntersection);
 	vector<Vec3> ProcessIntersections(vector<Vec3>& vecExpandedOutline);
 
 	_float		PerpendicularDistance(const Vec3& vPt, const Vec3& vLineStart, const Vec3& vLineEnd);

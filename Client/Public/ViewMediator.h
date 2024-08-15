@@ -32,6 +32,7 @@ public:
 	void	OnNotifiedPickingOn(CView* pSender);
 	void	OnNotifiedPlaceObject(const wstring& strObjectTag, const Matrix& matWorld, OUT CGameObject*& pGameObject);
 	void	OnNotifiedPlaceObstacle(CGameObject* const pGameObject);
+	void	OnNotifiedPlaceObstacle(const wstring& strObjectTag, const Vec3& vPickPos);
 	void	OnNotifiedTransformChanged(CGameObject* const pGameObject);
 
 	void	SetPrefabsView(CPrefabsView* pPrefabsView);
