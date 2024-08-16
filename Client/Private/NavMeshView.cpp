@@ -1361,9 +1361,6 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 		{
 			_int iKey = iKeyZ * gGridX + iKeyX;
 
-			//BoundingBox tGridAABB = BoundingBox(Vec3(0.5f * (iLB_X * gGridCX + iRT_X * gGridCX), 0.f, 0.5f * (iLB_X * gGridCZ + iRT_X * gGridCZ)), Vec3(0.5f * gGridCX, 10.0f, 0.5f * gGridCZ));
-			//if (true == tObst.tAABB.Intersects(tGridAABB))
-			//{
 			auto [begin, end] = m_umapObstGrids.equal_range(iKey);
 
 			for (auto& obst = begin; obst != end; ++obst)
@@ -1394,7 +1391,7 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 							const Vec3& vP2 = vecDest[j];
 							const Vec3& vQ2 = vecDest[(j + 1) % iSizeDest];
 
-							if (-1 == IntersectSegments(vP1, vQ1, vP2, vQ2, nullptr))
+							if (1 == IntersectSegments(vP1, vQ1, vP2, vQ2, nullptr))
 							{
 								return E_FAIL;
 							}
@@ -1402,7 +1399,6 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>&
 					}
 				}
 			}
-			//}
 		}
 	}
 
