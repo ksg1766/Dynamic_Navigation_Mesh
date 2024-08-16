@@ -1,7 +1,8 @@
-#include "stdafx.h"
 #include "NSHelper.h"
 
-_float PerpendicularDistance(const Vec3& vPt, const Vec3& vLineStart, const Vec3& vLineEnd)
+BEGIN(Engine)
+
+_float CNSHelper::PerpendicularDistance(const Vec3& vPt, const Vec3& vLineStart, const Vec3& vLineEnd)
 {
 	_float fDx = vLineEnd.x - vLineStart.x;
 	_float fDz = vLineEnd.z - vLineStart.z;
@@ -30,7 +31,7 @@ _float PerpendicularDistance(const Vec3& vPt, const Vec3& vLineStart, const Vec3
 	return pow(pow(fAx, 2.0f) + pow(fAz, 2.0f), 0.5f);
 }
 
-HRESULT RamerDouglasPeucker(const vector<Vec3>& vecPoints, _float fEpsilon, vector<Vec3>& vecOut)
+HRESULT CNSHelper::RamerDouglasPeucker(const vector<Vec3>& vecPoints, _float fEpsilon, vector<Vec3>& vecOut)
 {
 	if (vecPoints.size() < 2)
 	{
@@ -83,7 +84,7 @@ HRESULT RamerDouglasPeucker(const vector<Vec3>& vecPoints, _float fEpsilon, vect
 	return S_OK;
 }
 
-_float TriArea2x(const Vec3& vP0, const Vec3& vP1, const Vec3& vP2)
+_float CNSHelper::TriArea2x(const Vec3& vP0, const Vec3& vP1, const Vec3& vP2)
 {
 	const _float fAx = vP1.x - vP0.x;
 	const _float fAz = vP1.z - vP0.z;
@@ -93,7 +94,7 @@ _float TriArea2x(const Vec3& vP0, const Vec3& vP1, const Vec3& vP2)
 	return fBx * fAz - fAx * fBz;
 }
 
-Vec3 ProjectionPoint2Edge(const Vec3& vPoint, const Vec3& vP1, const Vec3& vP2)
+Vec3 CNSHelper::ProjectionPoint2Edge(const Vec3& vPoint, const Vec3& vP1, const Vec3& vP2)
 {
 	Vec3 vToLine = vP2 - vP1;
 	Vec3 vToPoint = vPoint - vP1;
@@ -105,7 +106,7 @@ Vec3 ProjectionPoint2Edge(const Vec3& vPoint, const Vec3& vP1, const Vec3& vP2)
 	return vP1 + fT * vToLine;
 }
 
-_float DistanceEdge2Edge(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2)
+_float CNSHelper::DistanceEdge2Edge(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2)
 {	// Âü°í : https://wizardmania.tistory.com/21
 	Vec3 U = vP2 - vP1;
 	Vec3 V = vQ2 - vQ1;
@@ -189,3 +190,5 @@ _float DistanceEdge2Edge(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, cons
 
 	return vDP.Length();
 }
+
+END

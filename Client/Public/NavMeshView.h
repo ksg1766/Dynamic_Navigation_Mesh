@@ -6,6 +6,8 @@ BEGIN(Engine)
 
 class CGameObject;
 class CShader;
+struct Obst;
+struct Cell;
 
 END
 
@@ -18,10 +20,6 @@ struct iVec3
 	_bool operator<(const iVec3& other) const { return (x == other.x) ? z < other.z : x < other.x; }
 };
 
-struct Obst;
-struct CellData;
-struct HierarchyNode;
-struct Portal;
 class CNavMeshView final : public CView
 {
     using Super = CView;
@@ -44,9 +42,9 @@ public:
 	HRESULT		UpdateObstacleTransform(CGameObject* const pGameObject);
 
 private:
-	void		ClearNeighbors(vector<CellData*>& vecCells);
-	void		SetUpNeighbors(vector<CellData*>& vecCells);
-	void		SetUpCells2Grids(vector<CellData*>& vecCells, OUT unordered_multimap<_int, CellData*>& umapCellGrids, const _int iGridCX = 64U, const _int iGridCZ = 64U);
+	void		ClearNeighbors(vector<Cell*>& vecCells);
+	void		SetUpNeighbors(vector<Cell*>& vecCells);
+	void		SetUpCells2Grids(vector<Cell*>& vecCells, OUT unordered_multimap<_int, Cell*>& umapCellGrids, const _int iGridCX = 64U, const _int iGridCZ = 64U);
 	void		SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_multimap<_int, Obst*>& umapObstGrids, const _int iGridCX = 64U, const _int iGridCZ = 64U);
 
 	HRESULT		BakeNavMesh();
@@ -68,7 +66,7 @@ private:
 
 private:
 	void		SetPolygonHoleCenter(Obst& tObst);
-	HRESULT		GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected, _bool bPop = false, _bool bDelete = false);
+	HRESULT		GetIntersectedCells(const Obst& tObst, OUT set<Cell*>& setIntersected, _bool bPop = false, _bool bDelete = false);
 
 private:
 	HRESULT		CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
@@ -89,7 +87,7 @@ private:
 private:
 	void		Input();
 	_bool		Pick(_uint screenX, _uint screenY);
-	CellData*	FindCellByPosition(const Vec3& vPosition);
+	Cell*	FindCellByPosition(const Vec3& vPosition);
 
 	HRESULT		SaveNvFile();
 	HRESULT		Save3DNvFile();
@@ -139,10 +137,9 @@ private:
 	vector<Vec3>			m_vecRegions;
 	vector<const _char*>	m_strRegions;
 
-	unordered_multimap<_int, CellData*> m_umapCellGrids;
+	unordered_multimap<_int, Cell*> m_umapCellGrids;
 	unordered_multimap<_int, Obst*> m_umapObstGrids;
-	vector<CellData*>		m_vecCells;
-	vector<vector<Portal*>> m_vecPortalCache;
+	vector<Cell*>		m_vecCells;
 	vector<const _char*>	m_strCells;
 
 	// Polygon (stress test)

@@ -214,6 +214,9 @@
     <Filter Include="01.Utiltiy\04.Component\05.Buffer\Sphere">
       <UniqueIdentifier>{4fcfa6cd-9d60-4254-9304-db33e4cc3c13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utiltiy\04.Component\14.NavMeshAgent\NSHelper">
+      <UniqueIdentifier>{3a2d86c4-34a6-4d96-813b-15e06080d4eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h">
@@ -471,6 +474,12 @@
     <ClInclude Include="..\Public\VIBuffer_Sphere.h">
       <Filter>01.Utiltiy\04.Component\05.Buffer\Sphere</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\NSHelper.h">
+      <Filter>01.Utiltiy\04.Component\14.NavMeshAgent\NSHelper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Obstacle.h">
+      <Filter>01.Utiltiy\04.Component\14.NavMeshAgent</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">
@@ -685,6 +694,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\VIBuffer_Sphere.cpp">
       <Filter>01.Utiltiy\04.Component\05.Buffer\Sphere</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\NSHelper.cpp">
+      <Filter>01.Utiltiy\04.Component\14.NavMeshAgent\NSHelper</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

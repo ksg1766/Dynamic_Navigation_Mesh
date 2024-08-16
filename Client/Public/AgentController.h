@@ -2,29 +2,18 @@
 #include "Client_Defines.h"
 #include "MonoBehaviour.h"
 #include "Transform.h"
-#include "CellData.h"
+#include "Cell.h"
 
 BEGIN(Engine)
 
 class CTransform;
 class CTerrain;
+struct Cell;
+struct Obst;
 
 END
 
 BEGIN(Client)
-
-struct CellData;
-struct Obst;
-
-struct PQNode
-{
-	_bool operator<(const PQNode& other) const { return f < other.f; }
-	_bool operator>(const PQNode& other) const { return f > other.f; }
-
-	_float f = FLT_MAX; // f = g + h
-	_float g = FLT_MAX;
-	CellData* pCell = nullptr;
-};
 
 class CAgentController : public CMonoBehaviour
 {
@@ -45,56 +34,22 @@ public:
 public:
 	_bool	IsIdle();
 	_bool	IsMoving();
-	_bool	IsOutOfWorld();
-
-	void	ForceHeight();
-	_float	GetHeightOffset();
-
-	void	Slide(const Vec3 vPrePos);
-	Vec3	Move(_float fTimeDelta);
-
-	_bool	AStar();
-	_bool	FunnelAlgorithm();
 
 	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
+
+public:
+	void	SetRadius(const _float fRadius);
+	void	SetLinearSpeed(const Vec3& vLinearSpeed);
 
 private:
 	void	Input(_float fTimeDelta);
 
 private:
-	_bool	AdjustLocation();
-	CellData* FindCellByPosition(const Vec3& vPosition);
-	Obst*	FindObstByPosition(const Vec3& vPosition);
-
-private:
 	CTransform*		m_pTransform = nullptr;
-	Vec3			m_vPrePos;
-	Vec3			m_vDestPos;
 
 	_bool			m_isMoving = false;
-	Vec3			m_vNetMove;
-
-	Vec3			m_vMaxLinearSpeed;
 	Vec3			m_vLinearSpeed;
-
-	CellData*		m_pCurrentCell = nullptr;
-	CellData*		m_pDestCell = nullptr;
-	
 	_float			m_fAgentRadius;
-
-	using PATH = pair<CellData*, LINES>;
-	deque<PATH>		m_dqPath;
-	deque<pair<Vec3, Vec3>>	m_dqEntries;
-	deque<Vec3>		m_dqWayPoints;
-	void			PopPath();
-
-	// For Debug Render
-	deque<pair<Vec3, Vec3>>	m_dqExpandedVertices;
-	deque<pair<Vec3, Vec3>>	m_dqOffset;
-
-	vector<CellData*>* m_pHierarchyNodes;
-	unordered_multimap<_int, CellData*>* m_pCellGrids;
-	unordered_multimap<_int, Obst*>* m_pObstGrids;
 
 	// DebugDraw
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;

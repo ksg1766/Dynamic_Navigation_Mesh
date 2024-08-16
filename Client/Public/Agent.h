@@ -6,26 +6,17 @@
 BEGIN(Engine)
 
 class CTerrain;
+struct Cell;
+struct Obst;
 
 END
 
 BEGIN(Client)
 
-struct CellData;
-struct HierarchyNode;
-struct Obst;
 class CAgentController;
 class CAgent final : public CGameObject
 {
 	using Super = CGameObject;
-public:
-	struct AgentDesc
-	{
-		CellData* pStartCell = nullptr;
-		unordered_multimap<_int, CellData*>* pCellGrids = nullptr;
-		unordered_multimap<_int, Obst*>* pObstGrids = nullptr;
-	};
-
 private:
 	CAgent(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CAgent(const CAgent& rhs);
@@ -44,8 +35,8 @@ public:
 	_bool			Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
 
 private:
-	HRESULT			Ready_FixedComponents();
-	HRESULT			Ready_Scripts(void* pArg);
+	HRESULT			Ready_FixedComponents(void* pArg);
+	HRESULT			Ready_Scripts();
 	HRESULT			Bind_ShaderResources();
 
 private:

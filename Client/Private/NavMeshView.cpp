@@ -12,7 +12,7 @@
 #include "Client_Macro.h"
 #include "tinyxml2.h"
 #include "Agent.h"
-#include "CellData.h"
+#include "Cell.h"
 #include "Obstacle.h"
 
 namespace fs = std::filesystem;
@@ -216,7 +216,7 @@ HRESULT CNavMeshView::DebugRender()
 	return S_OK;
 }
 
-void CNavMeshView::ClearNeighbors(vector<CellData*>& vecCells)
+void CNavMeshView::ClearNeighbors(vector<Cell*>& vecCells)
 {
 	for (auto cell : vecCells)
 	{
@@ -227,7 +227,7 @@ void CNavMeshView::ClearNeighbors(vector<CellData*>& vecCells)
 	}
 }
 
-void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
+void CNavMeshView::SetUpNeighbors(vector<Cell*>& vecCells)
 {
 	for (_int sour = 0; sour < vecCells.size(); ++sour)
 	{
@@ -254,7 +254,7 @@ void CNavMeshView::SetUpNeighbors(vector<CellData*>& vecCells)
 	}
 }
 
-void CNavMeshView::SetUpCells2Grids(vector<CellData*>& vecCells, OUT unordered_multimap<_int, CellData*>& umapCellGrids, const _int iGridCX, const _int iGridCZ)
+void CNavMeshView::SetUpCells2Grids(vector<Cell*>& vecCells, OUT unordered_multimap<_int, Cell*>& umapCellGrids, const _int iGridCX, const _int iGridCZ)
 {
 	BoundingBox tAABB;
 	tAABB.Extents = Vec3(iGridCX * 0.5f, 512.0f, iGridCZ * 0.5f);
@@ -316,7 +316,7 @@ HRESULT CNavMeshView::BakeNavMesh()
 	
 	if (false == m_umapObstGrids.empty()) { m_umapObstGrids.clear(); }
 
-	//vector<CellData*> vecCells;
+	//vector<Cell*> vecCells;
 
 	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 	{
@@ -333,13 +333,13 @@ HRESULT CNavMeshView::BakeNavMesh()
 			{ m_tOut.pointlist[iIdx3 * 2], y3, m_tOut.pointlist[iIdx3 * 2 + 1] },
 		};
 
-		CellData* pCellData = new CellData;
-		pCellData->vPoints[POINT_A] = vtx[POINT_A];
-		pCellData->vPoints[POINT_B] = vtx[POINT_B];
-		pCellData->vPoints[POINT_C] = vtx[POINT_C];
-		pCellData->CW();
+		Cell* pCell = new Cell;
+		pCell->vPoints[POINT_A] = vtx[POINT_A];
+		pCell->vPoints[POINT_B] = vtx[POINT_B];
+		pCell->vPoints[POINT_C] = vtx[POINT_C];
+		pCell->CW();
 
-		m_vecCells.push_back(pCellData);
+		m_vecCells.push_back(pCell);
 	}
 
 	SetUpNeighbors(m_vecCells);
@@ -637,11 +637,11 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 			{ m_tOut.pointlist[iIdx3 * 2], 0.0f, m_tOut.pointlist[iIdx3 * 2 + 1] },
 		};
 
-		CellData* pCellData = new CellData;
-		pCellData->vPoints[POINT_A] = vtx[POINT_A];
-		pCellData->vPoints[POINT_B] = vtx[POINT_B];
-		pCellData->vPoints[POINT_C] = vtx[POINT_C];
-		pCellData->CW();
+		Cell* pCell = new Cell;
+		pCell->vPoints[POINT_A] = vtx[POINT_A];
+		pCell->vPoints[POINT_B] = vtx[POINT_B];
+		pCell->vPoints[POINT_C] = vtx[POINT_C];
+		pCell->CW();
 
 		//////////
 
@@ -654,7 +654,7 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 			const vector<Vec3>& vecSurfaceVtx = m_pTerrainBuffer->GetTerrainVertices();
 			const vector<FACEINDICES32>& vecSurfaceIdx = m_pTerrainBuffer->GetTerrainIndices();
 
-			cVerticalRay.position = Vec3(pCellData->vPoints[p].x, 512.0f, pCellData->vPoints[p].z);
+			cVerticalRay.position = Vec3(pCell->vPoints[p].x, 512.0f, pCell->vPoints[p].z);
 			cVerticalRay.direction = Vec3::Down;
 
 			for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
@@ -668,13 +668,13 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 					if (isnan(fDistance))
 						continue;
 
-					pCellData->vPoints[p].y = cVerticalRay.position.y + cVerticalRay.direction.y * fDistance;
+					pCell->vPoints[p].y = cVerticalRay.position.y + cVerticalRay.direction.y * fDistance;
 					break;
 				}
 			}
 		}
 
-		m_vecCells.push_back(pCellData);
+		m_vecCells.push_back(pCell);
 	}
 
 	SetUpNeighbors(m_vecCells);
@@ -828,8 +828,8 @@ HRESULT CNavMeshView::DynamicCreate(const wstring& strObjectTag, const Vec3& vPi
 
 HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 {	
-	set<CellData*> setIntersected;
-	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
+	set<Cell*> setIntersected;
+	map<Vec3, pair<Vec3, Cell*>> mapOutlineCells;
 
 	if (FAILED(GetIntersectedCells(tObst, setIntersected, true, false)))
 	{
@@ -892,7 +892,7 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
 
 	// 何盒 皋浆 积己.
-	vector<CellData*> vecNewCells;
+	vector<Cell*> vecNewCells;
 
 	for (_int i = 0; i < tOut.numberoftriangles; ++i)
 	{
@@ -907,14 +907,14 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 			{ tOut.pointlist[iIdx3 * 2], 0.f, tOut.pointlist[iIdx3 * 2 + 1] },
 		};
 
-		CellData* pCellData = new CellData;
-		pCellData->vPoints[POINT_A] = vtx[POINT_A];
-		pCellData->vPoints[POINT_B] = vtx[POINT_B];
-		pCellData->vPoints[POINT_C] = vtx[POINT_C];
-		pCellData->CW();
-		//pCellData->SetUpData();
+		Cell* pCell = new Cell;
+		pCell->vPoints[POINT_A] = vtx[POINT_A];
+		pCell->vPoints[POINT_B] = vtx[POINT_B];
+		pCell->vPoints[POINT_C] = vtx[POINT_C];
+		pCell->CW();
+		//pCell->SetUpData();
 
-		vecNewCells.push_back(pCellData);
+		vecNewCells.push_back(pCell);
 	}
 
 	SetUpNeighbors(vecNewCells);
@@ -1025,8 +1025,8 @@ HRESULT CNavMeshView::UpdateObstacleTransform(CGameObject* const pGameObject)
 
 HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 {
-	set<CellData*> setIntersected;
-	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
+	set<Cell*> setIntersected;
+	map<Vec3, pair<Vec3, Cell*>> mapOutlineCells;
 
 	if (FAILED(GetIntersectedCells(tObst, setIntersected, true, true)))
 	{
@@ -1100,7 +1100,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 	triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
 
 	// 何盒 皋浆 积己.
-	vector<CellData*> vecNewCells;
+	vector<Cell*> vecNewCells;
 
 	for (_int i = 0; i < tOut.numberoftriangles; ++i)
 	{
@@ -1115,14 +1115,14 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 			{ tOut.pointlist[iIdx3 * 2], 0.f, tOut.pointlist[iIdx3 * 2 + 1] },
 		};
 
-		CellData* pCellData = new CellData;
-		pCellData->vPoints[POINT_A] = vtx[POINT_A];
-		pCellData->vPoints[POINT_B] = vtx[POINT_B];
-		pCellData->vPoints[POINT_C] = vtx[POINT_C];
-		pCellData->CW();
-		//pCellData->SetUpData();
+		Cell* pCell = new Cell;
+		pCell->vPoints[POINT_A] = vtx[POINT_A];
+		pCell->vPoints[POINT_B] = vtx[POINT_B];
+		pCell->vPoints[POINT_C] = vtx[POINT_C];
+		pCell->CW();
+		//pCell->SetUpData();
 
-		vecNewCells.emplace_back(pCellData);
+		vecNewCells.emplace_back(pCell);
 	}
 
 	SetUpNeighbors(vecNewCells);
@@ -1166,7 +1166,7 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		m_vecCells.emplace_back(cell);
 	}
 
-	/*CellData* pDummy = nullptr;
+	/*Cell* pDummy = nullptr;
 	_bool bFound = false;*/
 	for (auto cell : vecNewCells)
 	{
@@ -1195,14 +1195,13 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 		m_pGameInstance->DeleteObject(m_pAgent);
 	}
 
-	CellData* pCell = FindCellByPosition(vSpawnPosition);
+	Cell* pCell = FindCellByPosition(vSpawnPosition);
 
 	if (nullptr == pCell)
 	{
 		return E_FAIL;
 	}
-
-	CAgent::AgentDesc tDesc =
+	CNavMeshAgent::NAVIGATION_DESC tDesc =
 	{
 		pCell,
 		&m_umapCellGrids,
@@ -1234,7 +1233,7 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 
 	vSpawnPosition /= 3.f;
 
-	CAgent::AgentDesc tDesc =
+	CNavMeshAgent::NAVIGATION_DESC tDesc =
 	{
 		m_vecCells[iSpawnIndex],
 		&m_umapCellGrids,
@@ -1350,7 +1349,7 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 	}
 }
 
-HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<CellData*>& setIntersected, _bool bPop, _bool bDelete)
+HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<Cell*>& setIntersected, _bool bPop, _bool bDelete)
 {
 	Vec3 vLB = tObst.tAABB.Center - tObst.tAABB.Extents;
 	Vec3 vRT = tObst.tAABB.Center + tObst.tAABB.Extents;
@@ -2545,9 +2544,9 @@ _bool CNavMeshView::Pick(_uint screenX, _uint screenY)
 	return true;
 }
 
-CellData* CNavMeshView::FindCellByPosition(const Vec3& vPosition)
+Cell* CNavMeshView::FindCellByPosition(const Vec3& vPosition)
 {
-	CellData* pCell = nullptr;
+	Cell* pCell = nullptr;
 
 	_int iX = (vPosition.x + gWorldCX * 0.5f) / gGridCX;
 	_int iZ = (vPosition.z + gWorldCZ * 0.5f) / gGridCZ;

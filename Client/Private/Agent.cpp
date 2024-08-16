@@ -22,10 +22,10 @@ HRESULT CAgent::Initialize_Prototype()
 
 HRESULT CAgent::Initialize(void* pArg)
 {
-	if (FAILED(Ready_FixedComponents()))
+	if (FAILED(Ready_FixedComponents(pArg)))
 		return E_FAIL;
 
-	if (FAILED(Ready_Scripts(pArg)))
+	if (FAILED(Ready_Scripts()))
 		return E_FAIL;
 
 	return S_OK;
@@ -86,7 +86,7 @@ _bool CAgent::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 	return m_pController->Pick(pTerrain, screenX, screenY);
 }
 
-HRESULT CAgent::Ready_FixedComponents()
+HRESULT CAgent::Ready_FixedComponents(void* pArg)
 {
 	/* Com_Shader */
 	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Shader, TEXT("Prototype_Component_Shader_VtxCubeNom"))))
@@ -116,15 +116,18 @@ HRESULT CAgent::Ready_FixedComponents()
 	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Texture, TEXT("Prototype_Component_Texture_FlatBlue"))))
 		return E_FAIL;
 
+	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::NavMeshAgent, TEXT("Prototype_Component_NavMeshAgent"), pArg)))
+		return E_FAIL;
+
 	return S_OK;
 }
 
-HRESULT CAgent::Ready_Scripts(void* pArg)
+HRESULT CAgent::Ready_Scripts()
 {
 	//if (LEVEL_GAMEPLAY == m_pGameInstance->GetCurrentLevelIndex())
 	{
 		/* Com_AgentController */
-		if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Script, TEXT("Prototype_Component_AgentController"), pArg)))
+		if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Script, TEXT("Prototype_Component_AgentController"))))
 			return E_FAIL;
 
 		m_pController = static_cast<CAgentController*>(m_vecScripts[0]);

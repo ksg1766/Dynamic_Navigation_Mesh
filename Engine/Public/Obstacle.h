@@ -1,16 +1,11 @@
 #pragma once
-#include "Base.h"
-#include "Client_Defines.h"
+#include "Engine_Defines.h"
 #include "NSHelper.h"
 
 BEGIN(Engine)
 
-
-END
-
-BEGIN(Client)
-
-struct Obst
+class CGameObject;
+struct ENGINE_DLL Obst
 {
 	Vec3 vInnerPoint = Vec3::Zero;
 	BoundingBox tAABB;
@@ -96,7 +91,7 @@ struct Obst
 
 		for (_int m = 0; m < iSize; ++m)
 		{
-			Vec3 vProjection = ProjectionPoint2Edge(vPoint, vecPoints[m], vecPoints[(m + 1) % iSize]);
+			Vec3 vProjection = CNSHelper::ProjectionPoint2Edge(vPoint, vecPoints[m], vecPoints[(m + 1) % iSize]);
 			Vec3 vDistance = vProjection - vPoint;
 
 			_float fDistanceSq = vDistance.LengthSquared();

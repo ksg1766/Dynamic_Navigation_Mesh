@@ -1,49 +1,67 @@
 #pragma once
 #include "Base.h"
+#include "NSHelper.h"
 
 BEGIN(Engine)
 
-class ENGINE_DLL CCell : public CBase
+constexpr _int gWorldCX = 1024;
+constexpr _int gWorldCZ = 1024;
+constexpr _int gGridCX = 64;
+constexpr _int gGridCZ = 64;
+constexpr _int gGridX = 16;
+constexpr _int gGridZ = 16;
+
+enum POINTS : uint8 { POINT_A, POINT_B, POINT_C, POINT_END };
+enum LINES : uint8 { LINE_AB, LINE_BC, LINE_CA, LINE_END };
+
+struct ENGINE_DLL Cell
 {
-	using Super = CBase;
-public:
-	enum POINTS { POINT_A, POINT_B, POINT_C, POINT_END };
-	enum LINES { LINE_AB, LINE_BC, LINE_CA, LINE_END };
-private:
-	CCell(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	CCell(const CCell& rhs);
-	virtual ~CCell() = default;
-	
-public:
-	const _float3*	Get_Point(POINTS ePoint) const				{ return &m_vPoints[ePoint]; }
-	const _float3*	Get_Points() const							{ return m_vPoints; }
+	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
+	array<Cell*, LINE_END> pNeighbors = { nullptr, nullptr, nullptr };
+	array<Vec3, LINE_END> vNormals = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
+	//array<_float, LINE_END> fHalfWidths = { FLT_MAX, FLT_MAX, FLT_MAX };
+	array<_float, LINE_END> fTheta = { FLT_MAX, FLT_MAX, FLT_MAX };
 
-	void			SetUp_Neighbor(LINES eLine, CCell* pCell)	{ m_iNeighborIndices[eLine] = pCell->m_iIndex; }
+	void	CW();
+	void	SetUpData();
 
-	HRESULT			Initialize(const _float3* pPoints, _uint iIndex);
-	void			DebugRender(PrimitiveBatch<VertexPositionColor>*& pBatch, XMVECTORF32 vColor);
+	_bool	ComparePoints(const Vec3& pSour, const Vec3& pDest);
+	_bool	IsOut(const Vec3& vPoint, OUT Cell*& pNeighbor);
+	Vec3	GetPassedEdgeNormal(Vec3 vPoint);
+	inline Vec3	GetCenter() { return (vPoints[0] + vPoints[1] + vPoints[2]) / 3.f; }
 
-	_bool			Compare_Points(const _float3* pSourPoint, const _float3* pDestPoint);
-	_bool			isOut(_fvector vPoint, _int* pNeighborIndex);
-	_float3			GetPassedEdgeNormal(_fvector vPoint);
+	inline static _float CostBetween(Cell* pSour, Cell* pDest) { return Vec3::Distance(pSour->GetCenter(), pDest->GetCenter()); }
+	inline static _float HeuristicCostEuclidean(Cell* pSour, Cell* pDest) { return CostBetween(pSour, pDest); }
+	inline static _float HeuristicCostEuclidean(Cell* pSour, const Vec3& vDest) { return Vec3::Distance(pSour->GetCenter(), vDest); }
+	inline static _float HeuristicCostEuclidean(const Vec3& vSour, const Vec3& vDest) { return Vec3::Distance(vSour, vDest); }
 
-private:
-	_uint					m_iIndex = {};
-	_float3					m_vPoints[POINT_END];
-	_float3					m_vNormals[LINE_END];
+	inline static _float CostBetweenPoint2Edge(const Vec3& vStart, const Vec3& vQ1, const Vec3& vQ2)
+	{
+		Vec3 vClosestPoint2Edge = CNSHelper::ProjectionPoint2Edge(vStart, vQ1, vQ2);
+		return (vClosestPoint2Edge - vStart).Length();
+	}
 
-	_int					m_iNeighborIndices[LINE_END] = { -1, -1, -1 };
+	inline static _float CostBetweenEdge2Edge(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2)
+	{
+		return CNSHelper::DistanceEdge2Edge(vP1, vP2, vQ1, vQ2);
+	}
 
-	ID3D11Device*			m_pDevice = { nullptr };
-	ID3D11DeviceContext*	m_pContext = { nullptr };
+	static _float CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH, _float fAgentRadius);
+	_float CostBetweenMax(POINTS eP1, POINTS eP2, POINTS eQ1, POINTS eQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH, _float fAgentRadius);
 
-#ifdef _DEBUG
-	//class CVIBuffer_Cell*	m_pVIBuffer = { nullptr };
-#endif
+	inline _bool IsObtuse(const Vec3& vP0, const Vec3& vP1, const Vec3& vP2)
+	{
+		return (vP0 - vP2).LengthSquared() >= ((vP2 - vP1).LengthSquared() + (vP1 - vP0).LengthSquared());
+	}
 
-public:
-	static CCell* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _float3* pPoints, _uint iIndex);
-	virtual void Free() override;
+	_float CalculateHalfWidth(LINES eLine1, LINES eLine2);
+	_float SearchWidth(const Vec3& C, Cell* T, LINES e, _float d);
+
+	_bool Pick(const Ray& ray, OUT Vec3& pickPos, OUT _float& distance, const Matrix& matWorld);
+
+	// cache
+	_bool	isDead = false;
+	_bool	isNew = false;
 };
 
 END

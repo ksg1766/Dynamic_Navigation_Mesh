@@ -1,7 +1,24 @@
 #pragma once
 #include "Component.h"
+#include "Cell.h"
 
 BEGIN(Engine)
+
+struct Cell;
+struct Obst;
+
+class CTransform;
+class CTerrain;
+
+struct PQNode
+{
+	_bool operator<(const PQNode& other) const { return f < other.f; }
+	_bool operator>(const PQNode& other) const { return f > other.f; }
+
+	_float f = FLT_MAX; // f = g + h
+	_float g = FLT_MAX;
+	Cell* pCell = nullptr;
+};
 
 class ENGINE_DLL CNavMeshAgent final : public CComponent
 {
@@ -9,7 +26,9 @@ class ENGINE_DLL CNavMeshAgent final : public CComponent
 public:
 	typedef struct tagNavigationDesc
 	{
-		_int			iCurrentIndex = { -1 };
+		Cell* pStartCell = nullptr;
+		unordered_multimap<_int, Cell*>* pCellGrids = nullptr;
+		unordered_multimap<_int, Obst*>* pObstGrids = nullptr;
 	}NAVIGATION_DESC;
 
 private:
@@ -18,38 +37,76 @@ private:
 	virtual ~CNavMeshAgent() = default;
 
 public:
-	virtual HRESULT		Initialize_Prototype(const wstring& strNavigationData);
+	virtual HRESULT		Initialize_Prototype()		override;
 	virtual HRESULT		Initialize(void* pArg)		override;
 	virtual void		Tick(_float fTimeDelta)		override;
+	virtual void		LateTick(_float fTimeDelta)	override;
 	virtual void		DebugRender()				override;
 	
 public:
-	_bool	CanMove(_fvector vPoint);
+	_bool	IsIdle();
+	_bool	IsMoving();
+	_bool	IsOutOfWorld();
+
 	void	ForceHeight();
 	_float	GetHeightOffset();
-	_float3	GetPassedEdgeNormal(_fvector vPos);
 
-	_int	GetCurrentIndex() {	return m_iCurrentIndex;	}
-	void	SetCurrentIndex(_int iCurrentIndex);// { m_iCurrentIndex = iCurrentIndex; }
+	void	Slide(const Vec3 vPrePos);
+	Vec3	Move(_float fTimeDelta);
+
+	_bool	AStar();
+	_bool	FunnelAlgorithm();
+
+	_bool	SetPath(const Vec3& vDestPos);
+
+	void	SetLinearSpeed(const Vec3& vLinearSpeed) { m_vLinearSpeed = vLinearSpeed; }
+	void	SetRadius(const _float fRadius) { m_fAgentRadius = fRadius; }
 
 private:
-	HRESULT SetUp_Neighbors();
+	void	Input(_float fTimeDelta);
 
 private:
-	CTransform*				m_pTransform = nullptr;
-	_int					m_iCurrentIndex = { -1 };
-	static vector<class CCell*>	m_Cells;
+	_bool	AdjustLocation();
+	Cell*	FindCellByPosition(const Vec3& vPosition);
+	Obst*	FindObstByPosition(const Vec3& vPosition);
 
-#ifdef _DEBUG
-	static _bool	m_IsRendered;
+private:
+	CTransform*		m_pTransform = nullptr;
+	Vec3			m_vPrePos;
+	Vec3			m_vDestPos;
 
+	_bool			m_isMoving = false;
+	Vec3			m_vNetMove;
+
+	Vec3			m_vMaxLinearSpeed;
+	Vec3			m_vLinearSpeed;
+
+	Cell*			m_pCurrentCell = nullptr;
+	Cell*			m_pDestCell = nullptr;
+
+	_float			m_fAgentRadius;
+
+	using PATH = pair<Cell*, LINES>;
+	deque<PATH>		m_dqPath;
+	deque<pair<Vec3, Vec3>>	m_dqEntries;
+	deque<Vec3>		m_dqWayPoints;
+	void			PopPath();
+
+	// For Debug Render
+	deque<pair<Vec3, Vec3>>	m_dqExpandedVertices;
+	deque<pair<Vec3, Vec3>>	m_dqOffset;
+
+	static unordered_multimap<_int, Cell*>* m_pCellGrids;
+	static unordered_multimap<_int, Obst*>* m_pObstGrids;
+
+//#ifdef _DEBUG
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;
 	BasicEffect* m_pEffect = nullptr;
 	ID3D11InputLayout* m_pInputLayout = nullptr;
-#endif
+//#endif
 
 public:
-	static CNavMeshAgent* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const wstring& strNavigationData);
+	static CNavMeshAgent* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CComponent* Clone(CGameObject* pGameObject, void* pArg) override;
 	virtual void Free() override;
 };

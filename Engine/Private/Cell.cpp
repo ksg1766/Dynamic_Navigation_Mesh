@@ -2,133 +2,221 @@
 //#include "VIBuffer_Cell.h"
 #include "DebugDraw.h"
 
-CCell::CCell(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: m_pDevice(pDevice)
-	, m_pContext(pContext)
+void Cell::CW()
 {
-	Safe_AddRef(m_pDevice);
-	Safe_AddRef(m_pContext);
+	Vec3 vA(vPoints[POINT_A].x, 0.f, vPoints[POINT_A].z);
+	Vec3 vB(vPoints[POINT_B].x, 0.f, vPoints[POINT_B].z);
+	Vec3 vC(vPoints[POINT_C].x, 0.f, vPoints[POINT_C].z);
+
+	Vec3 vFlatAB = vB - vA;
+	Vec3 vFlatBC = vC - vB;
+	Vec3 vResult;
+	vFlatAB.Cross(vFlatBC, vResult);
+
+	if (vResult.y < 0.f)
+	{
+		::swap(vPoints[POINT_B], vPoints[POINT_C]);
+	}
 }
 
-HRESULT CCell::Initialize(const _float3* pPoints, _uint iIndex)
+void Cell::SetUpData()
 {
-	m_iIndex = iIndex;
+	Vec3 vLines[LINE_END];
 
-	memcpy(m_vPoints, pPoints, sizeof(_float3) * POINT_END);
+	vLines[LINE_AB] = vPoints[POINT_B] - vPoints[POINT_A];
+	vLines[LINE_BC] = vPoints[POINT_C] - vPoints[POINT_B];
+	vLines[LINE_CA] = vPoints[POINT_A] - vPoints[POINT_C];
 
-	_float3		vLines[LINE_END];
-
-	XMStoreFloat3(&vLines[LINE_AB], XMLoadFloat3(&m_vPoints[POINT_B]) - XMLoadFloat3(&m_vPoints[POINT_A]));
-	XMStoreFloat3(&vLines[LINE_BC], XMLoadFloat3(&m_vPoints[POINT_C]) - XMLoadFloat3(&m_vPoints[POINT_B]));
-	XMStoreFloat3(&vLines[LINE_CA], XMLoadFloat3(&m_vPoints[POINT_A]) - XMLoadFloat3(&m_vPoints[POINT_C]));
-
-	for (size_t i = 0; i < LINE_END; i++)
+	for (uint8 i = 0; i < LINE_END; i++)
 	{
-		m_vNormals[i] = _float3(vLines[i].z * -1.f, 0.f, vLines[i].x);
-
-		XMStoreFloat3(&m_vNormals[i], XMVector3Normalize(XMLoadFloat3(&m_vNormals[i])));
+		vNormals[i] = Vec3(vLines[i].z * -1.f, 0.f, vLines[i].x);
+		vNormals[i].Normalize();
 	}
 
-#ifdef _DEBUG
-	/*m_pVIBuffer = CVIBuffer_Cell::Create(m_pDevice, m_pContext, m_vPoints);
-	if (nullptr == m_pVIBuffer)
-		return E_FAIL;*/
-#endif
-
-	return S_OK;
-}
-
-void CCell::DebugRender(PrimitiveBatch<VertexPositionColor>*& pBatch , XMVECTORF32 vColor)
-{
-#ifdef _DEBUG
-	/*pBatch->Begin();
-	DX::DrawTriangle(pBatch, XMLoadFloat3(&m_vPoints[POINT_A]), XMLoadFloat3(&m_vPoints[POINT_B]), XMLoadFloat3(&m_vPoints[POINT_C]), vColor);
-	pBatch->End();*/
-#endif
-}
-
-_bool CCell::Compare_Points(const _float3* pSourPoint, const _float3* pDestPoint)
-{
-	if (XMVector3Equal(XMLoadFloat3(&m_vPoints[POINT_A]), XMLoadFloat3(pSourPoint)))
+	for (uint8 i = 0; i < LINE_END; i++)
 	{
-		if (XMVector3Equal(XMLoadFloat3(&m_vPoints[POINT_B]), XMLoadFloat3(pDestPoint)))
-			return true;
-
-		if (XMVector3Equal(XMLoadFloat3(&m_vPoints[POINT_C]), XMLoadFloat3(pDestPoint)))
-			return true;
+		//fHalfWidths[i] = CalculateHalfWidth((LINES)((i + 2) % 3), (LINES)i);
+		vLines[i].Normalize();
 	}
 
-	if (XMVector3Equal(XMLoadFloat3(&m_vPoints[POINT_B]), XMLoadFloat3(pSourPoint)))
+	for (uint8 i = 0; i < LINE_END; i++)
 	{
-		if (XMVector3Equal(XMLoadFloat3(&m_vPoints[POINT_A]), XMLoadFloat3(pDestPoint)))
+		fTheta[i] = acosf(vLines[i].Dot(-vLines[(i + 2) % 3]));
+	}
+}
+
+_bool Cell::ComparePoints(const Vec3& pSour, const Vec3& pDest)
+{
+	if (pSour == vPoints[POINT_A])
+	{
+		if (pDest == vPoints[POINT_B])
 			return true;
 
-		if (XMVector3Equal(XMLoadFloat3(&m_vPoints[POINT_C]), XMLoadFloat3(pDestPoint)))
+		if (pDest == vPoints[POINT_C])
 			return true;
 	}
 
-	if (XMVector3Equal(XMLoadFloat3(&m_vPoints[POINT_C]), XMLoadFloat3(pSourPoint)))
+	if (pSour == vPoints[POINT_B])
 	{
-		if (XMVector3Equal(XMLoadFloat3(&m_vPoints[POINT_A]), XMLoadFloat3(pDestPoint)))
+		if (pDest == vPoints[POINT_A])
 			return true;
 
-		if (XMVector3Equal(XMLoadFloat3(&m_vPoints[POINT_B]), XMLoadFloat3(pDestPoint)))
+		if (pDest == vPoints[POINT_C])
+			return true;
+	}
+
+	if (pSour == vPoints[POINT_C])
+	{
+		if (pDest == vPoints[POINT_A])
+			return true;
+
+		if (pDest == vPoints[POINT_B])
 			return true;
 	}
 
 	return false;
 }
 
-_bool CCell::isOut(_fvector vPoint, _int* pNeighborIndex)
+_bool Cell::IsOut(const Vec3& vPoint, OUT Cell*& pNeighbor)
 {
+	_bool bReturn = false;
 	for (size_t i = 0; i < LINE_END; i++)
 	{
-		_vector		vSour = XMVector3Normalize(vPoint - XMLoadFloat3(&m_vPoints[i]));
-		_vector		vDest = XMVector3Normalize(XMLoadFloat3(&m_vNormals[i]));
+		Vec3 vSour = vPoint - vPoints[i];
+		vSour.Normalize();
+		Vec3 vDest = vNormals[i];
+		vDest.Normalize();
 
-		if (0 < XMVectorGetX(XMVector3Dot(vSour, vDest)))
+		if (0 < vSour.Dot(vDest))
 		{
-			*pNeighborIndex = m_iNeighborIndices[i];
+			pNeighbor = pNeighbors[i];
 			return true;
 		}
 	}
 
-	return false;
+	return bReturn;
 }
 
-_float3 CCell::GetPassedEdgeNormal(_fvector vPoint)
+Vec3 Cell::GetPassedEdgeNormal(Vec3 vPoint)
 {
 	for (size_t i = 0; i < LINE_END; i++)
 	{
-		_vector		vSour = XMVector3Normalize(vPoint - XMLoadFloat3(&m_vPoints[i]));
-		_vector		vDest = XMVector3Normalize(XMLoadFloat3(&m_vNormals[i]));
+		Vec3	vSour = vPoint - vPoints[i];
+		vSour.Normalize();
+		Vec3	vDest = vNormals[i];
+		vDest.Normalize();
 
-		if (0 < XMVectorGetX(XMVector3Dot(vSour, vDest)))
-			return m_vNormals[i];
+		if (0 < vSour.Dot(vDest))
+		{
+			return vNormals[i];
+		}
 	}
 
-	return _float3(0.f, 0.f, 0.f);
+	return Vec3::Zero;
 }
 
-CCell* CCell::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _float3* pPoints, _uint iIndex)
+_float Cell::CostBetweenMax(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH, _float fAgentRadius)
 {
-	CCell* pInstance = new CCell(pDevice, pContext);
+	Vec3 vClosestPoint2Edge = CNSHelper::ProjectionPoint2Edge(vStart, vQ1, vQ2);
+	_float fCostPoint2Edge = (vClosestPoint2Edge - vStart).Length();
 
-	if (FAILED(pInstance->Initialize(pPoints, iIndex)))
+	Vec3 vEdge1 = vP2 - vP1;
+	Vec3 vEdge2 = vQ2 - vQ1;
+	vEdge1.Normalize();
+	vEdge2.Normalize();
+	_float fTheta = acosf(vEdge1.Dot(vEdge2));
+	_float fCostEdge2Edge = fParentG + fAgentRadius * fTheta;
+
+	Vec3 vMidPoint = 0.5f * (vQ1 + vQ2);
+	_float fNeighborH = HeuristicCostEuclidean(vMidPoint, vDest);
+	_float fCostHeuristicDiff = fParentG + fParentH - fNeighborH;
+
+	return ::max(::max(fCostPoint2Edge, fCostEdge2Edge), fCostHeuristicDiff);
+}
+
+_float Cell::CostBetweenMax(POINTS eP1, POINTS eP2, POINTS eQ1, POINTS eQ2, const Vec3& vStart, const Vec3& vDest, _float fParentG, _float fParentH, _float fAgentRadius)
+{
+	Vec3 vClosestPoint2Edge = CNSHelper::ProjectionPoint2Edge(vStart, vPoints[eQ1], vPoints[eQ2]);
+	_float fCostPoint2Edge = (vClosestPoint2Edge - vStart).Length();
+
+	POINTS eBetween = POINT_END;
+	(eP1 == eQ1) ? eBetween = eP1 : eBetween = eP2;
+
+	_float fCostEdge2Edge = fParentG + fAgentRadius * fTheta[eBetween];
+
+	Vec3 vMidPoint = 0.5f * (vPoints[eP1] + vPoints[eP2]);
+	_float fNeighborH = HeuristicCostEuclidean(vMidPoint, vDest);
+	_float fCostHeuristicDiff = fParentG + fParentH - fNeighborH;
+
+	return ::max(::max(fCostPoint2Edge, fCostEdge2Edge), fCostHeuristicDiff);
+}
+
+_float Cell::CalculateHalfWidth(LINES eLine1, LINES eLine2)
+{
+	if (eLine1 == eLine2)
+		return -FLT_MAX;
+
+	POINTS C = POINTS((5 - eLine1 - eLine2) % 3);
+	POINTS A = POINTS((C + 1) % 3);
+	POINTS B = POINTS((C + 2) % 3);
+
+	LINES c = LINES(3 - eLine1 - eLine2);
+
+	_float d = ::min(
+		(vPoints[c] - vPoints[C]).Length(),
+		(vPoints[(c + 1) % 3] - vPoints[C]).Length());
+
+	if (IsObtuse(vPoints[C], vPoints[A], vPoints[B]) || IsObtuse(vPoints[C], vPoints[B], vPoints[A]))
+		return 0.5f * d;
+	else if (nullptr == pNeighbors[c])
+		return 0.5f * CostBetweenPoint2Edge(vPoints[C], vPoints[A], vPoints[B]);
+	else
+		return 0.5f * SearchWidth(vPoints[C], this, c, d);
+}
+
+_float Cell::SearchWidth(const Vec3& C, Cell* T, LINES e, _float d)
+{
+	Vec3 U = T->vPoints[e];
+	Vec3 V = T->vPoints[(e + 1) % 3];
+
+	V.y = U.y = C.y;
+
+	if (IsObtuse(C, U, V) || IsObtuse(C, V, U))
+		return d;
+
+	_float _d = CostBetweenPoint2Edge(C, U, V);
+
+	if (_d > d)
+		return d;
+	else if (nullptr == T->pNeighbors[e])
+		return _d;
+	else
 	{
-		MSG_BOX("Failed to Created : CCell");
-		Safe_Release(pInstance);
-	}
+		Cell* _T = T->pNeighbors[e];
 
-	return pInstance;
+		LINES _e1 = LINE_END, _e2 = LINE_END;
+
+		for (uint8 i = 0; i < LINE_END; ++i)
+		{
+			if (T != _T->pNeighbors[i])
+				(LINE_END == _e1) ? _e1 = (LINES)i : _e2 = (LINES)i;
+		}
+
+		d = SearchWidth(C, _T, _e1, d);
+		return SearchWidth(C, _T, _e2, d);
+	}
 }
 
-void CCell::Free()
+_bool Cell::Pick(const Ray& ray, OUT Vec3& pickPos, OUT _float& distance, const Matrix& matWorld)
 {
-#ifdef _DEBUG
-	//Safe_Release(m_pVIBuffer);
-#endif
+	if (ray.Intersects(vPoints[POINT_A], vPoints[POINT_B], vPoints[POINT_C], OUT distance))
+	{
+		if (isnan(distance))
+			return false;
 
-	Safe_Release(m_pDevice);
-	Safe_Release(m_pContext);
+		pickPos = ray.position + ray.direction * distance;
+		return true;
+	}
+
+	return false;
 }

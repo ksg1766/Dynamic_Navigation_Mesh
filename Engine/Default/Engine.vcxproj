@@ -173,6 +173,8 @@ call Copy.bat</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\Downloads\Framework\Engine\Public\RenderTarget.h" />
+    <ClInclude Include="..\Public\NSHelper.h" />
+    <ClInclude Include="..\Public\Obstacle.h" />
     <ClInclude Include="..\Public\VIBuffer_Sphere.h" />
     <FxCompile Include="..\Bin\ShaderFiles\Engine_Shader_Defines.hlsl">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
@@ -295,6 +297,7 @@ call Copy.bat</Command>
     <ClCompile Include="..\Private\Model.cpp" />
     <ClCompile Include="..\Private\MurmurHash3.cpp" />
     <ClCompile Include="..\Private\NavMeshAgent.cpp" />
+    <ClCompile Include="..\Private\NSHelper.cpp" />
     <ClCompile Include="..\Private\PhysicsManager.cpp" />
     <ClCompile Include="..\Private\PipeLine.cpp" />
     <ClCompile Include="..\Private\PoolManager.cpp" />
