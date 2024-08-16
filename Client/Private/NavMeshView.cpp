@@ -820,6 +820,7 @@ HRESULT CNavMeshView::DynamicCreate(const wstring& strObjectTag, const Vec3& vPi
 		pObst->pGameObject->GetTransform()->SetPosition(vPickPos);
 
 		m_vecObstacles.push_back(pObst);
+		s2cPushBack(m_strObstacles, Utils::ToString(strObjectTag));
 	}
 
 	return S_OK;
@@ -831,6 +832,11 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 	map<Vec3, pair<Vec3, CellData*>> mapOutlineCells;
 
 	if (FAILED(GetIntersectedCells(tObst, setIntersected, true, false)))
+	{
+		return E_FAIL;
+	}
+
+	if (true == setIntersected.empty())
 	{
 		return E_FAIL;
 	}
@@ -2930,7 +2936,7 @@ HRESULT CNavMeshView::LoadNvFile()
 		}
 
 		m_vecObstacles.push_back(pObst);
-		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back()->vInnerPoint.x) + ", " + to_string(m_vecObstacles.back()->vInnerPoint.z));
+		s2cPushBack(m_strObstacles, Utils::ToString(strObjectTag));
 
 		node = node->NextSiblingElement();
 	}

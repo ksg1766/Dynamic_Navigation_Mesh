@@ -12,7 +12,7 @@ CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* p
 	:Super(pDevice, pContext)
 	, m_vLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
 	, m_vMaxLinearSpeed(Vec3(200.0f, 200.0f, 200.0f))
-	, m_fAgentRadius(3.3f)
+	, m_fAgentRadius(3.4f)
 	//, m_fAgentRadius(5.0f)
 {
 }
@@ -62,7 +62,7 @@ HRESULT CAgentController::Initialize(void* pArg)
 	}
 #pragma endregion DebugDraw
 
-	m_vLinearSpeed = m_vMaxLinearSpeed;
+	// m_vLinearSpeed = m_vMaxLinearSpeed;
 
 #pragma region AStarPerformance
 	/*if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
