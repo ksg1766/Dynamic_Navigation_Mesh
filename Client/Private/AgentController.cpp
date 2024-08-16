@@ -82,17 +82,16 @@ void CAgentController::Tick(_float fTimeDelta)
 
 void CAgentController::LateTick(_float fTimeDelta)
 {
-	AdjustLocation();
+	if (true == AdjustLocation() && true == AStar())
+	{
+		FunnelAlgorithm();
+	}
 
 	for (_int i = 0; i < m_dqPath.size(); ++i)
 	{
-		if (true == m_dqPath[i].first->isDead)
+		if (true == m_dqPath[i].first->isDead && true == AStar() && true == FunnelAlgorithm())
 		{
-			if (true == AStar())
-			{
-				FunnelAlgorithm();
-				break;
-			}
+			break;
 		}
 	}
 
@@ -113,10 +112,7 @@ _bool CAgentController::IsOutOfWorld()
 {
 	const Vec3& vPosition = m_pTransform->GetPosition();
 
-	if (vPosition.x >= 0.5f * gWorldCX || vPosition.x <= -0.5f * gWorldCX || vPosition.z >= 0.5f * gWorldCZ || vPosition.z <= -0.5f * gWorldCZ)
-		return true;
-
-	return false;
+	return (vPosition.x >= 0.5f * gWorldCX || vPosition.x <= -0.5f * gWorldCX || vPosition.z >= 0.5f * gWorldCZ || vPosition.z <= -0.5f * gWorldCZ);
 }
 
 void CAgentController::ForceHeight()
@@ -172,11 +168,15 @@ Vec3 CAgentController::Move(_float fTimeDelta)
 		vDistance.Normalize(OUT vDirection);
 
 		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
-		if (vMoveAmount.LengthSquared() > vDistance.LengthSquared())
-		{	// to next waypoint
-			if (false == m_dqWayPoints.empty())
-			{
+		if (false == m_dqWayPoints.empty())
+		{
+			if (vMoveAmount.LengthSquared() > vDistance.LengthSquared())
+			{	// to next waypoint
 				m_dqWayPoints.pop_front();
+			}
+			else
+			{
+				m_dqWayPoints[0] = m_pTransform->GetPosition();
 			}
 		}
 	}
@@ -211,13 +211,20 @@ void CAgentController::Slide(const Vec3 vPrePos)
 	vPosition = vPrePos + vDir - (EPSILON + vDir.Dot(vPassedLine)) * vPassedLine;
 	m_pCurrentCell = FindCellByPosition(vPosition);
 
-	while (nullptr == m_pCurrentCell)
+	if (nullptr == m_pCurrentCell)
 	{
 		Obst* pObst = FindObstByPosition(vPosition);
 		if (nullptr != pObst)
 		{
 			vPosition = pObst->GetClosestPoint(vPosition, m_fAgentRadius + EPSILON);
 			m_pCurrentCell = FindCellByPosition(vPosition);
+			m_pTransform->SetPosition(vPosition);
+
+			if (true == AStar())
+			{
+				FunnelAlgorithm();				
+			}
+			return;
 		}
 	}
 
@@ -242,14 +249,7 @@ _bool CAgentController::AStar()
 	 Vec3 vDistance = m_vDestPos - vStartPos;
 	_float h = vDistance.Length();
 
-	if (false == AdjustLocation())
-	{
-		m_dqPath.clear();
-		m_dqEntries.clear();
-		m_dqExpandedVertices.clear();
-
-		return false;
-	}
+	
 
 	Open.push(PQNode{ h, 0.0f, m_pCurrentCell });
 	Path[m_pCurrentCell] = PATH(m_pCurrentCell, LINE_END);
@@ -296,6 +296,8 @@ _bool CAgentController::AStar()
 			));
 
 			m_dqExpandedVertices.push_front(m_dqEntries.front());
+
+			m_isMoving = true;
 
 			return true;
 		}
@@ -421,7 +423,7 @@ _bool CAgentController::AStar()
 	return false;
 }
 
-void CAgentController::FunnelAlgorithm()
+_bool CAgentController::FunnelAlgorithm()
 {
 	//deque<pair<Vec3, Vec3>> dqOffset;
 	m_dqOffset.emplace_back(Vec3::Zero, Vec3::Zero); // for DebugRender
@@ -570,6 +572,8 @@ void CAgentController::FunnelAlgorithm()
 	}
 
 	m_dqWayPoints.push_back(m_vDestPos);
+
+	return true;
 }
 
 CellData* CAgentController::FindCellByPosition(const Vec3& vPosition)
@@ -647,13 +651,9 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 		if (true == AStar())
 		{
-			FunnelAlgorithm();
-
-			m_isMoving = true;
-
 			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
 			fAStarPerformance = fAStarPerformance;*/
-			return true;
+			return FunnelAlgorithm();
 		}
 	}
 
@@ -666,13 +666,9 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 		if (true == AStar())
 		{
-			FunnelAlgorithm();
-
-			m_isMoving = true;
-
 			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
 			fAStarPerformance = fAStarPerformance;*/
-			return true;
+			return FunnelAlgorithm();
 		}
 
 		m_vDestPos = m_pTransform->GetPosition();
@@ -685,7 +681,7 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 _bool CAgentController::AdjustLocation()
 {
-	if (true == m_pCurrentCell->isDead || nullptr == m_pCurrentCell)
+	if (nullptr == m_pCurrentCell || true == m_pCurrentCell->isDead)
 	{
 		Vec3 vPosition = m_pTransform->GetPosition();
 		m_pCurrentCell = FindCellByPosition(vPosition);
@@ -700,14 +696,11 @@ _bool CAgentController::AdjustLocation()
 
 				return true;
 			}
-
 			return false;
 		}
-
 		return true;
 	}
-
-	return true;
+	return false;
 }
 
 void CAgentController::Input(_float fTimeDelta)
