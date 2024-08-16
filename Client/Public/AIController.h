@@ -1,28 +1,19 @@
 #pragma once
+
 #include "Client_Defines.h"
 #include "MonoBehaviour.h"
-#include "Transform.h"
-#include "Cell.h"
-
-BEGIN(Engine)
-
-class CTransform;
-class CTerrain;
-struct Cell;
-struct Obst;
-
-END
+#include "RigidDynamic.h"
 
 BEGIN(Client)
 
-class CAgentController : public CMonoBehaviour
+class CAIController : public CMonoBehaviour
 {
 	using Super = CMonoBehaviour;
 
 private:
-	CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	CAgentController(const CAgentController& rhs);
-	virtual ~CAgentController() = default;
+	CAIController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CAIController(const CAIController& rhs);
+	virtual ~CAIController() = default;
 
 public:
 	virtual HRESULT Initialize_Prototype()		override;
@@ -32,17 +23,12 @@ public:
 	virtual void	DebugRender()				override;
 
 public:
-	_bool	IsIdle();
-	_bool	IsMoving();
-
-	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
-
-public:
 	void	SetRadius(const _float fRadius);
 	void	SetLinearSpeed(const Vec3& vLinearSpeed);
+	void	AddWayPoint(const Vec3& vWayPoint) { m_vecWayPoints.push_back(vWayPoint); }
 
 private:
-	void	Input(_float fTimeDelta);
+	void	AutoMove(_float fTimeDelta);
 
 private:
 	CTransform*	m_pTransform = nullptr;
@@ -51,14 +37,17 @@ private:
 	Vec3		m_vLinearSpeed;
 	_float		m_fAgentRadius;
 
+	vector<Vec3> m_vecWayPoints;
+	_int		m_iCurrentWayIdx = 0;
+
 private:
 	// DebugDraw
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;
-	BasicEffect*	m_pEffect = nullptr;
+	BasicEffect* m_pEffect = nullptr;
 	ID3D11InputLayout* m_pInputLayout = nullptr;
 
 public:
-	static	CAgentController* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static	CAIController* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CComponent* Clone(CGameObject* pGameObject, void* pArg) override;
 	virtual void Free() override;
 };

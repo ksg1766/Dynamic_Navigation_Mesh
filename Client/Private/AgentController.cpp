@@ -7,8 +7,6 @@
 #include "Terrain.h"
 #include "DebugDraw.h"
 
-constexpr auto EPSILON = 0.0001f;
-
 CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	:Super(pDevice, pContext)
 	, m_vLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
@@ -87,7 +85,7 @@ _bool CAgentController::IsMoving()
 _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 {
 	_float fDistance = 0.0f;
-	Vec3 vPickedPos;
+	Vec3 vPickedPos = Vec3::Zero;
 
 	if (true == pTerrain->Pick(screenX, screenY, vPickedPos, fDistance, pTerrain->GetTransform()->WorldMatrix()))
 	{
@@ -100,12 +98,13 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 void CAgentController::SetRadius(const _float fRadius)
 {
 	m_fAgentRadius = fRadius;
+	m_pGameObject->GetNavMeshAgent()->SetRadius(m_fAgentRadius);
 }
 
 void CAgentController::SetLinearSpeed(const Vec3& vLinearSpeed)
 {
 	m_vLinearSpeed = vLinearSpeed;
-	m_pGameObject->GetNavMeshAgent();
+	m_pGameObject->GetNavMeshAgent()->SetLinearSpeed(m_vLinearSpeed);
 }
 
 void CAgentController::Input(_float fTimeDelta)

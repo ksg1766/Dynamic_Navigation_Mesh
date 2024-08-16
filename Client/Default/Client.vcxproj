@@ -185,7 +185,7 @@
     <ClInclude Include="..\Public\DebugTerrainGrid.h" />
     <ClInclude Include="..\Public\FlyingCameraController.h" />
     <ClInclude Include="..\Public\Client_Defines.h" />
-    <ClInclude Include="..\Public\CollisionTest.h" />
+    <ClInclude Include="..\Public\AIAgent.h" />
     <ClInclude Include="..\Public\FlyingCamera.h" />
     <ClInclude Include="..\Public\ImGUI\imconfig.h" />
     <ClInclude Include="..\Public\ImGUI\imgui.h" />
@@ -207,9 +207,7 @@
     <ClInclude Include="..\Public\SkyBox.h" />
     <ClInclude Include="..\Public\StaticBase.h" />
     <ClInclude Include="..\Public\StaticScene.h" />
-    <ClInclude Include="..\Public\StaticTest.h" />
-    <ClInclude Include="..\Public\TempCube.h" />
-    <ClInclude Include="..\Public\TestAIController.h" />
+    <ClInclude Include="..\Public\AIController.h" />
     <ClInclude Include="..\Public\tinyxml2.h" />
     <ClInclude Include="..\Public\ViewMediator.h" />
     <ClInclude Include="..\Public\TransformView.h" />
@@ -239,7 +237,7 @@
     </ClCompile>
     <ClCompile Include="..\Private\DebugTerrainGrid.cpp" />
     <ClCompile Include="..\Private\FlyingCameraController.cpp" />
-    <ClCompile Include="..\Private\CollisionTest.cpp" />
+    <ClCompile Include="..\Private\AIAgent.cpp" />
     <ClCompile Include="..\Private\FlyingCamera.cpp" />
     <ClCompile Include="..\Private\LayersView.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
@@ -260,9 +258,7 @@
     <ClCompile Include="..\Private\SkyBox.cpp" />
     <ClCompile Include="..\Private\StaticBase.cpp" />
     <ClCompile Include="..\Private\StaticScene.cpp" />
-    <ClCompile Include="..\Private\StaticTest.cpp" />
-    <ClCompile Include="..\Private\TempCube.cpp" />
-    <ClCompile Include="..\Private\TestAIController.cpp" />
+    <ClCompile Include="..\Private\AIController.cpp" />
     <ClCompile Include="..\Private\tinyxml2.cpp" />
     <ClCompile Include="..\Private\ViewMediator.cpp" />
     <ClCompile Include="..\Private\TransformView.cpp">

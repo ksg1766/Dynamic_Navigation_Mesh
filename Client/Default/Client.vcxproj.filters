@@ -67,29 +67,8 @@
     <Filter Include="01.Levels\02.GameTool\View\AnimationView">
       <UniqueIdentifier>{13c85ca6-1738-412d-bdc4-c574d1d87906}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\02.Monster">
-      <UniqueIdentifier>{367a9a79-09c7-43f4-82e0-d3c6acf6d785}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\CollisionTestCube">
-      <UniqueIdentifier>{e292aea5-e692-4d18-9fff-2738cfc049d9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\CollisionTestCube\00.GameObject">
-      <UniqueIdentifier>{b17b4c1b-b792-4db7-9b23-90940fce33a0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.Monster\CollisionTestCube\01.Script">
-      <UniqueIdentifier>{55bff19f-cc5b-4634-997a-3cd2a3a214de}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\00.Static">
       <UniqueIdentifier>{c4e8b885-4768-40de-8227-7c9b20688169}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\StaticTestCube">
-      <UniqueIdentifier>{f5cd7116-71d1-4b30-9d70-4164654c1857}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\StaticTestCube\00.GameObject">
-      <UniqueIdentifier>{ca36102f-589a-4126-8c1f-ea8ba8c4f083}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\StaticTestCube\01.Script">
-      <UniqueIdentifier>{de5e19ca-de04-4b4b-955d-d8538e111663}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\00.Static\StaticBase">
       <UniqueIdentifier>{1b05fad7-47fa-4638-b885-25a871718926}</UniqueIdentifier>
@@ -105,15 +84,6 @@
     </Filter>
     <Filter Include="03.GameObjects\01.Playable">
       <UniqueIdentifier>{5dff5009-41f4-424a-bffb-51a193eb5a78}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\TempCube">
-      <UniqueIdentifier>{23a6e04a-e4fc-4b28-b63a-f5716d9f8432}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\TempCube\01.Script">
-      <UniqueIdentifier>{f2e7a9aa-968f-4f22-a126-803d09d5cdd2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\TempCube\00.GameObject">
-      <UniqueIdentifier>{19ba0693-056c-4617-a870-a8b73617aef6}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\99.BackGround">
       <UniqueIdentifier>{327a42a0-45f0-4b4d-b8cd-bb209baedc94}</UniqueIdentifier>
@@ -142,20 +112,8 @@
     <Filter Include="01.Levels\02.GameTool\View\NavMeshView">
       <UniqueIdentifier>{c6dc7fa4-a266-4b6f-98b6-de967c3ebeea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\02.Monster\Script">
-      <UniqueIdentifier>{b89f1ef8-48f4-4cde-9a89-2548fc76681c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\05.Particle">
-      <UniqueIdentifier>{12377550-5943-4235-a460-ed11c4fa3ea9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\05.Particle\Script">
-      <UniqueIdentifier>{235fcff1-0585-4907-82ad-8450231857f3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\00.Static\SkyBox">
       <UniqueIdentifier>{f4a2fcae-ca40-4f7a-bed8-a4f0c9f40e69}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\05.Particle\Particle">
-      <UniqueIdentifier>{a3e64665-a652-4752-bc78-eade768fb7bc}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\00.Static\StaticScene">
       <UniqueIdentifier>{29654f1c-3463-4ee1-a341-7d0cc73610ad}</UniqueIdentifier>
@@ -163,7 +121,22 @@
     <Filter Include="03.GameObjects\01.Playable\00.Agent">
       <UniqueIdentifier>{0fbf463f-1bb6-4749-a99e-32622afe4f0e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.Agent\Script">
+    <Filter Include="03.GameObjects\02.AI">
+      <UniqueIdentifier>{367a9a79-09c7-43f4-82e0-d3c6acf6d785}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.GameObjects\02.AI\AIAgent">
+      <UniqueIdentifier>{e292aea5-e692-4d18-9fff-2738cfc049d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.GameObjects\02.AI\AIAgent\00.GameObject">
+      <UniqueIdentifier>{b17b4c1b-b792-4db7-9b23-90940fce33a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.GameObjects\02.AI\AIAgent\01.Script">
+      <UniqueIdentifier>{55bff19f-cc5b-4634-997a-3cd2a3a214de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.GameObjects\01.Playable\00.Agent\00.GameObject">
+      <UniqueIdentifier>{19d28c0f-5b95-45e7-ba13-448c9514203b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.GameObjects\01.Playable\00.Agent\01.Script">
       <UniqueIdentifier>{cc513126-8d06-4a05-86f2-19b84d62430f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -228,14 +201,11 @@
     <ClInclude Include="..\Public\ImGUI\imstb_truetype.h">
       <Filter>01.Levels\02.GameTool\ImGUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\TempCube.h">
-      <Filter>03.GameObjects\01.Playable\TempCube\00.GameObject</Filter>
+    <ClInclude Include="..\Public\AIAgent.h">
+      <Filter>03.GameObjects\02.AI\AIAgent\00.GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\CollisionTest.h">
-      <Filter>03.GameObjects\02.Monster\CollisionTestCube\00.GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\TestAIController.h">
-      <Filter>03.GameObjects\02.Monster\CollisionTestCube\01.Script</Filter>
+    <ClInclude Include="..\Public\AIController.h">
+      <Filter>03.GameObjects\02.AI\AIAgent\01.Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\FlyingCamera.h">
       <Filter>03.GameObjects\98.Camera\00.FlyingCamera\GameObject</Filter>
@@ -248,9 +218,6 @@
     </ClInclude>
     <ClInclude Include="..\Public\DebugTerrainGrid.h">
       <Filter>03.GameObjects\00.Static\BasicTerrain\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\StaticTest.h">
-      <Filter>03.GameObjects\00.Static\StaticTestCube\00.GameObject</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\PrefabsView.h">
       <Filter>01.Levels\02.GameTool\View\PrefabsView</Filter>
@@ -282,9 +249,6 @@
     <ClInclude Include="..\Public\AnimationView.h">
       <Filter>01.Levels\02.GameTool\View\AnimationView</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Agent.h">
-      <Filter>03.GameObjects\01.Playable\00.Agent</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\MainCamera.h">
       <Filter>03.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
     </ClInclude>
@@ -292,7 +256,7 @@
       <Filter>03.GameObjects\98.Camera\01.MainCamera\Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\AgentController.h">
-      <Filter>03.GameObjects\01.Playable\00.Agent\Script</Filter>
+      <Filter>03.GameObjects\01.Playable\00.Agent\01.Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\NavMeshView.h">
       <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
@@ -311,6 +275,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\tinyxml2.h">
       <Filter>99.Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Agent.h">
+      <Filter>03.GameObjects\01.Playable\00.Agent\00.GameObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -362,14 +329,11 @@
     <ClCompile Include="..\Public\ImGUI\imgui_widgets.cpp">
       <Filter>01.Levels\02.GameTool\ImGUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\TempCube.cpp">
-      <Filter>03.GameObjects\01.Playable\TempCube\00.GameObject</Filter>
+    <ClCompile Include="..\Private\AIAgent.cpp">
+      <Filter>03.GameObjects\02.AI\AIAgent\00.GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\CollisionTest.cpp">
-      <Filter>03.GameObjects\02.Monster\CollisionTestCube\00.GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\TestAIController.cpp">
-      <Filter>03.GameObjects\02.Monster\CollisionTestCube\01.Script</Filter>
+    <ClCompile Include="..\Private\AIController.cpp">
+      <Filter>03.GameObjects\02.AI\AIAgent\01.Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\FlyingCamera.cpp">
       <Filter>03.GameObjects\98.Camera\00.FlyingCamera\GameObject</Filter>
@@ -382,9 +346,6 @@
     </ClCompile>
     <ClCompile Include="..\Private\DebugTerrainGrid.cpp">
       <Filter>03.GameObjects\00.Static\BasicTerrain\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\StaticTest.cpp">
-      <Filter>03.GameObjects\00.Static\StaticTestCube\00.GameObject</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\PrefabsView.cpp">
       <Filter>01.Levels\02.GameTool\View\PrefabsView</Filter>
@@ -413,9 +374,6 @@
     <ClCompile Include="..\Private\AnimationView.cpp">
       <Filter>01.Levels\02.GameTool\View\AnimationView</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Agent.cpp">
-      <Filter>03.GameObjects\01.Playable\00.Agent</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\MainCamera.cpp">
       <Filter>03.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
     </ClCompile>
@@ -423,7 +381,7 @@
       <Filter>03.GameObjects\98.Camera\01.MainCamera\Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\AgentController.cpp">
-      <Filter>03.GameObjects\01.Playable\00.Agent\Script</Filter>
+      <Filter>03.GameObjects\01.Playable\00.Agent\01.Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\NavMeshView.cpp">
       <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
@@ -439,6 +397,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\tinyxml2.cpp">
       <Filter>99.Defines</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Agent.cpp">
+      <Filter>03.GameObjects\01.Playable\00.Agent\00.GameObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@
 #include "Client_Macro.h"
 #include "tinyxml2.h"
 #include "Agent.h"
+#include "AIAgent.h"
 #include "Cell.h"
 #include "Obstacle.h"
 
@@ -97,6 +98,16 @@ HRESULT CNavMeshView::Tick()
 		}
 	}
 	ImGui::NewLine();
+
+	if (ImGui::Button("CreateAI"))
+	{
+		//if (FAILED(CreateAgent(0)))
+		if (FAILED(CreateAI(Vec3::Zero)))
+		{
+			ImGui::End();
+			return E_FAIL;
+		}
+	}
 
 	// stress test
 	const _char* szStressButon = (true == m_bStressTest) ? "Stop Stress Test" : "Start Stress Test";
@@ -1201,6 +1212,7 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 	{
 		return E_FAIL;
 	}
+
 	CNavMeshAgent::NAVIGATION_DESC tDesc =
 	{
 		pCell,
@@ -1248,6 +1260,38 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 	}
 
 	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::CreateAI(Vec3 vSpawnPosition)
+{
+	Cell* pCell = FindCellByPosition(vSpawnPosition);
+
+	if (nullptr == pCell)
+	{
+		return E_FAIL;
+	}
+
+	CNavMeshAgent::NAVIGATION_DESC tDesc =
+	{
+		pCell,
+		&m_umapCellGrids,
+		&m_umapObstGrids
+	};
+
+	CAIAgent* pAIAgent = static_cast<CAIAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_AIAgent"), LAYERTAG::UNIT_GROUND, &tDesc));
+
+	if (nullptr == pAIAgent)
+	{
+		return E_FAIL;
+	}
+
+	pAIAgent->GetTransform()->SetPosition(vSpawnPosition);
+
+	m_vecAIAgents.push_back(pAIAgent);
+
+	// TODO : 
 
 	return S_OK;
 }

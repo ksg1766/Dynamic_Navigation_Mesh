@@ -3,11 +3,11 @@
 #include <filesystem>
 
 #include "GameInstance.h"
-#include "DissolveManager.h"
 #include "Level_Loading.h"
 #include "FlyingCameraController.h"
 #include "DebugTerrainGrid.h"
 #include "AgentController.h"
+#include "AIController.h"
 
 CMainApp::CMainApp()	
 	: m_pGameInstance(CGameInstance::GetInstance())
@@ -24,20 +24,16 @@ CMainApp::CMainApp()
 	*/
 
 	/* 
-	_float4		vSrcColor(내가 백버퍼에 그릴려고하는 픽셀의 색), vDestColor(이미 백버퍼에 그려져있던 색);
+	_float4		vSrcColor, vDestColor;
 
 	_float4		vResult =
 		(vSrcColor * vSrcColor.a) + (vDestColor * (1.f - vSrcColor.a));
-		*/
+	*/
 }
 
 
 HRESULT CMainApp::Initialize()
 {
-	/* 1. 내 게임의 초기화를 수행. */
-	/* 1-1. 그래픽장치를 초기화한다. */
-	/* 1-2. 사운드장치를 초기화한다. */
-	/* 1-3. 입력장치를 초기화한다. */
 	GRAPHIC_DESC		GraphicDesc;
 	ZeroMemory(&GraphicDesc, sizeof GraphicDesc);
 
@@ -58,7 +54,6 @@ HRESULT CMainApp::Initialize()
 	if (FAILED(Ready_Prototype_Scripts()))
 		return E_FAIL;
 
-	/* 1-4. 게임내에서 사용할 레벨(씬)을 생성.   */
 	if (FAILED(Open_Level(LEVEL_LOGO)))
 		return E_FAIL;
 
@@ -67,12 +62,7 @@ HRESULT CMainApp::Initialize()
 
 void CMainApp::Tick(const _float& fTimeDelta)
 {
-	/* 게임내에 존재하는 여러 객체들의 갱신. */
-	/* 레벨의 갱신 */
 	m_pGameInstance->Tick(fTimeDelta);
-	
-	// Temp
-	CDissolveManager::GetInstance()->Tick_Dissolve(fTimeDelta);
 }
 
 HRESULT CMainApp::Render()
@@ -92,7 +82,6 @@ HRESULT CMainApp::Render()
 		m_dwTime = GetTickCount();
 	}
 
-	/* 게임내에 존재하는 여러 객체들의 렌더링. */
 	m_pGameInstance->Clear_BackBuffer_View(_float4(0.9f, 0.9f, 0.9f, 1.f));
 	m_pGameInstance->Clear_DepthStencil_View();
 #ifdef _DEBUG
@@ -102,7 +91,7 @@ HRESULT CMainApp::Render()
 	m_pRenderer->Draw_RenderObjects();
 
 	m_pGameInstance->DebugRender();
-	/* 초기화한 장면에 객체들을 그린다. */
+
 	m_pGameInstance->Present();
 
 	m_pGameInstance->FinalTick();
@@ -125,9 +114,6 @@ HRESULT CMainApp::Open_Level(LEVELID eLevelID)
 
 HRESULT CMainApp::Reserve_Client_Managers()
 {
-	if (FAILED(CDissolveManager::GetInstance()->Reserve_Manager(m_pDevice)))
-		return E_FAIL;
-
 	return S_OK;
 }
 
@@ -261,6 +247,10 @@ HRESULT CMainApp::Ready_Prototype_Components()
 	
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_FlatBlue"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Colors/FlatBlue.png")))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_FlatMagenta"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Colors/FlatMagenta.png")))))
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_FlatNormal"),
@@ -399,6 +389,11 @@ HRESULT CMainApp::Ready_Prototype_Scripts()
 		CAgentController::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	/* For.Prototype_Component_AIController*/
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_TestAIController"),
+		CAIController::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	return S_OK;
 }
 
@@ -425,8 +420,6 @@ void Client::CMainApp::Free()
 	Safe_Release(m_pContext);
 
 	Safe_Release(m_pGameInstance);
-
-	CDissolveManager::GetInstance()->Free();
 
 	CGameInstance::Release_Engine();
 }

@@ -64,6 +64,8 @@ private:
 	HRESULT		CreateAgent(_int iSpawnIndex);
 	HRESULT		StressTest();
 
+	HRESULT		CreateAI(Vec3 vSpawnPosition);
+
 private:
 	void		SetPolygonHoleCenter(Obst& tObst);
 	HRESULT		GetIntersectedCells(const Obst& tObst, OUT set<Cell*>& setIntersected, _bool bPop = false, _bool bDelete = false);
@@ -87,7 +89,7 @@ private:
 private:
 	void		Input();
 	_bool		Pick(_uint screenX, _uint screenY);
-	Cell*	FindCellByPosition(const Vec3& vPosition);
+	Cell*		FindCellByPosition(const Vec3& vPosition);
 
 	HRESULT		SaveNvFile();
 	HRESULT		Save3DNvFile();
@@ -117,6 +119,7 @@ private:
 private:
 	// Path Finding (A*)
 	class CAgent*			m_pAgent = nullptr;
+	vector<class CAIAgent*>	m_vecAIAgents;
 
 	// Cell Data
 	_int					m_iStaticPointCount = 0;
