@@ -6,7 +6,7 @@
 #include "Terrain.h"
 #include "DebugDraw.h"
 
-constexpr auto EPSILON = 0.001f;
+constexpr auto EPSILON = 0.0001f;
 
 CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	:Super(pDevice, pContext)
@@ -141,11 +141,9 @@ Vec3 CAgentController::Move(_float fTimeDelta)
 	Vec3 vMoveAmount = Vec3::Zero;
 	Vec3 vDirection = Vec3::Zero;
 
-	Vec3 vPrePos = m_pTransform->GetPosition();
-
 	if (1 >= m_dqWayPoints.size()) // already in destcell or no pathfinding
 	{
-		vDistance = m_vDestPos - vPrePos;
+		vDistance = m_vDestPos - m_vPrePos;
 		vDistance.Normalize(OUT vDirection);
 
 		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
@@ -164,7 +162,7 @@ Vec3 CAgentController::Move(_float fTimeDelta)
 	}
 	else
 	{
-		vDistance = m_dqWayPoints[1] - vPrePos;
+		vDistance = m_dqWayPoints[1] - m_vPrePos;
 		vDistance.Normalize(OUT vDirection);
 
 		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
@@ -183,7 +181,7 @@ Vec3 CAgentController::Move(_float fTimeDelta)
 	
 	m_pTransform->Translate(vMoveAmount);
 
-	return vPrePos;
+	return m_vPrePos;
 }
 
 void CAgentController::Slide(const Vec3 vPrePos)
@@ -196,19 +194,21 @@ void CAgentController::Slide(const Vec3 vPrePos)
 		return;
 	}
 
-	while (nullptr != pNeighbor)
+	_int iCount = 0;
+	while (nullptr != pNeighbor && iCount < 10)
 	{
 		if (false == pNeighbor->IsOut(vPosition, pNeighbor))
 		{
 			m_pCurrentCell = pNeighbor;
 			return;
 		}
+		++iCount;
 	}
 
 	Vec3 vDir = vPosition - vPrePos;
 	Vec3 vPassedLine = m_pCurrentCell->GetPassedEdgeNormal(vPosition);
 
-	vPosition = vPrePos + vDir - (EPSILON + vDir.Dot(vPassedLine)) * vPassedLine;
+	vPosition = vPrePos + vDir - (0.001f + vDir.Dot(vPassedLine)) * vPassedLine;
 	m_pCurrentCell = FindCellByPosition(vPosition);
 
 	if (nullptr == m_pCurrentCell)
@@ -216,7 +216,7 @@ void CAgentController::Slide(const Vec3 vPrePos)
 		Obst* pObst = FindObstByPosition(vPosition);
 		if (nullptr != pObst)
 		{
-			vPosition = pObst->GetClosestPoint(vPosition, m_fAgentRadius + EPSILON);
+			vPosition = pObst->GetClosestPoint(vPosition, m_fAgentRadius + 0.001f);
 			m_pCurrentCell = FindCellByPosition(vPosition);
 			m_pTransform->SetPosition(vPosition);
 
@@ -489,7 +489,7 @@ _bool CAgentController::FunnelAlgorithm()
 		if (Vec3::Zero != vAvgL)
 		{
 			vAvgL.Normalize();
-			vPerpendL = Vec3(m_fAgentRadius * vAvgL.z, vAvgL.y, m_fAgentRadius * -vAvgL.x);
+			vPerpendL = Vec3((m_fAgentRadius + EPSILON) * vAvgL.z, vAvgL.y, (m_fAgentRadius + EPSILON) * -vAvgL.x);
 		}
 		else
 		{
@@ -499,7 +499,7 @@ _bool CAgentController::FunnelAlgorithm()
 		if (Vec3::Zero != vAvgR)
 		{
 			vAvgR.Normalize();
-			vPerpendR = Vec3(m_fAgentRadius * -vAvgR.z, vAvgR.y, m_fAgentRadius * vAvgR.x);
+			vPerpendR = Vec3((m_fAgentRadius + EPSILON) * -vAvgR.z, vAvgR.y, (m_fAgentRadius + EPSILON) * vAvgR.x);
 		}
 		else
 		{
