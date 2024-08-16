@@ -2,9 +2,71 @@
 # 📅 2024.08.14
 📋 진행 사항
   * obstacle을 삭제할 때 변동하는 navigation mesh 정보를 agent가 이용할 수 있도록 수정했습니다.
-    * obstacle을 생성할 때와 마찬가지로,삭제될 cell들을 포함하는 모든 grid에서 cell의 정보를 제거했습니다.
-    * 
-  * 추가로, obstacle을 생성할 때, 이미 obstacle이 있는 영역
+    * obstacle을 생성할 때와 마찬가지로, 삭제될 cell들을 포함하는 모든 grid에서 cell의 정보를 제거했습니다.
+    * 아래는 연동한 결과입니다.
+      
+      ![FPS_61-DEBUG2024-08-1610-53-42-ezgif com-optimize](https://github.com/user-attachments/assets/5b926420-bc5e-4b1a-9833-21a9ac7f8c12)
+      
+  * 추가로, obstacle을 생성할 때, 이미 obstacle이 있는 영역과 겹치는 경우 obstacle을 생성할 수 없도록 수정했습니다. 이전에는 영역이 겹치면 프로그램 실행이 중단됐습니다.
+
+    ![FPS_61-DEBUG2024-08-1611-21-23-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/730bf0f4-3c04-4966-93cc-a6935ef8c2e0)
+    
+    * 외곽선의 교차점이 하나라도 검출되면 obstacle을 생성하지 않도록 구현했습니다. 교차점을 검출하는 방법은 이전에 obstacle 외곽선 확장을 구현했을 때 교차점을 제거하는 알고리즘과 같은 함수를 사용했습니다.
+		```
+		_int CNavMeshView::IntersectSegments(const Vec3& vP1, const Vec3& vQ1, const Vec3& vP2, const Vec3& vQ2, Vec3* pIntersection)
+		{
+			Vec3 vSour = { vQ1.x - vP1.x, 0.0f, vQ1.z - vP1.z };
+			Vec3 vDest = { vQ2.x - vP2.x, 0.0f, vQ2.z - vP2.z };
+
+			_float fSxD = vSour.x * vDest.z - vSour.z * vDest.x;
+			_float fPQxR = (vP2.x - vP1.x) * vSour.z - (vP2.z - vP1.z) * vSour.x;
+
+			if (fabs(fSxD) < 1e-5f)
+			{
+				return 0; // Parallel
+			}
+
+			_float fT = ((vP2.x - vP1.x) * vDest.z - (vP2.z - vP1.z) * vDest.x) / fSxD;
+			_float fU = fPQxR / fSxD;
+
+			if (fT >= 0.0f && fT <= 1.0f && fU >= 0.0f && fU <= 1.0f)
+			{
+				if (nullptr != pIntersection)
+				{
+					*pIntersection = { vP1.x + fT * vSour.x, 0.0f, vP1.z + fT * vSour.z };
+				}
+
+				return 1;
+			}
+
+			return -1;
+		}
+		```
+    
+  * obstacle을 생성할 때, 해당 영역에 agent가 위치해 있다면 가장자리로 밀려나도록 수정했습니다.
+    
+    ![FPS_61-DEBUG2024-08-1610-55-08-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/3bd8680c-99da-4963-a12e-3eedfc5708ee)
+    
+  * 경로 탐색 중에 새로 생성된 obstacle이 현재 경로를 가로막는다면 경로를 다시 탐색하도록 구현했습니다.
+    
+    ![FPS_61-DEBUG2024-08-1610-26-15-ezgif com-optimize](https://github.com/user-attachments/assets/3bdfe464-d136-4a07-8c08-a5a036ff72cd)
+
+    * 우선은 아래와 같이 간단히 구현했습니다. agent는 최종 결정된 path의 cell정보를 가지고 있는데, obstacle의 생성 및 삭제 시 새로 생성된 cell이 추가되기 전, 이미 있던 cell이 삭제 되는 작업은 해당 프레임의 마지막에 수행되므로
+      이미 경로로 지정된 cell들중 하나라도 삭제 예정 여부가 확인되면 경로를 재검색하도록 변경했습니다. 이후에 agent 수를 늘려가며 계속해서 확인해볼 계획입니다.
+      
+		```
+		for (_int i = 0; i < m_dqPath.size(); ++i)
+		{
+			if (true == m_dqPath[i].first->isDead)
+			{
+				if (true == AStar())
+				{
+					FunnelAlgorithm();
+					break;
+				}
+			}
+		}
+		```
 
 ---
 # 📅 2024.08.13
