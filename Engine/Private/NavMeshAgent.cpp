@@ -473,9 +473,12 @@ _bool CNavMeshAgent::AStar()
 			{
 				Path[pNeighbor] = PATH(pCurrent, (LINES)i);	// pCurrent의 i번째 line을 통과한 노드가 pNeighbor
 
-				Vec3 vEdgeMid = 0.5f * (pCurrent->vPoints[i] + pCurrent->vPoints[(i + 1) % POINT_END]);
+				//Vec3 vEdgeMid = 0.5f * (pCurrent->vPoints[i] + pCurrent->vPoints[(i + 1) % POINT_END]);
+				Vec3 vClosestPoint2Edge = CNSHelper::ProjectionPoint2Edge(m_vDestPos, pCurrent->vPoints[i], pCurrent->vPoints[(i + 1) % POINT_END]);
+
 				Open.push(PQNode{
-					neighbor_g + Cell::HeuristicCostEuclidean(vEdgeMid, m_vDestPos),
+					//neighbor_g + Cell::HeuristicCostEuclidean(vEdgeMid, m_vDestPos),
+					neighbor_g + Cell::HeuristicCostEuclidean(vClosestPoint2Edge, m_vDestPos),
 					neighbor_g,
 					pNeighbor
 					});

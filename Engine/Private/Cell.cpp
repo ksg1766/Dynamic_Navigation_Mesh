@@ -144,8 +144,9 @@ _float Cell::CostBetweenMax(POINTS eP1, POINTS eP2, POINTS eQ1, POINTS eQ2, cons
 
 	_float fCostEdge2Edge = fParentG + fAgentRadius * fTheta[eBetween];
 
-	Vec3 vMidPoint = 0.5f * (vPoints[eP1] + vPoints[eP2]);
-	_float fNeighborH = HeuristicCostEuclidean(vMidPoint, vDest);
+	//Vec3 vMidPoint = 0.5f * (vPoints[eP1] + vPoints[eP2]);
+	//_float fNeighborH = HeuristicCostEuclidean(vMidPoint, vDest);
+	_float fNeighborH = HeuristicCostEuclidean(vClosestPoint2Edge, vDest);
 	_float fCostHeuristicDiff = fParentG + fParentH - fNeighborH;
 
 	return ::max(::max(fCostPoint2Edge, fCostEdge2Edge), fCostHeuristicDiff);
