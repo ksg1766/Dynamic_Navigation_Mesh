@@ -124,20 +124,20 @@
     <Filter Include="03.GameObjects\02.AI">
       <UniqueIdentifier>{367a9a79-09c7-43f4-82e0-d3c6acf6d785}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\02.AI\AIAgent">
-      <UniqueIdentifier>{e292aea5-e692-4d18-9fff-2738cfc049d9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.AI\AIAgent\00.GameObject">
-      <UniqueIdentifier>{b17b4c1b-b792-4db7-9b23-90940fce33a0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.AI\AIAgent\01.Script">
-      <UniqueIdentifier>{55bff19f-cc5b-4634-997a-3cd2a3a214de}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.GameObjects\01.Playable\00.Agent\00.GameObject">
       <UniqueIdentifier>{19d28c0f-5b95-45e7-ba13-448c9514203b}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\01.Playable\00.Agent\01.Script">
       <UniqueIdentifier>{cc513126-8d06-4a05-86f2-19b84d62430f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.GameObjects\02.AI\00.AIAgent">
+      <UniqueIdentifier>{e292aea5-e692-4d18-9fff-2738cfc049d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.GameObjects\02.AI\00.AIAgent\00.GameObject">
+      <UniqueIdentifier>{b17b4c1b-b792-4db7-9b23-90940fce33a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.GameObjects\02.AI\00.AIAgent\01.Script">
+      <UniqueIdentifier>{55bff19f-cc5b-4634-997a-3cd2a3a214de}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -202,10 +202,10 @@
       <Filter>01.Levels\02.GameTool\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\AIAgent.h">
-      <Filter>03.GameObjects\02.AI\AIAgent\00.GameObject</Filter>
+      <Filter>03.GameObjects\02.AI\00.AIAgent\00.GameObject</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\AIController.h">
-      <Filter>03.GameObjects\02.AI\AIAgent\01.Script</Filter>
+      <Filter>03.GameObjects\02.AI\00.AIAgent\01.Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\FlyingCamera.h">
       <Filter>03.GameObjects\98.Camera\00.FlyingCamera\GameObject</Filter>
@@ -330,10 +330,10 @@
       <Filter>01.Levels\02.GameTool\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\AIAgent.cpp">
-      <Filter>03.GameObjects\02.AI\AIAgent\00.GameObject</Filter>
+      <Filter>03.GameObjects\02.AI\00.AIAgent\00.GameObject</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\AIController.cpp">
-      <Filter>03.GameObjects\02.AI\AIAgent\01.Script</Filter>
+      <Filter>03.GameObjects\02.AI\00.AIAgent\01.Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\FlyingCamera.cpp">
       <Filter>03.GameObjects\98.Camera\00.FlyingCamera\GameObject</Filter>

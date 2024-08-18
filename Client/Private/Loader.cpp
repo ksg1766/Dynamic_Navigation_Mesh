@@ -309,6 +309,10 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GameTool()
 	/* For.Prototype_GameObject_Agent */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Agent"), CAgent::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	
+	/* For.Prototype_GameObject_AIAgent */
+	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_AIAgent"), CAIAgent::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 
 	/* For.Prototype_GameObject_Static */
 	wstring strStaticFilePath = TEXT("../Bin/Resources/Models/Static/");

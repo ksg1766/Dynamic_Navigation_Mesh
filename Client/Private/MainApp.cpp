@@ -104,8 +104,6 @@ HRESULT CMainApp::Open_Level(LEVELID eLevelID)
 	if (nullptr == m_pGameInstance)
 		return E_FAIL;
 
-	/* 로고레베릉ㄹ 할당하고 싶었지만. 로고레벨을 위한 로딩레벨을 먼저 생성하여 로딩작업을 수행할꺼야. */
-	/* 로딩객체에게 eLevelID라는 내가 실제 할당ㅎ아고 싶었던 레벨열거체를 준거지?! 실제할당하고싶었던 레벨에 자원을 준비라하라고 */
 	if (FAILED(m_pGameInstance->Open_Level(LEVEL_LOADING, CLevel_Loading::Create(m_pDevice, m_pContext, eLevelID))))
 		return E_FAIL;
 
@@ -229,7 +227,6 @@ HRESULT CMainApp::Ready_Prototype_Components()
 		CRigidDynamic::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	// 일단 여기에 넣어보자
 	/* For.Prototype_Component_SphereCollider */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_SphereCollider"),
 		CSphereCollider::Create(m_pDevice, m_pContext))))
@@ -390,7 +387,7 @@ HRESULT CMainApp::Ready_Prototype_Scripts()
 		return E_FAIL;
 
 	/* For.Prototype_Component_AIController*/
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_TestAIController"),
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_AIController"),
 		CAIController::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 

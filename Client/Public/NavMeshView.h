@@ -64,7 +64,7 @@ private:
 	HRESULT		CreateAgent(_int iSpawnIndex);
 	HRESULT		StressTest();
 
-	HRESULT		CreateAI(Vec3 vSpawnPosition);
+	HRESULT		CreateAI();
 
 private:
 	void		SetPolygonHoleCenter(Obst& tObst);

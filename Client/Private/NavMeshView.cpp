@@ -102,7 +102,7 @@ HRESULT CNavMeshView::Tick()
 	if (ImGui::Button("CreateAI"))
 	{
 		//if (FAILED(CreateAgent(0)))
-		if (FAILED(CreateAI(Vec3::Zero)))
+		if (FAILED(CreateAI()))
 		{
 			ImGui::End();
 			return E_FAIL;
@@ -222,6 +222,11 @@ HRESULT CNavMeshView::DebugRender()
 	if (nullptr != m_pAgent)
 	{
 		m_pAgent->DebugRender();
+	}
+
+	for (auto AI : m_vecAIAgents)
+	{
+		AI->DebugRender();
 	}
 
 	return S_OK;
@@ -1264,14 +1269,21 @@ HRESULT CNavMeshView::CreateAgent(_int iSpawnIndex)
 	return S_OK;
 }
 
-HRESULT CNavMeshView::CreateAI(Vec3 vSpawnPosition)
+HRESULT CNavMeshView::CreateAI()
 {
-	Cell* pCell = FindCellByPosition(vSpawnPosition);
+	random_device						RandomDevice;
+	mt19937_64							RandomFloat(RandomDevice());
+	uniform_real_distribution<_float>	RandomX(-512.0f, 512.0f);
+	uniform_real_distribution<_float>	RandomZ(-512.0f, 512.0f);
 
-	if (nullptr == pCell)
+	Vec3 vRandomPoint = Vec3(RandomX(RandomFloat), 0.0f, RandomZ(RandomFloat));
+
+	Cell* pCell = nullptr;
+	do
 	{
-		return E_FAIL;
-	}
+		vRandomPoint = Vec3(RandomX(RandomFloat), 0.0f, RandomZ(RandomFloat));
+		pCell = FindCellByPosition(vRandomPoint);
+	} while (nullptr == pCell);
 
 	CNavMeshAgent::NAVIGATION_DESC tDesc =
 	{
@@ -1287,11 +1299,25 @@ HRESULT CNavMeshView::CreateAI(Vec3 vSpawnPosition)
 		return E_FAIL;
 	}
 
-	pAIAgent->GetTransform()->SetPosition(vSpawnPosition);
+	pAIAgent->GetTransform()->SetPosition(pCell->GetCenter());
+	
+	pAIAgent->AddWayPoint(vRandomPoint);
+
+	for (_int i = 0; i < 3; ++i)
+	{
+		Vec3 vNewPoint;
+		pCell = nullptr;
+		do
+		{
+			vNewPoint = Vec3(RandomX(RandomFloat), 0.0f, RandomZ(RandomFloat));
+			pCell = FindCellByPosition(vNewPoint);
+		} while (nullptr == pCell && gGridCX <= Vec3::Distance(vRandomPoint, vNewPoint));
+
+		pAIAgent->AddWayPoint(vNewPoint);
+		vRandomPoint = vNewPoint;
+	}
 
 	m_vecAIAgents.push_back(pAIAgent);
-
-	// TODO : 
 
 	return S_OK;
 }

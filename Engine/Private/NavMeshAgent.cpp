@@ -772,6 +772,20 @@ Obst* CNavMeshAgent::FindObstByPosition(const Vec3& vPosition)
 
 void CNavMeshAgent::PopPath()
 {
+	for (_int i = 0; i < m_dqPath.size(); ++i)
+	{
+		if (m_pCurrentCell == m_dqPath[i].first)
+		{
+			for (_int j = 0; j <= i; ++j)
+			{
+				if (false == m_dqPath.empty())				m_dqPath.pop_front();
+				if (false == m_dqEntries.empty())			m_dqEntries.pop_front();
+				if (false == m_dqOffset.empty())			m_dqOffset.pop_front();
+				if (false == m_dqExpandedVertices.empty())	m_dqExpandedVertices.pop_front();
+			}
+			break;
+		}
+	}
 }
 
 CNavMeshAgent* CNavMeshAgent::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
