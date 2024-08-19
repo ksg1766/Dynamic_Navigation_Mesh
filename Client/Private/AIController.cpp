@@ -88,10 +88,13 @@ void CAIController::AutoMove(_float fTimeDelta)
 	{
 		if (++m_iCurrentWayIdx >= m_vecWayPoints.size())
 		{
-			m_iCurrentWayIdx /= m_vecWayPoints.size();
+			m_iCurrentWayIdx %= m_vecWayPoints.size();
 		}
 
-		m_pGameObject->GetNavMeshAgent()->SetPath(m_vecWayPoints[m_iCurrentWayIdx]);
+		if (false == m_pGameObject->GetNavMeshAgent()->SetPath(m_vecWayPoints[m_iCurrentWayIdx]))
+		{
+			++m_iCurrentWayIdx %= m_vecWayPoints.size();
+		}
 	}
 }
 

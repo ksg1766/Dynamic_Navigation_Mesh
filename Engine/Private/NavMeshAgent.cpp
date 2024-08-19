@@ -169,7 +169,7 @@ void CNavMeshAgent::DebugRender()
 
 _bool CNavMeshAgent::IsIdle()
 {
-	return !IsMoving();
+	return !m_isMoving;
 }
 
 _bool CNavMeshAgent::IsMoving()
@@ -228,7 +228,7 @@ void CNavMeshAgent::Slide(const Vec3 vPrePos)
 	Vec3 vDir = vPosition - vPrePos;
 	Vec3 vPassedLine = m_pCurrentCell->GetPassedEdgeNormal(vPosition);
 
-	vPosition = vPrePos + vDir - (0.001f + vDir.Dot(vPassedLine)) * vPassedLine;
+	vPosition = vPrePos + vDir - (0.002f + vDir.Dot(vPassedLine)) * vPassedLine;
 	m_pCurrentCell = FindCellByPosition(vPosition);
 
 	if (nullptr == m_pCurrentCell)
