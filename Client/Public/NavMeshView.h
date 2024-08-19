@@ -23,8 +23,6 @@ struct iVec3
 class CNavMeshView final : public CView
 {
     using Super = CView;
-private:
-	enum class TRIMODE : uint8 { DEFAULT, OBSTACLE, REGION, MODE_END };
 
 private:
 	CNavMeshView(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -89,7 +87,6 @@ private:
 
 private:
 	void		Input();
-	_bool		Pick(_uint screenX, _uint screenY);
 	Cell*		FindCellByPosition(const Vec3& vPosition);
 
 	HRESULT		SaveNvFile();
@@ -100,16 +97,14 @@ private:
 	HRESULT		RefreshNvFile();
 
 	HRESULT		LoadMainScene();
-	//HRESULT		LoadAnotherLevelData(const vector<Vec3>& vecPoints);
+	HRESULT		LoadMazeTestScene();
 
 	HRESULT		SaveObstacleLocalOutline(const Obst* const pObst, string strName);
 	HRESULT		LoadObstacleOutlineData();
 
 private:
 	void		InfoView();
-	void		PointsGroup();
 	void		ObstaclesGroup();
-	void		CellGroup();
 
 private:
 	HRESULT		InitialSetting();
@@ -135,8 +130,6 @@ private:
 	vector<Obst*>			m_vecObstacles;
 	unordered_map<CGameObject*, _short>	m_hmapObstacleIndex;
 	vector<const _char*>	m_strObstacles;
-	vector<Vec3>			m_vecObstaclePoints;
-	vector<const _char*>	m_strObstaclePoints;
 
 	vector<Vec3>			m_vecRegions;
 	vector<const _char*>	m_strRegions;
@@ -159,17 +152,10 @@ private:
 	// Default
 	CTerrain*				m_pTerrainBuffer = nullptr;
 
-	string					m_strCurrentTriangleMode = "Obstacle";
-	TRIMODE					m_eCurrentTriangleMode = TRIMODE::OBSTACLE;
-
 	// DebugDraw
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;
 	BasicEffect*			m_pEffect = nullptr;
 	ID3D11InputLayout*		m_pInputLayout = nullptr;
-
-	vector<BoundingSphere>	m_vecPointSpheres;
-	vector<BoundingSphere>	m_vecObstaclePointSpheres;
-	vector<BoundingSphere>	m_vecRegionSpheres;
 
 	// Datafile
 	_int					m_file_Current = 0;
@@ -180,18 +166,11 @@ private:
 	map<wstring, Obst>		m_mapObstaclePrefabs;
 
 	// Legacy
-	CShader*				m_pCS_TriTest = nullptr;
+	//CShader*				m_pCS_TriTest = nullptr;
 
 public:
 	static class CNavMeshView* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, void* pArg = nullptr);
 	virtual void Free() override;
 };
-// https://www.slideshare.net/OrenKoler1/path-finding-in-hazard-terrain
-// multilayer
-// https://gamedev.stackexchange.com/questions/192183/how-does-hpahierarchical-pathfinding-a-really-work
-// https://web.archive.org/web/20190411040123/http://aigamedev.com/open/article/clearance-based-pathfinding/
-// https://webdocs.cs.ualberta.ca/%7Emmueller/ps/hpastar.pdf
-// https://gamedev.stackexchange.com/questions/99152/pathfinding-in-3d-voxel-waypoints
-// https://gamedev.stackexchange.com/questions/197895/how-would-i-actually-implement-a-pathfinding-in-a-3d-world
-// https://repositorium.sdum.uminho.pt/bitstream/1822/18769/1/SCCG08.pdf
+
 END

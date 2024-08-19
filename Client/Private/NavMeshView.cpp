@@ -58,11 +58,9 @@ HRESULT CNavMeshView::Initialize(void* pArg)
 	if (FAILED(RefreshNvFile()))
 		return E_FAIL;
 
-	m_pCS_TriTest = dynamic_cast<CShader*>(m_pGameInstance->Clone_Component(nullptr, LEVEL_STATIC, TEXT("Prototype_Component_Shader_TriangleTest"), nullptr));
+	/*m_pCS_TriTest = dynamic_cast<CShader*>(m_pGameInstance->Clone_Component(nullptr, LEVEL_STATIC, TEXT("Prototype_Component_Shader_TriangleTest"), nullptr));
 	if (nullptr == m_pCS_TriTest)
-		return  E_FAIL;
-
-	//m_pCS_TriTest = CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_TriangleTest.hlsl"), nullptr, 0);
+		return  E_FAIL;*/
 
 	return S_OK;
 }
@@ -74,19 +72,8 @@ HRESULT CNavMeshView::Tick()
 	ImGui::Begin("NavMeshTool");
 
 	InfoView();
-	switch (m_eCurrentTriangleMode)
-	{
-	case TRIMODE::DEFAULT:
-		PointsGroup();
-		break;
-	case TRIMODE::OBSTACLE:
-		ObstaclesGroup();
-		break;
-	case TRIMODE::REGION:
 
-		break;
-	}
-	ImGui::NewLine();
+	ObstaclesGroup();
 
 	if (ImGui::Button("CreateAgent"))
 	{
@@ -117,7 +104,7 @@ HRESULT CNavMeshView::Tick()
 	}
 
 	// stress test
-	const _char* szStressButon = (true == m_bStressTest) ? "Stop Stress Test" : "Start Stress Test";
+	/*const _char* szStressButon = (true == m_bStressTest) ? "Stop Stress Test" : "Start Stress Test";
 	if (ImGui::Button(szStressButon))
 	{
 		(true == m_bStressTest) ? m_bStressTest = false : m_bStressTest = true;
@@ -130,7 +117,7 @@ HRESULT CNavMeshView::Tick()
 			ImGui::End();
 			return E_FAIL;
 		}
-	}
+	}*/
 
 	ImGui::End();
 
@@ -209,14 +196,6 @@ HRESULT CNavMeshView::DebugRender()
 		m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
 	}
 	
-
-	if (false == m_vecObstaclePointSpheres.empty())
-	{
-		for (_int i = 0; i < m_vecObstaclePointSpheres.size(); ++i)
-		{
-			DX::Draw(m_pBatch, m_vecObstaclePointSpheres[i], Colors::Red);
-		}
-	}
 	m_pBatch->End();
 
 	if (nullptr != m_pAgent)
@@ -490,13 +469,6 @@ HRESULT CNavMeshView::BakeObstacles()
 		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.size()));
 
 		//DynamicCreate(*pObst);
-
-		for (auto& iter : pObst->vecPoints)
-		{
-			BoundingSphere tSphere(iter, 0.1f);
-
-			m_vecObstaclePointSpheres.emplace_back(tSphere);
-		}
 	}
 
 	//
@@ -1695,13 +1667,6 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 
 	setPoints.emplace(iVec3(-330, 9, 336));
 
-	for (auto& iter : setPoints)
-	{
-		BoundingSphere tSphere(Vec3(iter.x, iter.y, iter.z), 0.1f);
-
-		m_vecObstaclePointSpheres.emplace_back(tSphere);
-	}
-
 	Dfs(vStart, setPoints, vecTightOutline);
 
 	vecExpandedOutline = ExpandOutline(vecTightOutline, 0.5f);
@@ -2240,242 +2205,73 @@ HRESULT CNavMeshView::LoadMainScene()
 	if (nullptr == m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_EmeraldSquare_Base"), LAYERTAG::GROUND))
 		return E_FAIL;
 
+	// TODO : 아래 더 수정해야 함.
+	
+	CTerrain* pMazeBuffer = dynamic_cast<CTerrain*>(m_pGameInstance->Clone_Component(
+		m_pTerrainBuffer->GetGameObject(),
+		m_pGameInstance->GetCurrentLevelIndex(),
+		TEXT("Prototype_GameObject_BasicTerrain")));
+
+	if (nullptr == pMazeBuffer)
+		return E_FAIL;
+
+	Safe_Release(m_pTerrainBuffer);
+	m_pTerrainBuffer = pMazeBuffer;
+
 	if (FAILED(LoadNvFile()))
 		return E_FAIL;
-
-#pragma region MultilevelNavMesh
-	//// Portal
-	//vector<Portal*> vecPortalsBase;
-	//Portal* pPortalBase0 = new Portal;
-	//pPortalBase0->tPortalVolume.Center = Vec3(-65.0f, 0.0f + pPortalBase0->tPortalVolume.Radius, -334.0f);
-	//Portal* pPortalBase1 = new Portal;
-	//pPortalBase1->tPortalVolume.Center = Vec3(-65.0f, 0.0f + pPortalBase1->tPortalVolume.Radius, -292.5f);
-	//Portal* pPortalBase2 = new Portal;
-	//pPortalBase2->tPortalVolume.Center = Vec3(-128.0f, 0.0f + pPortalBase2->tPortalVolume.Radius, -395.0f);
-	//Portal* pPortalBase3 = new Portal;
-	//pPortalBase3->tPortalVolume.Center = Vec3(-168.5f, 0.0f + pPortalBase3->tPortalVolume.Radius, -395.0f);
-	//Portal* pPortalBase4 = new Portal;
-	//pPortalBase4->tPortalVolume.Center = Vec3(-293.0f, 0.0f + pPortalBase4->tPortalVolume.Radius, -395.0f);
-	//Portal* pPortalBase5 = new Portal;
-	//pPortalBase5->tPortalVolume.Center = Vec3(-334.5f, 0.0f + pPortalBase5->tPortalVolume.Radius, -395.0f);
-	////
-	//Portal* pPortalBase6 = new Portal;
-	//pPortalBase6->tPortalVolume.Center = Vec3(-127.5f, 0.0f + pPortalBase6->tPortalVolume.Radius, -59.0f);
-	//Portal* pPortalBase7 = new Portal;
-	//pPortalBase7->tPortalVolume.Center = Vec3(-168.5f, 0.0f + pPortalBase6->tPortalVolume.Radius, -59.0f);
-
-	//vecPortalsBase.push_back(pPortalBase0);
-	//vecPortalsBase.push_back(pPortalBase1);
-	//vecPortalsBase.push_back(pPortalBase2);
-	//vecPortalsBase.push_back(pPortalBase3);
-	//vecPortalsBase.push_back(pPortalBase4);
-	//vecPortalsBase.push_back(pPortalBase5);
-	////
-	//vecPortalsBase.push_back(pPortalBase6);
-	//vecPortalsBase.push_back(pPortalBase7);
-
-	//// Building_
-	//
-	//// Portal
-	//vector<Portal*> vecPortalsL0;
-	//Portal* pPortalL0 = new Portal;
-	//pPortalL0->tPortalVolume.Center = Vec3(-230.0f, 95.0f + pPortalL0->tPortalVolume.Radius, -315.0f);
-	//vecPortalsL0.push_back(pPortalL0);
-	//Portal::ConnectPortals(pPortalBase0, pPortalL0);
-	//Portal::ConnectPortals(pPortalBase1, pPortalL0);
-	//Portal::ConnectPortals(pPortalBase2, pPortalL0);
-	//Portal::ConnectPortals(pPortalBase3, pPortalL0);
-	//Portal::ConnectPortals(pPortalBase4, pPortalL0);
-	//Portal::ConnectPortals(pPortalBase5, pPortalL0);
-
-	//vector<Vec3> vecPoints0;
-	//vecPoints0.push_back(Vec3(-399.0f, 95.0f, -400.0f));
-	//vecPoints0.push_back(Vec3(-399.0f, 95.0f, -230.0f));
-	//vecPoints0.push_back(Vec3(-61.0f, 95.0f, -230.0f));
-	//vecPoints0.push_back(Vec3(-61.0f, 95.0f, -400.0f));
-	//if (FAILED(LoadAnotherLevelData(vecPoints0)))
-	//	return E_FAIL;
-
-	////
-	//vector<Portal*> vecPortalsL1;
-	//
-	//vector<Vec3> vecPoints1;
-	//vecPoints1.push_back(Vec3(-395.0f, 132.0f, -231.0f));
-	//vecPoints1.push_back(Vec3(-395.0f, 132.0f, -66.0f));
-	//vecPoints1.push_back(Vec3(-230.0f, 132.0f, -66.0f));
-	//vecPoints1.push_back(Vec3(-230.0f, 132.0f, -231.0f));
-	//if (FAILED(LoadAnotherLevelData(vecPoints1)))
-	//	return E_FAIL;
-
-	//// Portal
-	//vector<Portal*> vecPortalsL2;
-	//Portal* pPortalL2 = new Portal;
-	//pPortalL2->tPortalVolume.Center = Vec3(-147.5f, 154.0f + pPortalL2->tPortalVolume.Radius, -146.5f);
-	//vecPortalsL2.push_back(pPortalL2);
-	//Portal::ConnectPortals(pPortalBase6, pPortalL2);
-	//Portal::ConnectPortals(pPortalBase7, pPortalL2);
-
-	//vector<Vec3> vecPoints2;
-	//vecPoints2.push_back(Vec3(-238.0f, 154.0f, -237.0f));
-	//vecPoints2.push_back(Vec3(-238.0f, 154.0f, -57.0f));
-	//vecPoints2.push_back(Vec3(-57.0f, 154.0f, -57.0f));
-	//vecPoints2.push_back(Vec3(-57.0f, 154.0f, -237.0f));
-	//if (FAILED(LoadAnotherLevelData(vecPoints2)))
-	//	return E_FAIL;
-	//// Building_
-
-	//// Portal
-	//vector<Portal*> vecPortalsL3;
-
-	//vector<Vec3> vecPoints3;
-	//vecPoints3.push_back(Vec3(74.0f, 108.0f, 93.0f));
-	//vecPoints3.push_back(Vec3(74.0f, 108.0f, 230.0f));
-	//vecPoints3.push_back(Vec3(230.0f, 108.0f, 230.0f));
-	//vecPoints3.push_back(Vec3(230.0f, 108.0f, 73.0f));
-	//vecPoints3.push_back(Vec3(93.0f, 108.0f, 73.0f));
-	//if (FAILED(LoadAnotherLevelData(vecPoints3)))
-	//	return E_FAIL;
-
-	//// Portal
-	//vector<Portal*> vecPortalsL4;
-
-	//vector<Vec3> vecPoints4;
-	//vecPoints4.push_back(Vec3(65.0f, 134.0f, 230.0f));
-	//vecPoints4.push_back(Vec3(65.0f, 134.0f, 395.0f));
-	//vecPoints4.push_back(Vec3(230.0f, 134.0f, 395.0f));
-	//vecPoints4.push_back(Vec3(230.0f, 134.0f, 230.0f));
-	//if (FAILED(LoadAnotherLevelData(vecPoints4)))
-	//	return E_FAIL;
-
-	//// Portal
-	//vector<Portal*> vecPortalsL5;
-
-	//vector<Vec3> vecPoints5;
-	//vecPoints5.push_back(Vec3(230.0f, 131.0f, 395.0f));
-	//vecPoints5.push_back(Vec3(395.0f, 131.0f, 395.0f));
-	//vecPoints5.push_back(Vec3(395.0f, 131.0f, 65.0f));
-	//vecPoints5.push_back(Vec3(230.0f, 131.0f, 65.0f));
-	//if (FAILED(LoadAnotherLevelData(vecPoints5)))
-	//	return E_FAIL;
-	//// Building_Kwow
-
-	//// Portal
-	//vector<Portal*> vecPortalsL6;
-
-	//vector<Vec3> vecPoints6;
-	//vecPoints6.push_back(Vec3(230.0f, 134.0f, -395.0f));
-	//vecPoints6.push_back(Vec3(230.0f, 134.0f, -64.0f));
-	//vecPoints6.push_back(Vec3(395.0f, 134.0f, -64.0f));
-	//vecPoints6.push_back(Vec3(395.0f, 134.0f, -395.0f));
-	//if (FAILED(LoadAnotherLevelData(vecPoints6)))
-	//	return E_FAIL;
-
-	//// Portal
-	//vector<Portal*> vecPortalsL7;
-	////Portal* pPortalL7 = new Portal;
-	////pPortalL7->tPortalVolume.Center = Vec3(-230.0f, 95.0f + pPortalL7->tPortalVolume.Radius, -315.0f);
-	////vecPortalsL7.push_back(pPortalL7);
-	////Portal::ConnectPortals(pPortalBase6, pPortalL7);
-
-	//vector<Vec3> vecPoints7;
-	//vecPoints7.push_back(Vec3(230.0f, 130.0f, -396.0f));
-	//vecPoints7.push_back(Vec3(65.0f, 130.0f, -396.0f));
-	//vecPoints7.push_back(Vec3(65.0f, 130.0f, -232.0f));
-	//vecPoints7.push_back(Vec3(230.0f, 130.0f, -232.0f));
-	//if (FAILED(LoadAnotherLevelData(vecPoints7)))
-	//	return E_FAIL;
-
-	//// Portal
-	//vector<Portal*> vecPortalsL8;
-
-	//vector<Vec3> vecPoints8;
-	//vecPoints8.push_back(Vec3(238.0f, 274.0f, -233.0f));
-	//vecPoints8.push_back(Vec3(230.0f, 274.0f, -240.0f));
-	//vecPoints8.push_back(Vec3(64.0f, 274.0f, -240.0f));
-	//vecPoints8.push_back(Vec3(56.0f, 274.0f, -231.0f));
-	//vecPoints8.push_back(Vec3(56.0f, 274.0f, -166.0f));
-	//vecPoints8.push_back(Vec3(165.0f, 274.0f, -166.0f));
-	//vecPoints8.push_back(Vec3(165.0f, 274.0f, -57.0f));
-	//vecPoints8.push_back(Vec3(230.0f, 274.0f, -57.0f));
-	//vecPoints8.push_back(Vec3(239.0f, 274.0f, -65.0f));
-	//if (FAILED(LoadAnotherLevelData(vecPoints8)))
-	//	return E_FAIL;
-
-	//// Connect Portals
-	//m_vecPortalCache.push_back(vecPortalsBase);
-	//m_vecPortalCache.push_back(vecPortalsL0);
-	//m_vecPortalCache.push_back(vecPortalsL1);
-	//m_vecPortalCache.push_back(vecPortalsL2);
-	//m_vecPortalCache.push_back(vecPortalsL3);
-	//m_vecPortalCache.push_back(vecPortalsL4);
-	//m_vecPortalCache.push_back(vecPortalsL5);
-	//m_vecPortalCache.push_back(vecPortalsL6);
-	//m_vecPortalCache.push_back(vecPortalsL7);
-	//m_vecPortalCache.push_back(vecPortalsL8);
-
-	if (FAILED(BakeNavMesh()))
-		return E_FAIL;
-#pragma endregion MultilevelNavMesh
 
 	return S_OK;
 }
 
-//HRESULT CNavMeshView::LoadAnotherLevelData(const vector<Vec3>& vecPoints)
-//{
-//	triangulateio tIn = { 0 };
-//	triangulateio tOut = { 0 };
-//	
-//	tIn.numberofpoints = vecPoints.size();
-//	if (0 < tIn.numberofpoints)
-//	{
-//		SAFE_REALLOC(TRI_REAL, tIn.pointlist, tIn.numberofpoints * 2)
-//
-//		_int i = 0;
-//		for (auto point : vecPoints)
-//		{
-//			tIn.pointlist[2 * i + 0] = point.x;
-//			tIn.pointlist[2 * i + 1] = point.z;
-//			++i;
-//		}
-//	}
-//	//if (FAILED(UpdatePointList(tIn, vecPoints)))
-//	//	return E_FAIL;
-//
-//	tIn.numberofsegments = vecPoints.size();
-//	if (0 < tIn.numberofsegments)
-//	{
-//		SAFE_REALLOC(_int, tIn.segmentlist, tIn.numberofsegments * 2)
-//
-//		// Points
-//		_int iStartIndex = vecPoints.size();
-//		for (_int i = 0; i < iStartIndex - 1; ++i)
-//		{
-//			tIn.segmentlist[2 * i + 0] = i + 0;
-//			tIn.segmentlist[2 * i + 1] = i + 1;
-//		}
-//		tIn.segmentlist[2 * (iStartIndex - 1) + 0] = iStartIndex - 1;
-//		tIn.segmentlist[2 * (iStartIndex - 1) + 1] = 0;
-//	}
-//
-//	//if (FAILED(UpdateHoleList(tIn)))
-//	//	return E_FAIL;
-//
-//	//if (FAILED(UpdateRegionList(tIn)))
-//	//	return E_FAIL;
-//
-//	triangulate(m_szTriswitches, &tIn, &tOut, nullptr);
-//
-//	m_vecIn.push_back(tIn);
-//	m_vecOut.push_back(tOut);
-//	m_vecPointsMultiLevel.push_back(vecPoints);
-//
-//	/*if (FAILED(SafeReleaseTriangle(tIn)))
-//		return E_FAIL;
-//	if (FAILED(SafeReleaseTriangle(tOut)))
-//		return E_FAIL;*/
-//
-//	return S_OK;
-//}
+HRESULT CNavMeshView::LoadMazeTestScene()
+{
+	m_strFilePath = "StaticObstacles";
+	for (_int i = 0; i < m_vecDataFiles.size(); ++i)
+	{
+		if (0 == strcmp("Maze0.xml", m_vecDataFiles[i]))
+		{
+			m_file_Current = i;
+			break;
+		}
+	}
+
+	map<LAYERTAG, CLayer*>& mapLayer = m_pGameInstance->GetCurrentLevelLayers();
+	auto iter = mapLayer.find(LAYERTAG::GROUND);
+	vector<CGameObject*>* vecGroundObjects = nullptr;
+
+	if (mapLayer.end() != iter)
+	{
+		vecGroundObjects = &iter->second->GetGameObjects();
+	}
+
+	for (auto object : *vecGroundObjects)
+	{
+		m_pGameInstance->DeleteObject(object);
+	}
+
+	vecGroundObjects->clear();
+
+	wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze0.bmp");
+
+	CTerrain* pMazeBuffer = dynamic_cast<CTerrain*>(m_pGameInstance->Clone_Component(
+		m_pTerrainBuffer->GetGameObject(),
+		m_pGameInstance->GetCurrentLevelIndex(),
+		TEXT("Prototype_GameObject_BasicTerrain"),
+		&strPath)
+	);
+
+	if (nullptr == pMazeBuffer)
+		return E_FAIL;
+
+	Safe_Release(m_pTerrainBuffer);
+	m_pTerrainBuffer = pMazeBuffer;
+
+	if (FAILED(LoadNvFile()))
+		return E_FAIL;
+
+	return S_OK;
+}
 
 vector<Vec3> CNavMeshView::ProcessIntersections(vector<Vec3>& vecExpandedOutline)
 {
@@ -2618,77 +2414,6 @@ void CNavMeshView::Input()
 			m_pAgent->Pick(m_pTerrainBuffer, p.x, p.y);
 		}
 	}
-}
-
-_bool CNavMeshView::Pick(_uint screenX, _uint screenY)
-{
-	map<LAYERTAG, CLayer*>& mapLayer = m_pGameInstance->GetCurrentLevelLayers();
-	auto iter = mapLayer.find(LAYERTAG::GROUND);
-	vector<CGameObject*>* vecGroundObjects = nullptr;
-
-	if (mapLayer.end() != iter)
-	{
-		vecGroundObjects = &iter->second->GetGameObjects();
-	}
-
-	if (nullptr != vecGroundObjects && true == vecGroundObjects->empty())
-	{
-		//return false;
-	}
-
-	Viewport& vp = m_pGameInstance->GetViewPort();
-	const Matrix& P = m_pGameInstance->Get_Transform_float4x4(CPipeLine::D3DTS_PROJ);
-	const Matrix& V = m_pGameInstance->Get_Transform_float4x4(CPipeLine::D3DTS_VIEW);
-
-	Vec3 pickPos;
-	_float fDistance = FLT_MAX;
-	_float fMinDistance = FLT_MAX;
-
-	_float fWidth = vp.width;
-	_float fHeight = vp.height;
-
-	const POINT& p = m_pGameInstance->GetMousePos();
-	if (false == m_pTerrainBuffer->Pick(p.x, p.y, pickPos, fDistance, m_pTerrainBuffer->GetTransform()->WorldMatrix()))
-		return false;
-	
-	BoundingSphere tSphere;
-	tSphere.Center = pickPos;
-	tSphere.Radius = 2.f;
-
-	if (TRIMODE::DEFAULT == m_eCurrentTriangleMode)
-	{
-		m_vecPoints.push_back(pickPos);
-		m_vecPointSpheres.push_back(tSphere);
-		s2cPushBack(m_strPoints, to_string(pickPos.x) + " " + to_string(pickPos.y) + " " + to_string(pickPos.z));
-		++m_iStaticPointCount;
-
-		if (3 <= m_vecPoints.size())
-		{
-			SafeReleaseTriangle(m_tOut);
-
-			UpdatePointList(m_tIn, m_vecPoints);
-			UpdateSegmentList(m_tIn, m_vecPoints);
-			UpdateHoleList(m_tIn);
-			UpdateRegionList(m_tIn);
-
-			triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
-		}
-	}
-	else if (TRIMODE::OBSTACLE == m_eCurrentTriangleMode)
-	{
-		m_vecPoints.push_back(pickPos);
-		m_vecObstaclePoints.push_back(pickPos);
-		m_vecObstaclePointSpheres.push_back(tSphere);
-		s2cPushBack(m_strObstaclePoints, to_string(pickPos.x) + " " + to_string(pickPos.y) + " " + to_string(pickPos.z));
-	}
-	else if (TRIMODE::REGION == m_eCurrentTriangleMode)
-	{
-		m_vecRegions.push_back(pickPos);
-		m_vecRegionSpheres.push_back(tSphere);
-		//s2cPushBack(m_strRegions, to_string(pickPos.x) + " " + to_string(pickPos.y) + " " + to_string(pickPos.z));
-	}
-
-	return true;
 }
 
 Cell* CNavMeshView::FindCellByPosition(const Vec3& vPosition)
@@ -3326,40 +3051,6 @@ void CNavMeshView::InfoView()
 	}
 	ImGui::NewLine();
 
-	if (ImGui::BeginCombo("Mode", m_strCurrentTriangleMode.c_str()))
-	{
-		static const _char* szMode[3] = { "Default", "Obstacle", "Region" };
-
-		for (uint8 i = 0; i < (uint8)TRIMODE::MODE_END; ++i)
-		{
-			_bool isSelected = (0 == strcmp(m_strCurrentTriangleMode.c_str(), szMode[i]));
-			
-			if (ImGui::Selectable(szMode[i], isSelected))
-			{
-				m_strCurrentTriangleMode = szMode[i];
-				m_eCurrentTriangleMode = (TRIMODE)i;
-				m_item_Current = 0;
-			}
-
-			if (true == isSelected)
-			{
-				ImGui::SetItemDefaultFocus();
-			}
-		}
-		ImGui::EndCombo();
-	}
-
-	/*ImGui::InputFloat("SlopeMax (degree)", &m_fSlopeDegree);
-	ImGui::InputFloat("ClimbMax (height)", &m_fMaxClimb);
-	ImGui::InputFloat("AreaMin (degree)", &m_fMinArea);
-	ImGui::InputFloat3("AABB Center", (_float*)&m_tNavMeshBoundVolume.Center);
-	ImGui::InputFloat3("AABB Extent", (_float*)&m_tNavMeshBoundVolume.Extents);*/
-
-	if (ImGui::Button("BakeNav"))
-	{
-		BakeNavMesh();
-	}
-
 	if (ImGui::Button("LoadMainScene"))
 	{
 		if (SUCCEEDED(LoadMainScene()))
@@ -3372,55 +3063,65 @@ void CNavMeshView::InfoView()
 		}
 	}ImGui::NewLine();
 
-	static _bool bBakeSingle = false;
-	if (true == bBakeSingle && 1 == m_vecObstacles.size())
-	{		
-		if (ImGui::Button("SaveSingleObst"))
+	if (ImGui::TreeNode("BakeData"))
+	{
+		if (ImGui::Button("BakeNav"))
 		{
-			if (SUCCEEDED(SaveObstacleLocalOutline(m_vecObstacles[0], m_strObstacles[0])))
+			BakeNavMesh();
+		}
+
+		static _bool bBakeSingle = false;
+		if (true == bBakeSingle && 1 == m_vecObstacles.size())
+		{
+			if (ImGui::Button("SaveSingleObst"))
 			{
-				MSG_BOX("Succeed to Save Single Obstacle");
-			}
-			else
-			{
-				MSG_BOX("Failed to Save Single Obstacle");
+				if (SUCCEEDED(SaveObstacleLocalOutline(m_vecObstacles[0], m_strObstacles[0])))
+				{
+					MSG_BOX("Succeed to Save Single Obstacle");
+				}
+				else
+				{
+					MSG_BOX("Failed to Save Single Obstacle");
+				}
 			}
 		}
+		else if (false == bBakeSingle && 0 == m_vecObstacles.size())
+		{
+			if (ImGui::Button("BakeSingleObst"))
+			{
+				if (SUCCEEDED(BakeSingleObstacleData()))
+				{
+					MSG_BOX("Succeed to Save Single Obstacle");
+					bBakeSingle = true;
+				}
+				else
+				{
+					MSG_BOX("Failed to Save Single Obstacle");
+				}
+			}
+
+		}ImGui::SameLine();
+
+		if (0 == m_vecObstacles.size())
+		{
+			if (ImGui::Button("BakeHeightMapObst"))
+			{
+				if (SUCCEEDED(BakeObstacles()))
+					//if (SUCCEEDED(BakeNavMeshSingleLevel()))
+				{
+					MSG_BOX("Succeed to Bake Height Obstacles");
+				}
+				else
+				{
+					MSG_BOX("Failed to Bake Height Obstacles");
+				}
+			}
+		}ImGui::NewLine();
+
+		ImGui::TreePop();
 	}
-	else if(false == bBakeSingle && 0 == m_vecObstacles.size())
-	{
-		if (ImGui::Button("BakeSingleObst"))
-		{
-			if (SUCCEEDED(BakeSingleObstacleData()))
-			{
-				MSG_BOX("Succeed to Save Single Obstacle");
-				bBakeSingle = true;
-			}
-			else
-			{
-				MSG_BOX("Failed to Save Single Obstacle");
-			}
-		}
-		
-	}ImGui::SameLine();
 
-	if (0 == m_vecObstacles.size())
-	{
-		if (ImGui::Button("BakeHeightMapObst"))
-		{
-			if (SUCCEEDED(BakeObstacles()))
-			//if (SUCCEEDED(BakeNavMeshSingleLevel()))
-			{
-				MSG_BOX("Succeed to Bake Height Obstacles");
-			}
-			else
-			{
-				MSG_BOX("Failed to Bake Height Obstacles");
-			}
-		}
-	}ImGui::NewLine();
-
-	if (ImGui::Button("Bake3DNav"))
+	/*if (ImGui::Button("Bake3DNav"))
 	{
 		if (SUCCEEDED(BakeHeightMap3D()))
 		{
@@ -3430,112 +3131,43 @@ void CNavMeshView::InfoView()
 		{
 			MSG_BOX("Failed to Bake 3D Terrain");
 		}
-	}ImGui::NewLine();
-
-	ImGui::ListBox("Data Files", &m_file_Current, m_vecDataFiles.data(), m_vecDataFiles.size(), 3);
-
-	if (ImGui::Button("SaveNav"))
+	}ImGui::NewLine();*/
+	if (ImGui::TreeNode("DataFiles"))
 	{
-		SaveNvFile();
-	}ImGui::SameLine();
+		ImGui::ListBox("Data Files", &m_file_Current, m_vecDataFiles.data(), m_vecDataFiles.size(), 3);
 
-	if (ImGui::Button("LoadNav"))
-	{
-		LoadNvFile();
-	}ImGui::SameLine();
-
-	if (ImGui::Button("DeleteFile"))
-	{
-		DeleteNvFile();
-	}ImGui::SameLine();
-
-	if (ImGui::Button("RefreshFile"))
-	{
-		RefreshNvFile();
-	}ImGui::NewLine();
-
-	if (ImGui::Button("Save3DNav"))
-	{
-		Save3DNvFile();
-	}
-}
-
-void CNavMeshView::PointsGroup()
-{
-	if (ImGui::TreeNode("Points"))
-	{
-		ImGui::ListBox("", &m_item_Current, m_strPoints.data(), m_strPoints.size(), 3);
-		if (ImGui::Button("PopBackPoint"))
+		if (ImGui::Button("SaveNav"))
 		{
-			if (m_vecPoints.empty())
-				return;
+			SaveNvFile();
+		}ImGui::SameLine();
 
-			m_strPoints.pop_back();
-			m_vecPoints.pop_back();
-			m_vecPointSpheres.pop_back();
-		}
+		if (ImGui::Button("LoadNav"))
+		{
+			LoadNvFile();
+		}ImGui::SameLine();
+
+		if (ImGui::Button("DeleteFile"))
+		{
+			DeleteNvFile();
+		}ImGui::SameLine();
+
+		if (ImGui::Button("Refresh"))
+		{
+			RefreshNvFile();
+		}ImGui::NewLine();
+
 		ImGui::TreePop();
 	}
+	/*if (ImGui::Button("Save3DNav"))
+	{
+		Save3DNvFile();
+	}*/
 }
 
 void CNavMeshView::ObstaclesGroup()
 {
 	if (ImGui::TreeNode("Obstacles"))
-	{
-		ImGui::ListBox("ObstaclePoints", &m_item_Current, m_strObstaclePoints.data(), m_strObstaclePoints.size(), 3);
-
-		if (ImGui::Button("PopBackObstaclePoint"))
-		{
-			if (m_strObstaclePoints.empty())
-				return;
-
-			m_vecPoints.pop_back();
-			m_strObstaclePoints.pop_back();
-			m_vecObstaclePoints.pop_back();
-			m_vecObstaclePointSpheres.pop_back();
-		}
-
-		if (false == m_vecObstaclePoints.empty())
-		{
-			ImGui::SameLine();
-			if (ImGui::Button("CreateDynamic"))
-			{
-				Obst* pObst = new Obst;
-
-				TRI_REAL fMaxX = -FLT_MAX, fMinX = FLT_MAX, fMaxZ = -FLT_MAX, fMinZ = FLT_MAX;
-				for (auto vPoint : m_vecObstaclePoints)
-				{
-					if (fMaxX < vPoint.x) fMaxX = vPoint.x;
-					if (fMinX > vPoint.x) fMinX = vPoint.x;
-
-					if (fMaxZ < vPoint.z) fMaxZ = vPoint.z;
-					if (fMinZ > vPoint.z) fMinZ = vPoint.z;
-
-					pObst->vecPoints.push_back(vPoint);
-				}
-
-				const _float fAABBOffset = 0.05f;
-				Vec3 vAABBCenter((fMaxX + fMinX) * 0.5f, 0.0f, (fMaxZ + fMinZ) * 0.5f);
-				Vec3 vAABBExtent((fMaxX - fMinX) * 0.5f + fAABBOffset, 10.0f, (fMaxZ - fMinZ) * 0.5f + fAABBOffset);
-				pObst->tAABB = BoundingBox(vAABBCenter, vAABBExtent);
-
-				SetPolygonHoleCenter(*pObst);
-
-				m_vecObstacles.push_back(pObst);
-				s2cPushBack(m_strObstacles, to_string(m_vecObstacles.back()->vInnerPoint.x) + ", " + to_string(m_vecObstacles.back()->vInnerPoint.z));
-
-				DynamicCreate(*pObst);
-
-				for (auto obst : m_strObstaclePoints)
-				{
-					delete obst;
-				}
-
-				m_strObstaclePoints.clear();
-				m_vecObstaclePoints.clear();
-			}
-		}
-	
+	{		
 		ImGui::ListBox("", &m_item_Current, m_strObstacles.data(), m_strObstacles.size(), 3);
 
 		if (false == m_strObstacles.empty())
@@ -3558,41 +3190,13 @@ void CNavMeshView::ObstaclesGroup()
 		ImGui::TreePop();
 	}
 }
-// https://gdcvault.com/play/1014514/AI-Navigation-It-s-Not
-void CNavMeshView::CellGroup()
-{
-	if (ImGui::TreeNode("Cells"))
-	{
-		ImGui::ListBox("", &m_item_Current, m_strCells.data(), m_strCells.size(), 3);
-		if (ImGui::Button("PopBackCell"))
-		{
-			if (m_vecCells.empty())
-				return;
-
-			m_strCells.pop_back();
-			m_vecCells.pop_back();
-
-			auto iter = m_vecPointSpheres.end() - 3 - m_vecPoints.size();
-			for (_int i = 0; i < 3; ++i)
-				iter = m_vecPointSpheres.erase(iter);
-		}
-		ImGui::TreePop();
-	}
-}
 
 HRESULT CNavMeshView::InitialSetting()
 {
 	m_vecPoints.push_back(Vec3(-512.0f, 0.f, -512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, -512.0f), 2.f));
-
 	m_vecPoints.push_back(Vec3(+512.0f, 0.f, -512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, -512.0f), 2.f));
-
 	m_vecPoints.push_back(Vec3(+512.0f, 0.f, +512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(+512.0f, 0.f, +512.0f), 2.f));
-
 	m_vecPoints.push_back(Vec3(-512.0f, 0.f, +512.0f));
-	m_vecPointSpheres.push_back(BoundingSphere(Vec3(-512.0f, 0.f, +512.0f), 2.f));
 
 	m_iStaticPointCount = m_vecPoints.size();
 
@@ -3679,19 +3283,7 @@ HRESULT CNavMeshView::Reset()
 	}
 	m_strObstacles.clear();
 
-	m_vecObstaclePoints.clear();
-
-	for (auto obstacle : m_strObstaclePoints)
-	{
-		Safe_Delete(obstacle);
-	}
-	m_strObstaclePoints.clear();
-
 	m_item_Current = 0;
-
-	m_vecPointSpheres.clear();
-	m_vecObstaclePointSpheres.clear();
-	m_vecRegionSpheres.clear();
 
 	return S_OK;
 }

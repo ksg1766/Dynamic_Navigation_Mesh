@@ -120,7 +120,7 @@ void CPrefabsView::TapGroups()
 	ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 	if (ImGui::BeginTabBar("Tool", tab_bar_flags))
 	{
-		if (ImGui::BeginTabItem("Ground"))
+		/*if (ImGui::BeginTabItem("Ground"))
 		{
 			static const _char* items[] =
 			{
@@ -136,7 +136,7 @@ void CPrefabsView::TapGroups()
 			m_ePickedLayerTag = LAYERTAG::GROUND;
 			m_strPickedObject = Utils::ToWString(items[m_Item_Current]);
 			ImGui::EndTabItem();
-		}
+		}*/
 		if (ImGui::BeginTabItem("Obstacle"))
 		{
 			static const _char* items[] =
@@ -161,7 +161,7 @@ void CPrefabsView::TapGroups()
 			
 			ImGui::EndTabItem();
 		}
-		if (ImGui::BeginTabItem("IgnoreCollision"))
+		/*if (ImGui::BeginTabItem("IgnoreCollision"))
 		{
 			static const _char* items[] =
 			{
@@ -176,7 +176,7 @@ void CPrefabsView::TapGroups()
 			m_strPickedObject = Utils::ToWString(items[m_Item_Current]);
 			
 			ImGui::EndTabItem();
-		}
+		}*/
 		ImGui::EndTabBar();
 	}
 }
