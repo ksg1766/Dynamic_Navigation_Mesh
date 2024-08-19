@@ -107,9 +107,9 @@ HRESULT CNavMeshView::Tick()
 			return E_FAIL;
 		}
 	}ImGui::NewLine();
-	if (ImGui::Button("CreateAIMazeTest"))
+	if (ImGui::Button("CreateAIStressTest"))
 	{
-		if (FAILED(CreateAIMazeTest()))
+		if (FAILED(StartAIStressTest()))
 		{
 			ImGui::End();
 			return E_FAIL;
@@ -167,14 +167,7 @@ HRESULT CNavMeshView::DebugRender()
 		Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
 		Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
 
-		/*if (true == (*cell)->isNew)
-		{
-			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::Blue);
-		}
-		else*/
-		{
-			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
-		}
+		DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
 
 		++cell;
 	}
@@ -284,9 +277,9 @@ void CNavMeshView::SetUpCells2Grids(vector<Cell*>& vecCells, OUT unordered_multi
 
 	for (auto pCell : vecCells)
 	{
-		for (_int iX = 0; iX < 1024 / iGridCX; ++iX)
+		for (_int iX = 0; iX < gWorldCX / iGridCX; ++iX)
 		{
-			for (_int iZ = 0; iZ < 1024 / iGridCZ; ++iZ)
+			for (_int iZ = 0; iZ < gWorldCZ / iGridCZ; ++iZ)
 			{
 				tAABB.Center = Vec3((iGridCX - gWorldCX) * 0.5f + iGridCX * iX, 0.0f, (iGridCZ - gWorldCZ) * 0.5f + iGridCZ * iZ);
 
@@ -307,9 +300,9 @@ void CNavMeshView::SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_m
 
 	for (auto pObst : vecObstacles)	// TODO : 불필요한 영역 거사 배제
 	{
-		for (_int iX = 0; iX < 1024 / iGridCX; ++iX)
+		for (_int iX = 0; iX < gWorldCX / iGridCX; ++iX)
 		{
-			for (_int iZ = 0; iZ < 1024 / iGridCZ; ++iZ)
+			for (_int iZ = 0; iZ < gWorldCZ / iGridCZ; ++iZ)
 			{
 				tAABB.Center = Vec3((iGridCX - gWorldCX) * 0.5f + iGridCX * iX, 0.0f, (iGridCZ - gWorldCZ) * 0.5f + iGridCZ * iZ);
 
@@ -1329,7 +1322,7 @@ HRESULT CNavMeshView::CreateAI()
 	return S_OK;
 }
 
-HRESULT CNavMeshView::CreateAIMazeTest()
+HRESULT CNavMeshView::StartAIStressTest()
 {
 	random_device						RandomDevice;
 	mt19937_64							RandomFloat(RandomDevice());
@@ -1343,7 +1336,7 @@ HRESULT CNavMeshView::CreateAIMazeTest()
 	uniform_real_distribution<_float>	RandomMiddleX(-384.0f, 384.0f);
 	uniform_real_distribution<_float>	RandomMiddleZ(-384.0f, 384.0f);
 
-	for (_int i = 0; i < 300; ++i)
+	for (_int i = 0; i < 1000; ++i)
 	{
 		_float fOuterX;
 		_float fOuterZ;
@@ -1752,9 +1745,9 @@ HRESULT CNavMeshView::CalculateObstacleOutlines(OUT vector<vector<Vec3>>& vecOut
 	Ray cVerticalRay;
 	Ray cHorizontalRay;
 
-	vector<vector<_int>> vecIntersected(1024, vector<_int>(1024, 0));
+	vector<vector<_int>> vecIntersected(gWorldCX, vector<_int>(gWorldCZ, 0));
 
-	for (_int i = -512; i < 512; ++i)
+	for (_int i = -gWorldCX / 2; i < gWorldCX / 2; ++i)
 	{
 		cVerticalRay.position = Vec3((_float)i, 2.0f, -512.0f);
 		cVerticalRay.direction = Vec3::Backward;
@@ -1777,7 +1770,7 @@ HRESULT CNavMeshView::CalculateObstacleOutlines(OUT vector<vector<Vec3>>& vecOut
 
 				Vec3 vPos = cVerticalRay.position + cVerticalRay.direction * fDistance;
 
-				vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = 2;
+				vecIntersected[round(vPos.x) + gWorldCX / 2][round(vPos.z) + gWorldCZ / 2] = 2;
 			}
 
 			if (cHorizontalRay.Intersects(
@@ -1793,7 +1786,7 @@ HRESULT CNavMeshView::CalculateObstacleOutlines(OUT vector<vector<Vec3>>& vecOut
 
 				Vec3 vPos = cHorizontalRay.position + cHorizontalRay.direction * fDistance;
 
-				vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = 2;
+				vecIntersected[round(vPos.x) + gWorldCX / 2][round(vPos.z) + gWorldCZ / 2] = 2;
 			}
 		}
 	}
@@ -1855,11 +1848,11 @@ HRESULT CNavMeshView::CalculateObstacleOutlinesTopDown(OUT vector<vector<Vec3>>&
 
 	Ray cVerticalRay;
 
-	vector<vector<_int>> vecIntersected(1024, vector<_int>(1024, 0));
+	vector<vector<_int>> vecIntersected(gWorldCX, vector<_int>(gWorldCZ, 0));
 
-	for (_int x = -512 + 64; x < 512 - 64; ++x)
+	for (_int x = -gWorldCX / 2 + gGridCX; x < gWorldCZ / 2 - gGridCZ; ++x)
 	{
-		for (_int z = -512 + 64; z < 512 - 64; ++z)
+		for (_int z = -gWorldCX / 2 + gGridCX; z < gWorldCZ / 2 - gGridCZ; ++z)
 		{
 			_float fDistance = FLT_MAX;
 			_float fMinDistance = FLT_MAX;
@@ -1940,7 +1933,7 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 	Ray cVerticalRay;
 	Ray cHorizontalRay;
 
-	vector<vector<_int>> vecIntersected(1024, vector<_int>(1024, 0));
+	vector<vector<_int>> vecIntersected(gGridCX, vector<_int>(gGridCZ, 0));
 
 	// 등고선을 terrain vtx y값으로 정하게 되면 맵 테두리 등에서 따로 처리할 문제가 생김.
 	// 오래걸리더라도 0.05f 정도 작은 값 y에 offset주고 RayCasting해서 Outline 따내도록 해보자.
@@ -1949,12 +1942,12 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 
 	for (_int h = 0; h < 20; h += 2)
 	{
-		for (_int i = -512; i < 512; i += 1)
+		for (_int i = -gGridCX / 2; i < gGridCX / 2; i += 1)
 		{
-			cVerticalRay.position = Vec3((_float)i, (_float)h + 0.2f, -512.0f);
+			cVerticalRay.position = Vec3((_float)i, (_float)h + 0.2f, -0.5f * gGridCZ);
 			cVerticalRay.direction = Vec3::Backward;
 
-			cHorizontalRay.position = Vec3(-512.0f, (_float)h + 0.2f, (_float)i);
+			cHorizontalRay.position = Vec3(-0.5f * gGridCX, (_float)h + 0.2f, (_float)i);
 			cHorizontalRay.direction = Vec3::Right;
 
 			for (_int j = 0; j < vecSurfaceIdx.size(); ++j)
@@ -1998,7 +1991,7 @@ HRESULT CNavMeshView::CalculateHillOutline(OUT vector<vector<Vec3>>& vecOutlines
 					/*_int iX = (_int)round(vPos.x / 4.0f) * 4;
 					_int iZ = (_int)round(vPos.z / 4.0f) * 4;*/
 
-					vecIntersected[round(vPos.x) + 512][round(vPos.z) + 512] = (_int)round(vPos.y);
+					vecIntersected[round(vPos.x) + gGridCX / 2][round(vPos.z) + gGridCZ / 2] = (_int)round(vPos.y);
 					//vecIntersected[iX + 512][iZ + 512] = (_int)round(vPos.y);
 				}
 			}
@@ -2104,12 +2097,12 @@ void CNavMeshView::DfsTerrain(vector<vector<_int>>& vecPoints, OUT vector<vector
 	{
 		for (_int j = 0; j < iCols; j += 1)
 		{
-			if (vecPoints[i][j] && setVisited.find({ i - 512, vecPoints[i][j], j - 512 }) == setVisited.end())
+			if (vecPoints[i][j] && setVisited.find({ i - gGridCX / 2, vecPoints[i][j], j - gGridCZ / 2 }) == setVisited.end())
 			{
 				stack<pair<iVec3, vector<iVec3>>> stkPoint;
 				vector<iVec3> vecOutline;
-				stkPoint.push({ {i - 512, vecPoints[i][j], j - 512}, {{i - 512, vecPoints[i][j], j - 512}} });
-				setVisited.emplace(i - 512, vecPoints[i][j], j - 512);
+				stkPoint.push({ {i - gGridCX / 2, vecPoints[i][j], j - gGridCZ / 2}, {{i - gGridCX / 2, vecPoints[i][j], j - gGridCZ / 2}} });
+				setVisited.emplace(i - gGridCX / 2, vecPoints[i][j], j - gGridCZ / 2);
 
 				while (!stkPoint.empty())
 				{
@@ -2120,9 +2113,9 @@ void CNavMeshView::DfsTerrain(vector<vector<_int>>& vecPoints, OUT vector<vector
 					{
 						iVec3 vNeighbor(vCurrent.x + vDir.first, vCurrent.y, vCurrent.z + vDir.second);
 
-						if (vNeighbor.x >= -512 && vNeighbor.x < iRows - 512 &&
-							vNeighbor.z >= -512 && vNeighbor.z < iCols - 512 &&
-							vecPoints[vNeighbor.x + 512][vNeighbor.z + 512] &&
+						if (vNeighbor.x >= -gGridCX / 2 && vNeighbor.x < iRows - gGridCX / 2 &&
+							vNeighbor.z >= -gGridCZ / 2 && vNeighbor.z < iCols - gGridCZ / 2 &&
+							vecPoints[vNeighbor.x + gGridCX / 2][vNeighbor.z + gGridCZ / 2] &&
 							setVisited.find(vNeighbor) == setVisited.end())
 						{
 							setVisited.emplace(vNeighbor);

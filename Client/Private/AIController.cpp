@@ -126,5 +126,11 @@ CComponent* CAIController::Clone(CGameObject* pGameObject, void* pArg)
 
 void CAIController::Free()
 {
+	Safe_Delete(m_pBatch);
+	Safe_Delete(m_pEffect);
+	Safe_Release(m_pInputLayout);
+
+	m_vecWayPoints.clear();
+
 	Super::Free();
 }

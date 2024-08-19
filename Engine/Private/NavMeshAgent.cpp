@@ -86,7 +86,7 @@ HRESULT CNavMeshAgent::Initialize(void* pArg)
 
 void CNavMeshAgent::Tick(_float fTimeDelta)
 {
-	if (true == IsMoving() || false == IsOutOfWorld())
+	if (true == IsMoving() || false == IsOutOfWorld(m_vPrePos))
 	{
 		Slide(Move(fTimeDelta));
 	} PopPath();
@@ -177,10 +177,8 @@ _bool CNavMeshAgent::IsMoving()
 	return m_isMoving;
 }
 
-_bool CNavMeshAgent::IsOutOfWorld()
+_bool CNavMeshAgent::IsOutOfWorld(const Vec3& vPosition)
 {
-	const Vec3& vPosition = m_pTransform->GetPosition();
-
 	return (vPosition.x >= 0.5f * gWorldCX || vPosition.x <= -0.5f * gWorldCX || vPosition.z >= 0.5f * gWorldCZ || vPosition.z <= -0.5f * gWorldCZ);
 }
 
@@ -209,7 +207,7 @@ void CNavMeshAgent::Slide(const Vec3 vPrePos)
 	Cell* pNeighbor = nullptr;
 	Vec3 vPosition = m_pTransform->GetPosition();
 
-	if (false == m_pCurrentCell->IsOut(vPosition, pNeighbor))
+	if (nullptr == m_pCurrentCell || false == m_pCurrentCell->IsOut(vPosition, pNeighbor))
 	{
 		return;
 	}
@@ -325,6 +323,14 @@ _bool CNavMeshAgent::AStar()
 	{
 		PQNode tNode = Open.top();
 		Cell* pCurrent = tNode.pCell;
+
+		if (nullptr == pCurrent)
+		{
+			/*m_isMoving = true;
+			m_pDestCell = m_dqPath.back().first;
+			m_vDestPos = m_dqPath.back().first->GetCenter();*/
+			return false;
+		}
 
 		if (pCurrent == m_pDestCell)
 		{
@@ -665,6 +671,10 @@ _bool CNavMeshAgent::SetPath(const Vec3& vDestPos)
 			fAStarPerformance = fAStarPerformance;*/
 			return FunnelAlgorithm();
 		}
+		else
+		{
+			return false;
+		}
 	}
 
 	Obst* pObst = FindObstByPosition(vDestPos);
@@ -679,6 +689,10 @@ _bool CNavMeshAgent::SetPath(const Vec3& vDestPos)
 			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
 			fAStarPerformance = fAStarPerformance;*/
 			return FunnelAlgorithm();
+		}
+		else
+		{
+			return false;
 		}
 
 		m_vDestPos = m_pTransform->GetPosition();

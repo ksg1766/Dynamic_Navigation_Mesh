@@ -120,6 +120,7 @@ HRESULT CAIAgent::Ready_Scripts()
 		return E_FAIL;
 
 	m_pController = static_cast<CAIController*>(m_vecScripts[0]);
+	Safe_AddRef(m_pController);
 
 	return S_OK;
 }
@@ -166,5 +167,7 @@ CGameObject * CAIAgent::Clone(void * pArg)
 
 void CAIAgent::Free()
 {
+	Safe_Release(m_pController);
+
 	Super::Free();
 }

@@ -46,7 +46,7 @@ public:
 public:
 	_bool	IsIdle();
 	_bool	IsMoving();
-	_bool	IsOutOfWorld();
+	_bool	IsOutOfWorld(const Vec3& vPosition);
 
 	void	ForceHeight();
 	_float	GetHeightOffset();

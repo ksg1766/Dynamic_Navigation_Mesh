@@ -27,11 +27,11 @@ void Cell::SetUpData()
 	vLines[LINE_BC] = vPoints[POINT_C] - vPoints[POINT_B];
 	vLines[LINE_CA] = vPoints[POINT_A] - vPoints[POINT_C];
 
-	for (uint8 i = 0; i < LINE_END; i++)
+	/*for (uint8 i = 0; i < LINE_END; i++)
 	{
 		vNormals[i] = Vec3(vLines[i].z * -1.f, 0.f, vLines[i].x);
 		vNormals[i].Normalize();
-	}
+	}*/
 
 	for (uint8 i = 0; i < LINE_END; i++)
 	{
@@ -79,36 +79,46 @@ _bool Cell::ComparePoints(const Vec3& pSour, const Vec3& pDest)
 
 _bool Cell::IsOut(const Vec3& vPoint, OUT Cell*& pNeighbor)
 {
-	_bool bReturn = false;
 	for (size_t i = 0; i < LINE_END; i++)
 	{
-		Vec3 vSour = vPoint - vPoints[i];
+		/*Vec3 vSour = vPoint - vPoints[i];
 		vSour.Normalize();
 		Vec3 vDest = vNormals[i];
-		vDest.Normalize();
 
 		if (0 < vSour.Dot(vDest))
+		{
+			pNeighbor = pNeighbors[i];
+			return true;
+		}*/
+
+		if (CNSHelper::TriArea2x(vPoints[i], vPoint, vPoints[(i + 1) % POINT_END]) > 0.0f)
 		{
 			pNeighbor = pNeighbors[i];
 			return true;
 		}
 	}
 
-	return bReturn;
+	return false;
 }
 
 Vec3 Cell::GetPassedEdgeNormal(Vec3 vPoint)
 {
 	for (size_t i = 0; i < LINE_END; i++)
 	{
-		Vec3	vSour = vPoint - vPoints[i];
-		vSour.Normalize();
-		Vec3	vDest = vNormals[i];
-		vDest.Normalize();
+		//Vec3	vSour = vPoint - vPoints[i];
+		//vSour.Normalize();
+		//Vec3	vDest = vNormals[i];
 
-		if (0 < vSour.Dot(vDest))
+		//if (0 < vSour.Dot(vDest))
+		//{
+		//	return vNormals[i];
+		//}
+
+		if (CNSHelper::TriArea2x(vPoints[i], vPoint, vPoints[(i + 1) % POINT_END]) > 0.0f)
 		{
-			return vNormals[i];
+			Vec3 vNormal = Vec3(vPoints[i].z - vPoints[(i + 1) % POINT_END].z, 0.f, vPoints[(i + 1) % POINT_END].x - vPoints[i].x);
+			vNormal.Normalize();
+			return vNormal;
 		}
 	}
 

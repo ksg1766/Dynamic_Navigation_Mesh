@@ -80,10 +80,10 @@ HRESULT CLevel_GameTool::Tick(const _float& fTimeDelta)
 	//
 	if (m_pPrefabsView)
 		m_pPrefabsView->Tick();
-	if (m_pLayersView)
+	/*if (m_pLayersView)
 		m_pLayersView->Tick();
 	if (m_pTransformView)
-		m_pTransformView->Tick();
+		m_pTransformView->Tick();*/
 	/*if (m_pSaveLoadView)
 		m_pSaveLoadView->Tick();
 	if (m_pAnimationView)
@@ -111,11 +111,11 @@ HRESULT CLevel_GameTool::DebugRender()
 	if (m_IsImGUIReady)
 	{
 		m_pPrefabsView->DebugRender();
-		m_pLayersView->DebugRender();
-		m_pTransformView->DebugRender();
-		m_pSaveLoadView->DebugRender();
-		m_pAnimationView->DebugRender();
-		m_pNavMeshView->DebugRender();
+		//m_pLayersView->DebugRender();
+		//m_pTransformView->DebugRender();
+		//m_pSaveLoadView->DebugRender();
+		//m_pAnimationView->DebugRender();
+		//m_pNavMeshView->DebugRender();
 
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -156,20 +156,20 @@ HRESULT CLevel_GameTool::Ready_Layer_Default()
 HRESULT CLevel_GameTool::Ready_Layer_Terrain()
 {
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/cityterrain3.bmp");
-	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze0.bmp");
+	wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze0.bmp");
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/Terrain0.bmp");
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/TerrainEx1.bmp");
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/TerrainBig0.bmp");
-	/*m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
+	m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
 		LEVEL_GAMETOOL,
 		LAYERTAG::TERRAIN,
 		TEXT("Prototype_GameObject_BasicTerrain"),
 		&strPath));
-	if (nullptr == m_pBasicTerrain) return E_FAIL;*/
-	m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
+	if (nullptr == m_pBasicTerrain) return E_FAIL;
+	/*m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
 		LEVEL_GAMETOOL,
 		LAYERTAG::TERRAIN,
-		TEXT("Prototype_GameObject_BasicTerrain")));
+		TEXT("Prototype_GameObject_BasicTerrain")));*/
 	if (nullptr == m_pBasicTerrain) return E_FAIL;
 
 	return S_OK;
@@ -289,10 +289,11 @@ CLevel_GameTool* CLevel_GameTool::Create(ID3D11Device * pDevice, ID3D11DeviceCon
 void CLevel_GameTool::Free()
 {
 	Safe_Release(m_pPrefabsView);
-	Safe_Release(m_pLayersView);
+	/*Safe_Release(m_pLayersView);
 	Safe_Release(m_pTransformView);
 	Safe_Release(m_pSaveLoadView);
-	Safe_Release(m_pAnimationView);
+	Safe_Release(m_pAnimationView);*/
+	Safe_Release(m_pNavMeshView);
 	Safe_Release(m_pMediator);
 	Safe_Release(m_pBasicTerrain);
 

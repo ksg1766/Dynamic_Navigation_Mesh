@@ -13,13 +13,11 @@ constexpr _int gGridZ = 16;
 
 enum POINTS : uint8 { POINT_A, POINT_B, POINT_C, POINT_END };
 enum LINES : uint8 { LINE_AB, LINE_BC, LINE_CA, LINE_END };
-
+//#pragma pack(push, 1)
 struct ENGINE_DLL Cell
 {
 	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
 	array<Cell*, LINE_END> pNeighbors = { nullptr, nullptr, nullptr };
-	array<Vec3, LINE_END> vNormals = { Vec3::Zero, Vec3::Zero, Vec3::Zero };
-	//array<_float, LINE_END> fHalfWidths = { FLT_MAX, FLT_MAX, FLT_MAX };
 	array<_float, LINE_END> fTheta = { FLT_MAX, FLT_MAX, FLT_MAX };
 
 	void	CW();
@@ -61,7 +59,7 @@ struct ENGINE_DLL Cell
 
 	// cache
 	_bool	isDead = false;
-	_bool	isNew = false;
+	//_bool	isNew = false;
 };
-
+//#pragma pack(pop)
 END
