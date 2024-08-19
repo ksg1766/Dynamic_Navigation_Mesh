@@ -2205,18 +2205,17 @@ HRESULT CNavMeshView::LoadMainScene()
 	if (nullptr == m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_EmeraldSquare_Base"), LAYERTAG::GROUND))
 		return E_FAIL;
 
-	// TODO : 아래 더 수정해야 함.
-	
-	CTerrain* pMazeBuffer = dynamic_cast<CTerrain*>(m_pGameInstance->Clone_Component(
+	// TODO : 아래 더 확인해 볼 것.
+	CTerrain* pDefaultBuffer = dynamic_cast<CTerrain*>(m_pGameInstance->Clone_Component(
 		m_pTerrainBuffer->GetGameObject(),
 		m_pGameInstance->GetCurrentLevelIndex(),
 		TEXT("Prototype_GameObject_BasicTerrain")));
 
-	if (nullptr == pMazeBuffer)
+	if (nullptr == pDefaultBuffer)
 		return E_FAIL;
 
 	Safe_Release(m_pTerrainBuffer);
-	m_pTerrainBuffer = pMazeBuffer;
+	m_pTerrainBuffer = pDefaultBuffer;
 
 	if (FAILED(LoadNvFile()))
 		return E_FAIL;
