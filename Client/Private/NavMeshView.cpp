@@ -3,6 +3,7 @@
 #include "ViewMediator.h"
 #include "GameInstance.h"
 #include "GameObject.h"
+#include "Shader.h"
 #include "FileUtils.h"
 #include <filesystem>
 #include "Utils.h"
@@ -15,6 +16,7 @@
 #include "AIAgent.h"
 #include "Cell.h"
 #include "Obstacle.h"
+#include "BasicTerrain.h"
 
 namespace fs = std::filesystem;
 
@@ -75,34 +77,41 @@ HRESULT CNavMeshView::Tick()
 
 	ObstaclesGroup();
 
-	if (ImGui::Button("CreateAgent"))
+	if (ImGui::TreeNode("Create Agent"))
 	{
-		//if (FAILED(CreateAgent(0)))
-		if (FAILED(CreateAgent(Vec3::Zero)))
+		if (ImGui::Button("Create Playable"))
 		{
-			ImGui::End();
-			return E_FAIL;
+			//if (FAILED(CreateAgent(0)))
+			if (FAILED(CreateAgent(Vec3::Zero)))
+			{
+				ImGui::End();
+				return E_FAIL;
+			}
 		}
-	}
-	ImGui::NewLine();
+		ImGui::NewLine();
 
-	if (ImGui::Button("CreateAI"))
-	{
-		if (FAILED(CreateAI()))
+		if (ImGui::Button("CreateAI"))
 		{
-			ImGui::End();
-			return E_FAIL;
-		}
-	}ImGui::NewLine();
-	if (ImGui::Button("CreateAIStressTest"))
-	{
-		if (FAILED(StartAIStressTest()))
+			if (FAILED(CreateAI()))
+			{
+				ImGui::End();
+				return E_FAIL;
+			}
+		}ImGui::NewLine();
+		if (ImGui::Button("CreateAIStressTest"))
 		{
-			ImGui::End();
-			return E_FAIL;
-		}
+			if (FAILED(StartAIStressTest()))
+			{
+				ImGui::End();
+				return E_FAIL;
+			}
+		}ImGui::NewLine();
+
+		ImGui::TreePop();
 	}
 
+	ImGui::Checkbox("Render Debug", &m_bRenderDebug);
+	
 	// stress test
 	/*const _char* szStressButon = (true == m_bStressTest) ? "Stop Stress Test" : "Start Stress Test";
 	if (ImGui::Button(szStressButon))
@@ -131,6 +140,11 @@ HRESULT CNavMeshView::LateTick()
 
 HRESULT CNavMeshView::DebugRender()
 {
+	if (false == m_bRenderDebug)
+	{
+		return S_OK;
+	}
+
 	m_pEffect->SetWorld(XMMatrixIdentity());
 
 	m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
@@ -2208,14 +2222,22 @@ HRESULT CNavMeshView::LoadMainScene()
 	// TODO : 아래 더 확인해 볼 것.
 	CTerrain* pDefaultBuffer = dynamic_cast<CTerrain*>(m_pGameInstance->Clone_Component(
 		m_pTerrainBuffer->GetGameObject(),
-		m_pGameInstance->GetCurrentLevelIndex(),
-		TEXT("Prototype_GameObject_BasicTerrain")));
+		LEVEL_STATIC,
+		TEXT("Prototype_Component_Terrain")));
 
 	if (nullptr == pDefaultBuffer)
 		return E_FAIL;
 
-	Safe_Release(m_pTerrainBuffer);
+	pDefaultBuffer->InitializeJustGrid(1024U, 1024U, 64U, 64U);
+
+	static_cast<CBasicTerrain*>(m_pTerrainBuffer->GetGameObject())->SwapTerrainBuffer(pDefaultBuffer);
+	
+	if (FAILED(m_pGameInstance->SwapShader(pDefaultBuffer->GetGameObject(), TEXT("Shader_VtxDebug"))))
+		return E_FAIL;
+
 	m_pTerrainBuffer = pDefaultBuffer;
+
+	pDefaultBuffer->GetGameObject()->GetShader()->SetPassIndex(3);
 
 	if (FAILED(LoadNvFile()))
 		return E_FAIL;
@@ -2236,12 +2258,19 @@ HRESULT CNavMeshView::LoadMazeTestScene()
 	}
 
 	map<LAYERTAG, CLayer*>& mapLayer = m_pGameInstance->GetCurrentLevelLayers();
-	auto iter = mapLayer.find(LAYERTAG::GROUND);
+	auto iterG = mapLayer.find(LAYERTAG::GROUND);
+	auto iterW = mapLayer.find(LAYERTAG::WALL);
 	vector<CGameObject*>* vecGroundObjects = nullptr;
+	vector<CGameObject*>* vecObstacleObjects = nullptr;
 
-	if (mapLayer.end() != iter)
+	if (mapLayer.end() != iterG)
 	{
-		vecGroundObjects = &iter->second->GetGameObjects();
+		vecGroundObjects = &iterG->second->GetGameObjects();
+	}
+	
+	if (mapLayer.end() != iterW)
+	{
+		vecObstacleObjects = &iterW->second->GetGameObjects();
 	}
 
 	for (auto object : *vecGroundObjects)
@@ -2249,22 +2278,34 @@ HRESULT CNavMeshView::LoadMazeTestScene()
 		m_pGameInstance->DeleteObject(object);
 	}
 
+	for (auto object : *vecObstacleObjects)
+	{
+		m_pGameInstance->DeleteObject(object);
+	}
+
 	vecGroundObjects->clear();
+	vecObstacleObjects->clear();
 
 	wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze0.bmp");
 
 	CTerrain* pMazeBuffer = dynamic_cast<CTerrain*>(m_pGameInstance->Clone_Component(
 		m_pTerrainBuffer->GetGameObject(),
-		m_pGameInstance->GetCurrentLevelIndex(),
-		TEXT("Prototype_GameObject_BasicTerrain"),
-		&strPath)
-	);
+		LEVEL_STATIC,
+		TEXT("Prototype_Component_Terrain")));
 
 	if (nullptr == pMazeBuffer)
 		return E_FAIL;
 
-	Safe_Release(m_pTerrainBuffer);
+	pMazeBuffer->InitializeWithHeightMap(strPath);
+
+	static_cast<CBasicTerrain*>(m_pTerrainBuffer->GetGameObject())->SwapTerrainBuffer(pMazeBuffer);
+
+	if (FAILED(m_pGameInstance->SwapShader(pMazeBuffer->GetGameObject(), TEXT("Shader_VtxNorTex"))))
+		return E_FAIL;
+
 	m_pTerrainBuffer = pMazeBuffer;
+
+	pMazeBuffer->GetGameObject()->GetShader()->SetPassIndex(0);
 
 	if (FAILED(LoadNvFile()))
 		return E_FAIL;
@@ -3060,6 +3101,17 @@ void CNavMeshView::InfoView()
 		{
 			MSG_BOX("Failed to Load MainScene");
 		}
+	}ImGui::SameLine();
+	if (ImGui::Button("LoadMazeTestScene"))
+	{
+		if (SUCCEEDED(LoadMazeTestScene()))
+		{
+			MSG_BOX("Succeed to Load MazeTestScene");
+		}
+		else
+		{
+			MSG_BOX("Failed to Load MazeTestScene");
+		}
 	}ImGui::NewLine();
 
 	if (ImGui::TreeNode("BakeData"))
@@ -3106,7 +3158,6 @@ void CNavMeshView::InfoView()
 			if (ImGui::Button("BakeHeightMapObst"))
 			{
 				if (SUCCEEDED(BakeObstacles()))
-					//if (SUCCEEDED(BakeNavMeshSingleLevel()))
 				{
 					MSG_BOX("Succeed to Bake Height Obstacles");
 				}

@@ -65,6 +65,14 @@ HRESULT CBasicTerrain::Render()
 	return S_OK;
 }
 
+HRESULT CBasicTerrain::SwapTerrainBuffer(CTerrain* pTerrainBuffer)
+{
+	Safe_Release(m_arrComponents[(_int)ComponentType::Terrain]);
+	m_arrComponents[(_int)ComponentType::Terrain] = pTerrainBuffer;
+
+	return S_OK;
+}
+
 HRESULT CBasicTerrain::Ready_FixedComponents(void* pArg)
 {	
 	/* Com_Transform */

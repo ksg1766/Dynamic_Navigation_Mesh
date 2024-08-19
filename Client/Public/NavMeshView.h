@@ -153,6 +153,7 @@ private:
 	CTerrain*				m_pTerrainBuffer = nullptr;
 
 	// DebugDraw
+	_bool					m_bRenderDebug = false;
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;
 	BasicEffect*			m_pEffect = nullptr;
 	ID3D11InputLayout*		m_pInputLayout = nullptr;

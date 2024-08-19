@@ -24,6 +24,9 @@ public:
 	virtual void			DebugRender()					override;
 	virtual HRESULT			Render()						override;
 
+public:
+	HRESULT	SwapTerrainBuffer(CTerrain* pTerrainBuffer);
+
 protected:
 	HRESULT Ready_FixedComponents(void* pArg);
 	HRESULT Ready_Scripts(void* pArg);
