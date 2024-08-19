@@ -65,6 +65,7 @@ private:
 	HRESULT		StressTest();
 
 	HRESULT		CreateAI();
+	HRESULT		CreateAIMazeTest();
 
 private:
 	void		SetPolygonHoleCenter(Obst& tObst);

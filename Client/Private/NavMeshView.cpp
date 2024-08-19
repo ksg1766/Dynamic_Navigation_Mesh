@@ -101,8 +101,15 @@ HRESULT CNavMeshView::Tick()
 
 	if (ImGui::Button("CreateAI"))
 	{
-		//if (FAILED(CreateAgent(0)))
 		if (FAILED(CreateAI()))
+		{
+			ImGui::End();
+			return E_FAIL;
+		}
+	}ImGui::NewLine();
+	if (ImGui::Button("CreateAIMazeTest"))
+	{
+		if (FAILED(CreateAIMazeTest()))
 		{
 			ImGui::End();
 			return E_FAIL;
@@ -1299,7 +1306,7 @@ HRESULT CNavMeshView::CreateAI()
 		return E_FAIL;
 	}
 
-	pAIAgent->GetTransform()->SetPosition(pCell->GetCenter());
+	pAIAgent->GetTransform()->SetPosition(vRandomPoint);
 	
 	pAIAgent->AddWayPoint(vRandomPoint);
 
@@ -1318,6 +1325,83 @@ HRESULT CNavMeshView::CreateAI()
 	}
 
 	m_vecAIAgents.push_back(pAIAgent);
+
+	return S_OK;
+}
+
+HRESULT CNavMeshView::CreateAIMazeTest()
+{
+	random_device						RandomDevice;
+	mt19937_64							RandomFloat(RandomDevice());
+
+	uniform_real_distribution<_float>	RandomOuterX(-512.0f, 512.0f);
+	uniform_real_distribution<_float>	RandomOuterZ(-512.0f, 512.0f);
+
+	uniform_real_distribution<_float>	RandomInnerX(-96.0f, 96.0f);
+	uniform_real_distribution<_float>	RandomInnerZ(-96.0f, 96.0f);
+
+	uniform_real_distribution<_float>	RandomMiddleX(-384.0f, 384.0f);
+	uniform_real_distribution<_float>	RandomMiddleZ(-384.0f, 384.0f);
+
+	for (_int i = 0; i < 300; ++i)
+	{
+		_float fOuterX;
+		_float fOuterZ;
+
+		Vec3 vRandomPoint;
+
+		Cell* pCell = nullptr;
+		do
+		{
+			fOuterX = RandomOuterX(RandomFloat);
+			fOuterZ = RandomOuterZ(RandomFloat);
+			vRandomPoint = Vec3(fOuterX, 0.0f, fOuterZ);
+			pCell = FindCellByPosition(vRandomPoint);
+		} while ((fOuterX < 512 - gGridCX && fOuterX > -512 + gGridCX) && (fOuterZ < 512 - gGridCZ && fOuterZ > -512 + gGridCZ) || nullptr == pCell);
+
+		CNavMeshAgent::NAVIGATION_DESC tDesc =
+		{
+			pCell,
+			&m_umapCellGrids,
+			&m_umapObstGrids
+		};
+
+		CAIAgent* pAIAgent = static_cast<CAIAgent*>(m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_AIAgent"), LAYERTAG::UNIT_GROUND, &tDesc));
+
+		if (nullptr == pAIAgent)
+		{
+			return E_FAIL;
+		}
+
+		pAIAgent->GetTransform()->SetPosition(vRandomPoint);
+
+		pAIAgent->AddWayPoint(vRandomPoint);
+
+		pCell = nullptr;
+		do
+		{
+			vRandomPoint = Vec3(RandomInnerX(RandomFloat), 0.0f, RandomInnerZ(RandomFloat));
+			pCell = FindCellByPosition(vRandomPoint);
+		} while (nullptr == pCell);
+
+		pAIAgent->AddWayPoint(vRandomPoint);
+
+		for (_int i = 0; i < 2; ++i)
+		{
+			Vec3 vNewPoint;
+			pCell = nullptr;
+			do
+			{
+				vNewPoint = Vec3(RandomMiddleX(RandomFloat), 0.0f, RandomMiddleZ(RandomFloat));
+				pCell = FindCellByPosition(vNewPoint);
+			} while (nullptr == pCell && gGridCX <= Vec3::Distance(vRandomPoint, vNewPoint));
+
+			pAIAgent->AddWayPoint(vNewPoint);
+			vRandomPoint = vNewPoint;
+		}
+
+		m_vecAIAgents.push_back(pAIAgent);
+	}
 
 	return S_OK;
 }
