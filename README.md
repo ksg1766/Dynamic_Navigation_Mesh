@@ -2,7 +2,7 @@
 # 📅 2024.08.16
 📋 진행 사항
   * 무작위 위치를 way-point로 설정한 ai agent를 생성하기 위한 작업을 수행했습니다.
-    * 기존에 agent의 기능을 구현하는 것에 집중하느라 정리되지 않았던 클래스를 정리해서 ai agent에 사용할 수 있도록 컴포넌트 클래스로 변경했습니다.
+    * 기존에 agent의 기능을 구현하는 것에 집중하느라 정리되지 않아 입출력 등 불필요한 기능들이 포함돼 있던 클래스를 정리해서 playable과 ai agent에 함께 사용할 수 있도록 컴포넌트 클래스로 변경했습니다.
     * 아래와 같이 테스트를 위해 무작위로 waypoint가 설정된 ai agent를 생성했습니다.
       
       ![FPS_61-RELEASE2024-08-1911-11-44-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/c2a7d936-1d9e-456a-aba0-81c69428a387)
