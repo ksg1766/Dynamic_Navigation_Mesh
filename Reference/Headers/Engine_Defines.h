@@ -21,6 +21,9 @@
 #include <DirectXTK/DDSTextureLoader.h>
 #include <DirectXTK/WICTextureLoader.h>
 #include <Triangle/triangle.h>
+#include <fpm/fixed.hpp>
+#include <fpm/math.hpp>
+#include <fpm/ios.hpp>
 
 //#include <FMOD/fmod.h>
 //#include <FMOD/fmod.hpp>

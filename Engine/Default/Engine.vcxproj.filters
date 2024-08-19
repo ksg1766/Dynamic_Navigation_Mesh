@@ -480,6 +480,15 @@
     <ClInclude Include="..\Public\Obstacle.h">
       <Filter>01.Utiltiy\04.Component\14.NavMeshAgent</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\fpm\fixed.hpp">
+      <Filter>98.Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\fpm\ios.hpp">
+      <Filter>98.Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\fpm\math.hpp">
+      <Filter>98.Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">

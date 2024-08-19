@@ -112,7 +112,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Engine.lib;d3d11.lib;DirectXTKd.lib;fmod_vc.lib;fmodL_vc.lib;triangled.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Engine.lib;d3d11.lib;DirectXTKd.lib;fmod_vc.lib;fmodL_vc.lib;triangled.lib;libfixmathd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../../Reference/Librarys/;../Public/boost_1_85_0/stage/lib/</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
@@ -158,7 +158,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Engine.lib;d3d11.lib;DirectXTK.lib;fmod_vc.lib;fmodL_vc.lib;triangle.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Engine.lib;d3d11.lib;DirectXTK.lib;fmod_vc.lib;fmodL_vc.lib;triangle.lib;libfixmath.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../../Reference/Librarys/;../Public/boost_1_85_0/stage/lib/;../Public/Triangle/Release/</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
