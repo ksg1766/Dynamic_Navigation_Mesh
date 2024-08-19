@@ -169,8 +169,8 @@ HRESULT CLevel_GameTool::Ready_Layer_Terrain()
 	/*m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
 		LEVEL_GAMETOOL,
 		LAYERTAG::TERRAIN,
-		TEXT("Prototype_GameObject_BasicTerrain")));*/
-	if (nullptr == m_pBasicTerrain) return E_FAIL;
+		TEXT("Prototype_GameObject_BasicTerrain")));
+	if (nullptr == m_pBasicTerrain) return E_FAIL;*/
 
 	return S_OK;
 }
