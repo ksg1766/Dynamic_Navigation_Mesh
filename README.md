@@ -1,4 +1,73 @@
 ---
+# 📅 2024.08.19
+📋 진행 사항
+  * navigation mesh의 cell에 포함된 불필요한 데이터를 제거했습니다.
+    * 이전에는 agent가 cell 영역을 벗어났는지 판단할때, 아래와 같이 미리 계산된 각 edge의 normal과 position을 향한 벡터를 내적해 판별했습니다.
+	```
+	_bool Cell::IsOut(const Vec3& vPoint, OUT Cell*& pNeighbor)
+	{
+		for (size_t i = 0; i < LINE_END; i++)
+		{
+			Vec3 vSour = vPoint - vPoints[i];
+			vSour.Normalize();
+			Vec3 vDest = vNormals[i];
+
+   			if (0 < vSour.Dot(vDest))
+			{
+				pNeighbor = pNeighbors[i];
+				return true;
+			}
+		}
+		return false;
+	}
+	```
+     * 따라서 cell은 아래와 같이 많은 데이터를 포함하고 있었습니다.
+	```
+	array<Vec3, POINT_END> vPoints = { Vec3::Zero, Vec3::Zero, Vec3::Zero };	// cell을 구성하는 point의 좌표
+	array<Cell*, LINE_END> pNeighbors = { nullptr, nullptr, nullptr };		// edge의 neighbor cell
+	array<Vec3, LINE_END> vNormals = { Vec3::Zero, Vec3::Zero, Vec3::Zero };	// edge의 normal vector
+ 	array<_float, LINE_END> fHalfWidths = { FLT_MAX, FLT_MAX, FLT_MAX };		// 통과하려 하는 edge의 너비
+	array<_float, POINT_END> fTheta = { FLT_MAX, FLT_MAX, FLT_MAX };		// 두 edge 사이의 각(cell을 통과하는 길이(호의 길이)계산에 사용)
+	```
+     * 위에서 통로의 너비를 구하기 위해 사용했던 HalfWidths (agent의 radius와 비교하기 위해 half width로 계산)는 동적으로 추가되는 obstacle에 의헤 cell의 상태가 바뀔 경우 경우, 아래와 같이 주변 cell을 재귀적으로 탐색해 너비를 구해야 할 때에는 오차가 발생하게 돼 사용할 수 없었습니다.
+        
+        ![image](https://github.com/user-attachments/assets/fccd0a0f-522f-49d5-ab05-1b84d60f7d88)
+
+    * 위의 vNormals와 내적을 사용하는 방법 대신에, 경로 단순화에 사용되는 Funnel 알고리즘에서 한 선분이 다른 선분을 넘어 외부로 벗어났는지 판단하기 위해 사용했던 TriArea2x 함수를 사용하기로 했습니다.
+    * 함수는 아래와 같습니다. position으로 향하는 벡터와 edge의 벡터가 이루는 삼각형의 면적이 0보다 크다면 position은 edge의 외부에, 그렇지 않다면 내부에 있다고 판별하는 함수입니다.
+	```
+	_float CNSHelper::TriArea2x(const Vec3& vP0, const Vec3& vP1, const Vec3& vP2)
+	{
+		_float fAx = vP1.x - vP0.x;
+		_float fAz = vP1.z - vP0.z;
+		_float fBx = vP2.x - vP0.x;
+		_float fBz = vP2.z - vP0.z;
+
+		return fBx * fAz - fAx * fBz;
+	}
+	```
+    * 몇 차례의 사칙연산으로 수행 돼 빠르게 결과를 얻을 수 있음을 Funnel 알고리즘을 통해 확인한 바 있어 사용하기로 했습니다. 결과적으로 cell의 vNormals는 불필요하게 됐습니다.
+    * 남아 있는 vPoints와 pNeighbors는 고정소숫점 사용, 혹은 Vector3 대신 전체 정점 집합배열과 index를 이용하는 방법을 고려했으나, 좌표의 정밀도를 포기하거나, dynamic하게 변경되는 cell의 index, 캐스팅 등 다른 부가적인 계산이 추가로 필요할 것 같아 우선 보류했습니다.
+  
+  * 하드 코딩 된 값을 정리하고 결과물에 사용되지 않을 Tool의 기능을 정리 중입니다.
+    * 이전에 미로 테스트 환경과 메인 씬 환경을 오가기 위해 매번 재실행 해야 했는데, 실행 중에 변경할 수 있도록 수정했습니다.
+    * DebugDraw Render 옵션을 추가했습니다.
+    * 이외에 기타 작업을 계속 진행중입니다.
+
+  * 아래와 같이 데이터를 정리하고 Debug Draw를 off한 상태에서 복수의 agent에 대해 ramdom way point를 설정해 경로 탐색을 수행하도록 다시 테스트 했습니다.
+    * Agent 10000
+   
+      
+      
+    * 미로 테스트 환경에서 FPS 60을 유지할 수 있는 agent의 최대 수는 약 9000개 정도 입니다.
+    * obstacle을 이용해 경로를 막았을 때, agent는 아래와 같이 경로를 재탐색합니다.
+
+  * position이 world의 범위를 벗어나거나 경로 탐색에 실패했을 때 등, 예외 상황에 프로그램이 종료되지 않도록 수정했습니다.
+
+⚽ 이후 계획
+  * main scene에 사용되는 playable agent의 기능을 추가하고자 합니다.
+  
+---
 # 📅 2024.08.16
 📋 진행 사항
   * 무작위 위치를 way-point로 설정한 ai agent를 생성하기 위한 작업을 수행했습니다.
