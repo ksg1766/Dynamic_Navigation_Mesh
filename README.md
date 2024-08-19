@@ -1,4 +1,24 @@
 ---
+# 📅 2024.08.16
+📋 진행 사항
+  * 무작위 위치를 way-point로 설정한 ai agent를 생성하기 위한 작업을 수행했습니다.
+    * 기존에 agent의 기능을 구현하는 것에 집중하느라 정리되지 않았던 클래스를 정리해서 ai agent에 사용할 수 있도록 컴포넌트 클래스로 변경했습니다.
+    * 아래와 같이 테스트를 위해 무작위로 waypoint가 설정된 ai agent를 생성했습니다.
+      
+      ![FPS_61-RELEASE2024-08-1911-11-44-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/c2a7d936-1d9e-456a-aba0-81c69428a387)
+
+    * 이전에 사용하던 미로 테스트 환경에서 무작위로 waypoint가 설정된 ai agent를 생성해 경로 탐색 수행 횟수를 증가시켰습니다.
+      * 아래는 300개의 무작위 way-point를 반복이동하는 agent를 실행한 결과입니다. 평균 FPS는 60이상이긴 하지만 정확하게는 다시 측정해봐야 할 것 같습니다.
+
+      ![FPS_60-RELEASE2024-08-1911-09-52-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/584dacb2-679e-48a3-827d-cd72cd8260bd)
+
+⚽ 이후 계획
+  * 우선 동적으로 navigation mesh가 변경될 때에도 무리없이 수행될 수 있는지 테스트 할 계획입니다.
+  * 불필요한 GUI등을 개선해 테스트 환경을 개선할 계획입니다.
+  * 테스트에 초점이 맞춰 구현된 환경을 어느 정도 게임과 비슷한 환경으로 개선해보고자 합니다.
+  * navigation mesh의 cell이 포함하고 있는 데이터가 많아 더 최적화 할 수 있는지 개선 방법을 찾는중입니다.
+
+---
 # 📅 2024.08.14
 📋 진행 사항
   * obstacle을 삭제할 때 변동하는 navigation mesh 정보를 agent가 이용할 수 있도록 수정했습니다.
