@@ -2,7 +2,7 @@
 # 📅 2024.08.19
 📋 진행 사항
   * navigation mesh의 cell에 포함된 불필요한 데이터를 제거했습니다.
-    * 이전에는 agent가 cell 영역을 벗어났는지 판단할때, 아래와 같이 미리 계산된 각 edge의 normal과 position을 향한 벡터를 내적해 판별했습니다.
+    * 이전에는 agent가 cell 영역을 벗어났는지 판단할 때, 아래와 같이 미리 계산된 각 edge의 normal과 position을 향한 벡터를 내적해 판별했습니다.
 	```
 	_bool Cell::IsOut(const Vec3& vPoint, OUT Cell*& pNeighbor)
 	{
@@ -47,25 +47,28 @@
 	}
 	```
     * 몇 차례의 사칙연산으로 수행 돼 빠르게 결과를 얻을 수 있음을 Funnel 알고리즘을 통해 확인한 바 있어 사용하기로 했습니다. 결과적으로 cell의 vNormals는 불필요하게 됐습니다.
-    * 남아 있는 vPoints와 pNeighbors는 고정소숫점 사용, 혹은 Vector3 대신 전체 정점 집합배열과 index를 이용하는 방법을 고려했으나, 좌표의 정밀도를 포기하거나, dynamic하게 변경되는 cell의 index, 캐스팅 등 다른 부가적인 계산이 추가로 필요할 것 같아 우선 보류했습니다.
+    * 남아 있는 vPoints와 pNeighbors는 dynamic하게 변경되는 cell의 특성을 고려해 추가로 최적화 할 수 없을지 고민중입니다.
   
   * 하드 코딩 된 값을 정리하고 결과물에 사용되지 않을 Tool의 기능을 정리 중입니다.
     * 이전에 미로 테스트 환경과 메인 씬 환경을 오가기 위해 매번 재실행 해야 했는데, 실행 중에 변경할 수 있도록 수정했습니다.
     * DebugDraw Render 옵션을 추가했습니다.
     * 이외에 기타 작업을 계속 진행중입니다.
 
-  * 아래와 같이 데이터를 정리하고 Debug Draw를 off한 상태에서 복수의 agent에 대해 ramdom way point를 설정해 경로 탐색을 수행하도록 다시 테스트 했습니다.
-    * Agent 10000
+  * 아래와 같이 데이터를 정리하고 Debug Draw를 off한 상태에서 복수의 agent에 대해 맵의 가장자리, 중심, 추가로 2곳의 ramdom way point를 설정해 경로 탐색을 수행하도록 다시 테스트 했습니다.
+    * Agent 10000 (업로드 파일 용량 제한으로 크기를 줄였습니다.)
    
-      
+      ![FPS_55-RELEASE2024-08-2010-00-59-ezgif com-optimize](https://github.com/user-attachments/assets/7717e4d6-9076-4565-adf1-415e8703c69f)
       
     * 미로 테스트 환경에서 FPS 60을 유지할 수 있는 agent의 최대 수는 약 9000개 정도 입니다.
-    * obstacle을 이용해 경로를 막았을 때, agent는 아래와 같이 경로를 재탐색합니다.
+    * obstacle을 이용해 경로를 막았을 때(상, 하단), agent는 아래와 같이 경로를 재탐색합니다.
+
+      ![FPS_55-RELEASE2024-08-2010-04-17-ezgif com-optimize](https://github.com/user-attachments/assets/26bf0a02-7cde-4c2c-a622-c4eac81bca5d)
 
   * position이 world의 범위를 벗어나거나 경로 탐색에 실패했을 때 등, 예외 상황에 프로그램이 종료되지 않도록 수정했습니다.
 
 ⚽ 이후 계획
-  * main scene에 사용되는 playable agent의 기능을 추가하고자 합니다.
+  * 추가로 최적화할 수 있는 부분을 찾아 지속적으로 시도할 계획입니다.
+  * main scene에 사용되는 playable agent에 기능을 추가하고자 합니다.
   
 ---
 # 📅 2024.08.16
