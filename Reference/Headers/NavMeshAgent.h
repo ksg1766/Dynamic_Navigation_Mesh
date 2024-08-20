@@ -41,7 +41,7 @@ public:
 	virtual HRESULT		Initialize(void* pArg)		override;
 	virtual void		Tick(_float fTimeDelta)		override;
 	virtual void		LateTick(_float fTimeDelta)	override;
-	virtual void		DebugRender()				override;
+	void				DebugRender(_bool bRenderPathCells, _bool bRenderEntries, _bool bRenderWayPoints);
 	
 public:
 	_bool	IsIdle();
@@ -59,8 +59,14 @@ public:
 
 	_bool	SetPath(const Vec3& vDestPos);
 
-	void	SetLinearSpeed(const Vec3& vLinearSpeed) { m_vLinearSpeed = vLinearSpeed; }
-	void	SetRadius(const _float fRadius) { m_fAgentRadius = fRadius; }
+	void	SetLinearSpeed(const Vec3& vLinearSpeed)	{ m_vLinearSpeed = vLinearSpeed; }
+	void	SetRadius(const _float fRadius)				{ m_fAgentRadius = fRadius; }
+
+	void	SetState(_bool isMoving)					{ m_isMoving = isMoving; }
+	void	SetMoveDirectly(_bool isMovingDirectly);
+
+public:
+	void	ClearWayPoints();
 
 private:
 	void	Input(_float fTimeDelta);
@@ -76,6 +82,7 @@ private:
 	Vec3			m_vDestPos;
 
 	_bool			m_isMoving = false;
+	_bool			m_isMovingDirectly = false;
 	Vec3			m_vNetMove;
 
 	Vec3			m_vMaxLinearSpeed;

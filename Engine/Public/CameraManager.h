@@ -1,6 +1,5 @@
 #pragma once
 #include "Base.h"
-#include "Hasher.h"
 
 BEGIN(Engine)
 
@@ -24,14 +23,14 @@ public:
 	HRESULT AddCamera(const wstring& strName, CGameObject* pCamera);
 	HRESULT DeleteCamera(const wstring& strName);
 	HRESULT ChangeCamera(const wstring& strName);
+	HRESULT ChangeCamera();
 	void	UpdateReflectionMatrix(_float fWaterLevel);
 	_matrix GetReflectionMatrix()		{ return m_matReflect; }
 
 	CGameObject* GetCurrentCamera()		{ return m_pCurrentCamera; }
 
 private:
-	using CameraHash = unordered_map<const wstring, CGameObject*, djb2Hasher>;
-	CameraHash		m_hashCamera;
+	map<const wstring, CGameObject*> m_mapCamera;
 	CGameObject*	m_pCurrentCamera = nullptr;
 	_matrix			m_matReflect;
 

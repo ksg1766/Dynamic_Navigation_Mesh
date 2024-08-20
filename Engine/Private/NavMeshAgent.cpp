@@ -89,31 +89,35 @@ void CNavMeshAgent::Tick(_float fTimeDelta)
 	if (true == IsMoving() || false == IsOutOfWorld(m_vPrePos))
 	{
 		Slide(Move(fTimeDelta));
+		ForceHeight();
 	} PopPath();
 }
 
 void CNavMeshAgent::LateTick(_float fTimeDelta)
 {
-	if (true == AdjustLocation() && true == AStar())
+	if (false == m_isMovingDirectly)
 	{
-		FunnelAlgorithm();
-	}
-
-	for (_int i = 0; i < m_dqPath.size(); ++i)
-	{
-		if (true == m_dqPath[i].first->isDead && true == AStar() && true == FunnelAlgorithm())
+		if (true == AdjustLocation() && true == AStar())
 		{
-			break;
+			FunnelAlgorithm();
+		}
+
+		for (_int i = 0; i < m_dqPath.size(); ++i)
+		{
+			if (true == m_dqPath[i].first->isDead && true == AStar() && true == FunnelAlgorithm())
+			{
+				break;
+			}
 		}
 	}
 
 	m_vPrePos = m_pTransform->GetPosition();
 }
 
-void CNavMeshAgent::DebugRender()
+void CNavMeshAgent::DebugRender(_bool bRenderPathCells, _bool bRenderEntries, _bool bRenderWayPoints)
 {
 	m_pBatch->Begin();
-	if (false == m_dqPath.empty())
+	if (true == bRenderPathCells && false == m_dqPath.empty())
 	{
 		for (_int i = m_dqPath.size() - 1; i >= 0; --i)
 		{
@@ -131,7 +135,7 @@ void CNavMeshAgent::DebugRender()
 		}
 	}
 
-	if (false == m_dqEntries.empty())
+	if (true == bRenderEntries && false == m_dqEntries.empty())
 	{
 		for (_int i = 0; i < m_dqEntries.size(); ++i)
 		{
@@ -155,7 +159,7 @@ void CNavMeshAgent::DebugRender()
 		}
 	}
 
-	if (false == m_dqWayPoints.empty())
+	if (true == bRenderWayPoints && false == m_dqWayPoints.empty())
 	{
 		for (size_t i = 0; i < m_dqWayPoints.size() - 1; ++i)
 		{
@@ -184,12 +188,15 @@ _bool CNavMeshAgent::IsOutOfWorld(const Vec3& vPosition)
 
 void CNavMeshAgent::ForceHeight()
 {
-	m_pTransform->Translate(Vec3(0.f, GetHeightOffset(), 0.f));
+	m_pTransform->Translate(Vec3(0.f, GetHeightOffset() + m_fAgentRadius, 0.f));
 }
 
 _float CNavMeshAgent::GetHeightOffset()
 {
 	Vec3 vPos(m_pTransform->GetPosition());
+
+	if (nullptr == m_pCurrentCell)
+		return 0.0f;
 
 	const array<Vec3, POINT_END>* vPoints = &m_pCurrentCell->vPoints;
 
@@ -238,7 +245,7 @@ void CNavMeshAgent::Slide(const Vec3 vPrePos)
 			m_pCurrentCell = FindCellByPosition(vPosition);
 			m_pTransform->SetPosition(vPosition);
 
-			if (true == AStar())
+			if (false == m_isMovingDirectly && true == AStar())
 			{
 				FunnelAlgorithm();
 			}
@@ -251,6 +258,11 @@ void CNavMeshAgent::Slide(const Vec3 vPrePos)
 
 Vec3 CNavMeshAgent::Move(_float fTimeDelta)
 {
+	if (true == m_isMovingDirectly)
+	{
+		return m_vPrePos;
+	}
+
 	Vec3 vDistance = Vec3::Zero;
 	Vec3 vMoveAmount = Vec3::Zero;
 	Vec3 vDirection = Vec3::Zero;
@@ -258,6 +270,7 @@ Vec3 CNavMeshAgent::Move(_float fTimeDelta)
 	if (1 >= m_dqWayPoints.size()) // already in destcell or no pathfinding
 	{
 		vDistance = m_vDestPos - m_vPrePos;
+		vDistance.y = 0.0f;
 		vDistance.Normalize(OUT vDirection);
 
 		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
@@ -265,11 +278,7 @@ Vec3 CNavMeshAgent::Move(_float fTimeDelta)
 		{	// end
 			vMoveAmount = vDistance;
 
-			m_dqEntries.clear();
-			m_dqOffset.clear();
-			m_dqPath.clear();
-			m_dqWayPoints.clear();
-			m_dqExpandedVertices.clear();
+			ClearWayPoints();
 
 			m_isMoving = false;
 		}
@@ -277,6 +286,7 @@ Vec3 CNavMeshAgent::Move(_float fTimeDelta)
 	else
 	{
 		vDistance = m_dqWayPoints[1] - m_vPrePos;
+		vDistance.y = 0.0f;
 		vDistance.Normalize(OUT vDirection);
 
 		vMoveAmount = fTimeDelta * m_vLinearSpeed * vDirection;
@@ -285,6 +295,26 @@ Vec3 CNavMeshAgent::Move(_float fTimeDelta)
 			if (vMoveAmount.LengthSquared() > vDistance.LengthSquared())
 			{	// to next waypoint
 				m_dqWayPoints.pop_front();
+
+				if (Vec3::Zero != vDirection)
+				{
+					_float fRight = m_pTransform->GetRight().Length();
+					_float fUp = m_pTransform->GetUp().Length();
+					_float fLook = m_pTransform->GetForward().Length();
+
+					vDirection *= fLook;
+					m_pTransform->SetForward(vDirection);
+
+					Vec3 vRight = Vec3::UnitY.Cross(vDirection);
+					vRight.Normalize();
+					vRight *= fRight;
+					m_pTransform->SetRight(vRight);
+
+					Vec3 vUp = vDirection.Cross(vRight);
+					vUp.Normalize();
+					vUp *= fUp;
+					m_pTransform->SetUp(vUp);
+				}
 			}
 			else
 			{
@@ -304,11 +334,7 @@ _bool CNavMeshAgent::AStar()
 	unordered_map<Cell*, PATH> Path;
 	unordered_set<Cell*> Closed;
 
-	m_dqWayPoints.clear();
-	m_dqPath.clear();
-	m_dqEntries.clear();
-	m_dqOffset.clear();
-	m_dqExpandedVertices.clear();
+	ClearWayPoints();
 
 	// start node
 	Vec3 vStartPos = m_pTransform->GetPosition();
@@ -701,6 +727,27 @@ _bool CNavMeshAgent::SetPath(const Vec3& vDestPos)
 	/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
 	fAStarPerformance = fAStarPerformance;*/
 	return false;
+}
+
+void CNavMeshAgent::SetMoveDirectly(_bool isMovingDirectly)
+{
+	if (isMovingDirectly != m_isMovingDirectly)
+	{
+		m_isMovingDirectly = isMovingDirectly;
+		if (true == isMovingDirectly)
+		{
+			ClearWayPoints();
+		}
+	}
+}
+
+void CNavMeshAgent::ClearWayPoints()
+{
+	m_dqWayPoints.clear();
+	m_dqPath.clear();
+	m_dqEntries.clear();
+	m_dqOffset.clear();
+	m_dqExpandedVertices.clear();
 }
 
 void CNavMeshAgent::Input(_float fTimeDelta)

@@ -489,6 +489,9 @@
     <ClInclude Include="..\Public\fpm\math.hpp">
       <Filter>98.Utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Delegate.h">
+      <Filter>98.Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">

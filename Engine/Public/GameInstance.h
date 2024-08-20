@@ -63,6 +63,7 @@ public: /* For.CameraManager */
 	HRESULT			AddCamera(const wstring& strName, CGameObject* pCamera);
 	HRESULT			DeleteCamera(const wstring& strName);
 	HRESULT			ChangeCamera(const wstring& strName);
+	HRESULT			ChangeCamera();
 	CGameObject*	GetCurrentCamera();
 
 public: /* For.PoolManager */

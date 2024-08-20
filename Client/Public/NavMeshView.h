@@ -36,7 +36,7 @@ public:
 
 public:
 	HRESULT		DynamicCreate(CGameObject* const pGameObject);
-	HRESULT		DynamicCreate(const wstring& strObjectTag, const Vec3& vPickPos);
+	HRESULT		DynamicCreate(const wstring& strObjectTag, const Vec3& vPickPos, Matrix matWorld = Matrix::Identity);
 	HRESULT		UpdateObstacleTransform(CGameObject* const pGameObject);
 
 private:
@@ -154,6 +154,13 @@ private:
 
 	// DebugDraw
 	_bool					m_bRenderDebug = false;
+	_bool					m_bRenderCells = true;
+	_bool					m_bRenderObstacleOutlines = true;
+
+	_bool					m_bRenderPathCells = true;
+	_bool					m_bRenderEntries = true;
+	_bool					m_bRenderWayPoints = true;
+
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;
 	BasicEffect*			m_pEffect = nullptr;
 	ID3D11InputLayout*		m_pInputLayout = nullptr;

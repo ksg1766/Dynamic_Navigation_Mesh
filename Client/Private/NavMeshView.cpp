@@ -13,6 +13,7 @@
 #include "Client_Macro.h"
 #include "tinyxml2.h"
 #include "Agent.h"
+#include "AgentController.h"
 #include "AIAgent.h"
 #include "Cell.h"
 #include "Obstacle.h"
@@ -111,6 +112,11 @@ HRESULT CNavMeshView::Tick()
 	}
 
 	ImGui::Checkbox("Render Debug", &m_bRenderDebug);
+	ImGui::Checkbox("Render Cells", &m_bRenderCells);
+	ImGui::Checkbox("Render Obstacle Outlines", &m_bRenderObstacleOutlines);
+	ImGui::Checkbox("Render Path Cells", &m_bRenderPathCells);
+	ImGui::Checkbox("Render Entry Lines", &m_bRenderEntries);
+	ImGui::Checkbox("Render Way Points", &m_bRenderWayPoints);
 	
 	// stress test
 	/*const _char* szStressButon = (true == m_bStressTest) ? "Stop Stress Test" : "Start Stress Test";
@@ -155,71 +161,77 @@ HRESULT CNavMeshView::DebugRender()
 	
 	m_pBatch->Begin();
 	
-	for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
+	if (true == m_bRenderCells)
 	{
-		if (nullptr != (*cell) && true == (*cell)->isDead)
+		for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
 		{
-			Safe_Delete(*cell);
-			cell = m_vecCells.erase(cell);
-			continue;
+			if (nullptr != (*cell) && true == (*cell)->isDead)
+			{
+				Safe_Delete(*cell);
+				cell = m_vecCells.erase(cell);
+				continue;
+			}
+
+			Vec3 vP0 = (*cell)->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
+			Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
+			Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
+
+			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
+
+			++cell;
 		}
-
-		Vec3 vP0 = (*cell)->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
-		Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
-		Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
-
-		DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
-
-		++cell;
 	}
 
-	for (_int i = 0; i < m_vecObstacles.size(); ++i)
+	if (true == m_bRenderObstacleOutlines)
 	{
-		for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size() - 1; ++j)
+		for (_int i = 0; i < m_vecObstacles.size(); ++i)
 		{
+			for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size() - 1; ++j)
+			{
+				Vec3 vLine1 =
+				{
+					m_vecObstacles[i]->vecPoints[j].x,
+					0.0f,
+					m_vecObstacles[i]->vecPoints[j].z
+				};
+				Vec3 vLine2 =
+				{
+					m_vecObstacles[i]->vecPoints[j + 1].x,
+					0.0f,
+					m_vecObstacles[i]->vecPoints[j + 1].z,
+				};
+
+				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
+			}
+
 			Vec3 vLine1 =
 			{
-				m_vecObstacles[i]->vecPoints[j].x,
+				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].x,
 				0.0f,
-				m_vecObstacles[i]->vecPoints[j].z
+				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].z
+
 			};
 			Vec3 vLine2 =
 			{
-				m_vecObstacles[i]->vecPoints[j + 1].x,
+				m_vecObstacles[i]->vecPoints[0].x,
 				0.0f,
-				m_vecObstacles[i]->vecPoints[j + 1].z,
+				m_vecObstacles[i]->vecPoints[0].z
 			};
 
 			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
 		}
-
-		Vec3 vLine1 =
-		{
-			m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].x,
-			0.0f,
-			m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].z
-
-		};
-		Vec3 vLine2 =
-		{
-			m_vecObstacles[i]->vecPoints[0].x,
-			0.0f,
-			m_vecObstacles[i]->vecPoints[0].z
-		};
-
-		m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
 	}
-	
+
 	m_pBatch->End();
 
 	if (nullptr != m_pAgent)
 	{
-		m_pAgent->DebugRender();
+		m_pAgent->GetNavMeshAgent()->DebugRender(m_bRenderPathCells, m_bRenderEntries, m_bRenderWayPoints);
 	}
 
 	for (auto AI : m_vecAIAgents)
 	{
-		AI->DebugRender();
+		AI->GetNavMeshAgent()->DebugRender(m_bRenderPathCells, m_bRenderEntries, m_bRenderWayPoints);
 	}
 
 	return S_OK;
@@ -802,15 +814,14 @@ HRESULT CNavMeshView::UpdateRegionList(triangulateio& tIn, const Obst* pObst)
 	return S_OK;
 }
 
-HRESULT CNavMeshView::DynamicCreate(const wstring& strObjectTag, const Vec3& vPickPos)
+HRESULT CNavMeshView::DynamicCreate(const wstring& strObjectTag, const Vec3& vPickPos, Matrix matWorld)
 {
 	auto ObstPrefab = m_mapObstaclePrefabs.find(strObjectTag);
 	if (m_mapObstaclePrefabs.end() != ObstPrefab)
 	{
-		Matrix matworld = Matrix::Identity;
-		matworld.Translation(vPickPos);
+		matWorld.Translation(vPickPos);
 
-		Obst* pObst = new Obst(ObstPrefab->second, matworld, nullptr);
+		Obst* pObst = new Obst(ObstPrefab->second, matWorld, nullptr);
 		if (FAILED(DynamicCreate(*pObst)))
 		{
 			Safe_Delete(pObst);
@@ -1219,6 +1230,8 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 	}
 
 	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
+	auto func = ::bind(static_cast<HRESULT(CNavMeshView::*)(const wstring&, const Vec3&, Matrix)>(&CNavMeshView::DynamicCreate), this, placeholders::_1, placeholders::_2, placeholders::_3);
+	m_pAgent->GetController()->CB_PlaceObstacle += func;
 
 	m_IsPickingActivated = true;
 
@@ -1336,7 +1349,7 @@ HRESULT CNavMeshView::StartAIStressTest()
 			fOuterZ = RandomOuterZ(RandomFloat);
 			vRandomPoint = Vec3(fOuterX, 0.0f, fOuterZ);
 			pCell = FindCellByPosition(vRandomPoint);
-		} while ((fOuterX < 512 - gGridCX && fOuterX > -512 + gGridCX) && (fOuterZ < 512 - gGridCZ && fOuterZ > -512 + gGridCZ) || nullptr == pCell);
+		} while ((fOuterX < gWorldCX / 2 - 1 - gGridCX && fOuterX > -(gWorldCX / 2 - 1) + gGridCX) && (fOuterZ < (gWorldCZ / 2 - 1) - gGridCZ && fOuterZ > -(gWorldCZ / 2 - 1) + gGridCZ) || nullptr == pCell);
 
 		CNavMeshAgent::NAVIGATION_DESC tDesc =
 		{
@@ -2273,18 +2286,23 @@ HRESULT CNavMeshView::LoadMazeTestScene()
 		vecObstacleObjects = &iterW->second->GetGameObjects();
 	}
 
-	for (auto object : *vecGroundObjects)
+	if (nullptr != vecGroundObjects)
 	{
-		m_pGameInstance->DeleteObject(object);
+		for (auto object : *vecGroundObjects)
+		{
+			m_pGameInstance->DeleteObject(object);
+		}
+		vecGroundObjects->clear();
 	}
 
-	for (auto object : *vecObstacleObjects)
+	if (nullptr != vecObstacleObjects)
 	{
-		m_pGameInstance->DeleteObject(object);
+		for (auto object : *vecObstacleObjects)
+		{
+			m_pGameInstance->DeleteObject(object);
+		}
+		vecObstacleObjects->clear();
 	}
-
-	vecGroundObjects->clear();
-	vecObstacleObjects->clear();
 
 	wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze0.bmp");
 
@@ -2306,6 +2324,9 @@ HRESULT CNavMeshView::LoadMazeTestScene()
 	m_pTerrainBuffer = pMazeBuffer;
 
 	pMazeBuffer->GetGameObject()->GetShader()->SetPassIndex(0);
+
+	if (FAILED(pMazeBuffer->GetGameObject()->GetShader()->Bind_RawValue("g_vMtrlDiffuse", &Colors::MediumSeaGreen, sizeof(Color))))
+		return E_FAIL;
 
 	if (FAILED(LoadNvFile()))
 		return E_FAIL;

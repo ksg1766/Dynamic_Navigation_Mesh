@@ -3,6 +3,7 @@
 #include "MonoBehaviour.h"
 #include "Transform.h"
 #include "Cell.h"
+#include "Delegate.h"
 
 BEGIN(Engine)
 
@@ -18,7 +19,8 @@ BEGIN(Client)
 class CAgentController : public CMonoBehaviour
 {
 	using Super = CMonoBehaviour;
-
+private:
+	enum class VIEWMODE : uint8 { WORLD, THIRD, MODE_END };
 private:
 	CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CAgentController(const CAgentController& rhs);
@@ -37,12 +39,17 @@ public:
 
 	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
 
+	FDelegate<const wstring&, const Vec3&, Matrix&> CB_PlaceObstacle;
+
 public:
 	void	SetRadius(const _float fRadius);
 	void	SetLinearSpeed(const Vec3& vLinearSpeed);
 
 private:
 	void	Input(_float fTimeDelta);
+	_bool	MoveDirectly(_float fTimeDelta);
+	void	PlaceObstacle();
+
 
 private:
 	CTransform*	m_pTransform = nullptr;
@@ -50,6 +57,13 @@ private:
 	_bool		m_isMoving = false;
 	Vec3		m_vLinearSpeed;
 	_float		m_fAgentRadius;
+
+	VIEWMODE	m_eViewMode = VIEWMODE::WORLD;
+
+	Vec3		m_vNetMove = Vec3::Zero;
+
+	int8		m_iObstacleIndex = -1;	
+	vector<pair<wstring, CGameObject*>> m_HoldingObstacles;
 
 private:
 	// DebugDraw

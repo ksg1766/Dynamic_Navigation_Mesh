@@ -5,6 +5,7 @@
 #include "GameInstance.h"
 #include "Level_Loading.h"
 #include "FlyingCameraController.h"
+#include "MainCameraController.h"
 #include "DebugTerrainGrid.h"
 #include "AgentController.h"
 #include "AIController.h"
@@ -374,6 +375,11 @@ HRESULT CMainApp::Ready_Prototype_Scripts()
 	/* For.Prototype_Component_FlyingCameraController */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_FlyingCameraController"),
 		CFlyingCameraController::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* For.Prototype_Component_MainCameraController*/
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_MainCameraController"),
+		CMainCameraController::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_Component_DebugTerrainGrid */

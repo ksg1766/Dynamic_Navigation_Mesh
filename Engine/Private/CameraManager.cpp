@@ -45,12 +45,12 @@ void CCameraManager::DebugRender()
 
 HRESULT CCameraManager::AddCamera(const wstring& strName, CGameObject* pCamera)
 {
-	CameraHash::iterator iter;
-	iter = m_hashCamera.find(strName);
+	map<const wstring, CGameObject*>::iterator iter;
+	iter = m_mapCamera.find(strName);
 
-	if (iter == m_hashCamera.end())
+	if (iter == m_mapCamera.end())
 	{
-		m_hashCamera.emplace(strName, pCamera);
+		m_mapCamera.emplace(strName, pCamera);
 		return S_OK;
 	}
 
@@ -59,28 +59,42 @@ HRESULT CCameraManager::AddCamera(const wstring& strName, CGameObject* pCamera)
 
 HRESULT CCameraManager::DeleteCamera(const wstring& strName)
 {
-	CameraHash::iterator iter;
-	iter = m_hashCamera.find(strName);
+	map<const wstring, CGameObject*>::iterator iter;
+	iter = m_mapCamera.find(strName);
 
-	if (iter == m_hashCamera.end())
+	if (iter == m_mapCamera.end())
 		return E_FAIL;
 
-	m_hashCamera.erase(iter);
+	m_mapCamera.erase(iter);
 
 	return E_FAIL;
 }
 
 HRESULT CCameraManager::ChangeCamera(const wstring& strName)
 {
-	CameraHash::iterator iter;
-	iter = m_hashCamera.find(strName);
+	map<const wstring, CGameObject*>::iterator iter;
+	iter = m_mapCamera.find(strName);
 
-	if (iter == m_hashCamera.end())
+	if (iter == m_mapCamera.end())
 		return E_FAIL;
 
 	m_pCurrentCamera = iter->second;
 
 	return S_OK;
+}
+
+HRESULT CCameraManager::ChangeCamera()
+{
+	for (auto& iter : m_mapCamera)
+	{
+		if (m_pCurrentCamera != iter.second)
+		{
+			m_pCurrentCamera = iter.second;
+			return S_OK;
+		}
+	}
+
+	return E_FAIL;
 }
 
 void CCameraManager::UpdateReflectionMatrix(_float fWaterLevel)

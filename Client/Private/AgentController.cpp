@@ -3,8 +3,11 @@
 #include "GameInstance.h"
 #include "Agent.h"
 #include "Obstacle.h"
+#include "MainCamera.h"
+#include "MainCameraController.h"
 #include "NSHelper.h"
 #include "Terrain.h"
+#include "StaticBase.h"
 #include "DebugDraw.h"
 
 CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -54,6 +57,17 @@ HRESULT CAgentController::Initialize(void* pArg)
 	m_pGameObject->GetNavMeshAgent()->SetRadius(m_fAgentRadius);
 	m_pGameObject->GetNavMeshAgent()->SetLinearSpeed(m_vLinearSpeed);
 
+	CStaticBase* pHoldingObst = nullptr;
+	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
+	pHoldingObst->SetObjectTag(TEXT("Cart_a"));
+	pHoldingObst->Initialize(nullptr);
+	m_HoldingObstacles.emplace_back(TEXT("Cart_a"), pHoldingObst);
+
+	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
+	pHoldingObst->SetObjectTag(TEXT("Crate"));
+	pHoldingObst->Initialize(nullptr);
+	m_HoldingObstacles.emplace_back(TEXT("Crate"), pHoldingObst);
+
 #pragma region AStarPerformance
 	/*if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
 		return E_FAIL;*/
@@ -64,7 +78,7 @@ HRESULT CAgentController::Initialize(void* pArg)
 
 void CAgentController::Tick(_float fTimeDelta)
 {
-	
+	Input(fTimeDelta);
 }
 
 void CAgentController::LateTick(_float fTimeDelta)
@@ -74,7 +88,7 @@ void CAgentController::LateTick(_float fTimeDelta)
 
 _bool CAgentController::IsIdle()
 {
-	return !IsMoving();
+	return !m_isMoving;
 }
 
 _bool CAgentController::IsMoving()
@@ -89,6 +103,7 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 	if (true == pTerrain->Pick(screenX, screenY, vPickedPos, fDistance, pTerrain->GetTransform()->WorldMatrix()))
 	{
+		m_pGameObject->GetNavMeshAgent()->SetMoveDirectly(false);
 		return m_pGameObject->GetNavMeshAgent()->SetPath(vPickedPos);
 	}
 
@@ -109,6 +124,111 @@ void CAgentController::SetLinearSpeed(const Vec3& vLinearSpeed)
 
 void CAgentController::Input(_float fTimeDelta)
 {
+	if (KEY_DOWN(KEY::V))
+	{
+		m_eViewMode = VIEWMODE(((uint8)m_eViewMode + 1U) % (uint8)VIEWMODE::MODE_END);
+		m_pGameInstance->ChangeCamera();
+
+		if (VIEWMODE::THIRD == m_eViewMode)
+		{
+			dynamic_cast<CMainCamera*>(m_pGameInstance->GetCurrentCamera())->GetController()->SetTarget(m_pTransform);
+			::SetCursorPos(0, 0);
+		}
+	}
+
+	if (VIEWMODE::THIRD == m_eViewMode)
+	{
+		_long		dwMouseMove = 0;
+
+		if (dwMouseMove = m_pGameInstance->Get_DIMouseMove(DIMS_X))
+		{
+			m_pTransform->RotateYAxisFixed(Vec3(0.0f, 12 * dwMouseMove * fTimeDelta, 0.0f));
+		}
+
+		if (dwMouseMove = m_pGameInstance->Get_DIMouseMove(DIMS_Y))
+		{
+			m_pTransform->RotateYAxisFixed(Vec3(12 * dwMouseMove * fTimeDelta, 0.0f, 0.0f));
+		}
+
+		MoveDirectly(fTimeDelta);
+		PlaceObstacle();
+	}
+}
+
+_bool CAgentController::MoveDirectly(_float fTimeDelta)
+{
+	if (KEY_PRESSING(KEY::UP_ARROW) || KEY_DOWN(KEY::UP_ARROW))
+		m_vNetMove += m_pTransform->GetForward();
+
+	if (KEY_PRESSING(KEY::DOWN_ARROW) || KEY_DOWN(KEY::DOWN_ARROW))
+		m_vNetMove -= m_pTransform->GetForward();
+	
+	if (KEY_PRESSING(KEY::LEFT_ARROW) || KEY_DOWN(KEY::LEFT_ARROW))
+		m_vNetMove -= m_pTransform->GetRight();	
+
+	if (KEY_PRESSING(KEY::RIGHT_ARROW) || KEY_DOWN(KEY::RIGHT_ARROW))
+		m_vNetMove += m_pTransform->GetRight();
+
+	if (Vec3::Zero != m_vNetMove)
+	{
+		m_pGameObject->GetNavMeshAgent()->SetMoveDirectly(true);
+		m_pGameObject->GetNavMeshAgent()->SetState(true);
+
+		m_vNetMove.Normalize();
+		m_vNetMove *= (fTimeDelta * m_vLinearSpeed);
+
+		m_pTransform->Translate(m_vNetMove);
+		m_vNetMove = Vec3::Zero;
+
+		return true;
+	}
+
+	return false;
+}
+
+void CAgentController::PlaceObstacle()
+{
+	if (KEY_DOWN(KEY::F1))
+	{
+		(0 != m_iObstacleIndex) ? m_iObstacleIndex = 0 : m_iObstacleIndex = -1;
+	}
+	else if (KEY_DOWN(KEY::F2))
+	{
+		(1 != m_iObstacleIndex) ? m_iObstacleIndex = 1 : m_iObstacleIndex = -1;
+	}
+
+	if (0 <= m_iObstacleIndex)
+	{
+		auto& [Name, Object] = m_HoldingObstacles[m_iObstacleIndex];
+		Vec3 vPlacePosition = m_pTransform->GetPosition();
+
+		Vec3 vLook = -m_pTransform->GetForward();
+		vLook.y = 0.0f;
+		vLook.Normalize();
+
+		Vec3 vRight = Vec3::Up.Cross(vLook);
+		vRight.Normalize();
+
+		Vec3 vUp = vLook.Cross(vRight);
+		vUp.Normalize();;
+
+		Object->GetTransform()->SetRight(vRight);
+		Object->GetTransform()->SetUp(vUp);
+		Object->GetTransform()->SetForward(vLook);
+
+		vPlacePosition += 25.0f * -vLook;
+
+		Object->GetTransform()->SetPosition(vPlacePosition);
+
+		Object->GetRenderer()->Add_RenderGroup(CRenderer::RG_NONBLEND_INSTANCE, Object);
+
+		if (m_pGameInstance->Mouse_Down(DIM_LB))
+		{
+			Matrix& matObst = Object->GetTransform()->WorldMatrix();
+
+			CB_PlaceObstacle(Name, vPlacePosition, matObst);
+		}
+	}
 }
 
 void CAgentController::DebugRender()

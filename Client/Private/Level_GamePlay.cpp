@@ -208,7 +208,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_UnitAir()
 
 HRESULT CLevel_GamePlay::Ready_Layer_Camera()
 {
-	CGameObject* pGameObject = nullptr;
+	/*CGameObject* pGameObject = nullptr;
 	LAYERTAG	eLayerTag = LAYERTAG::CAMERA;
 
 	pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, eLayerTag, TEXT("Prototype_GameObject_MainCamera"));
@@ -218,7 +218,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera()
 	if (nullptr == pGameObject)	return E_FAIL;
 	pGameObject->GetTransform()->Translate(Vec3(0.f, 400.f, 0.f));
 
-	m_pGameInstance->ChangeCamera(TEXT("MainCamera"));
+	m_pGameInstance->ChangeCamera(TEXT("MainCamera"));*/
 
 	return S_OK;
 }

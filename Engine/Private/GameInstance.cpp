@@ -303,6 +303,14 @@ HRESULT CGameInstance::ChangeCamera(const wstring& strName)
 	return m_pCameraManager->ChangeCamera(strName);
 }
 
+HRESULT CGameInstance::ChangeCamera()
+{
+	if (nullptr == m_pCameraManager)
+		return E_FAIL;
+
+	return m_pCameraManager->ChangeCamera();
+}
+
 CGameObject* CGameInstance::GetCurrentCamera()
 {
 	return m_pCameraManager->GetCurrentCamera();

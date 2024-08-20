@@ -173,6 +173,7 @@ call Copy.bat</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\Downloads\Framework\Engine\Public\RenderTarget.h" />
+    <ClInclude Include="..\Public\Delegate.h" />
     <ClInclude Include="..\Public\fpm\fixed.hpp" />
     <ClInclude Include="..\Public\fpm\ios.hpp" />
     <ClInclude Include="..\Public\fpm\math.hpp" />

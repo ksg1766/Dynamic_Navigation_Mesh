@@ -33,6 +33,7 @@ public:
 
 public:
 	_bool			Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
+	CAgentController* GetController() {	return m_pController; };
 
 private:
 	HRESULT			Ready_FixedComponents(void* pArg);

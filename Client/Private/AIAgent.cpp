@@ -25,7 +25,7 @@ HRESULT CAIAgent::Initialize(void * pArg)
 
 	if (FAILED(Ready_Scripts()))
 		return E_FAIL;
-	
+
 	return S_OK;
 }
 

@@ -9,7 +9,7 @@ class CMainCameraController : public CMonoBehaviour
 {
 	using Super = CMonoBehaviour;
 public:
-	enum class CameraMode { Default = 0, End };
+	enum class CAMERAMODE : uint8 { WORLD, FIRST, THIRD, MODE_END };
 
 private:
 	CMainCameraController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -26,7 +26,7 @@ public:
 public:
 	void	SetTarget(CTransform* pTargetTransform)	{ m_pTargetTransform = pTargetTransform; }
 
-	void	SetCameraMode(CameraMode eCameraMode)	{ m_eCameraMode = eCameraMode; }
+	void	SetCameraMode(CAMERAMODE eCameraMode)	{ m_eCameraMode = eCameraMode; }
 
 private:
 	void	Input(_float fTimeDelta);
@@ -36,14 +36,10 @@ private:
 	CTransform*		m_pTransform = nullptr;
 	CTransform*		m_pTargetTransform = nullptr;
 
-	Vec3			m_vOffset = Vec3(0.f, 13.f, -15.f);
-	Vec3			m_vBaseOffset = Vec3(0.f, 13.f, -15.f);
-	Vec3			m_vOffsetDagon = Vec3(14.f, 17.f, -14.f);
-	Vec3			m_vOffsetGodRay = Vec3(-12.5f, -5.f, -17.f);
-	Vec3			m_vOffsetGodRayEnd = Vec3(0.f, 4.f, -25.5f);
-	_float			m_fTimer = 0.f;
+	Vec3			m_vOffset = Vec3(0.0f, 40.0f, 0.0f);
+	_float			m_fDistance = 180.0f;
 
-	CameraMode		m_eCameraMode = CameraMode::End;
+	CAMERAMODE		m_eCameraMode = CAMERAMODE::THIRD;
 
 public:
 	static	CMainCameraController* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

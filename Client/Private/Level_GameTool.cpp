@@ -162,21 +162,21 @@ HRESULT CLevel_GameTool::Ready_Layer_Default()
 HRESULT CLevel_GameTool::Ready_Layer_Terrain()
 {
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/cityterrain3.bmp");
-	wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze0.bmp");
+	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/testmaze0.bmp");
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/Terrain0.bmp");
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/TerrainEx1.bmp");
 	//wstring strPath = TEXT("../Bin/Resources/Textures/Terrain/TerrainBig0.bmp");
-	m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
+	/*m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
 		LEVEL_GAMETOOL,
 		LAYERTAG::TERRAIN,
 		TEXT("Prototype_GameObject_BasicTerrain"),
 		&strPath));
-	if (nullptr == m_pBasicTerrain) return E_FAIL;
-	/*m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
+	if (nullptr == m_pBasicTerrain) return E_FAIL;*/
+	m_pBasicTerrain = dynamic_cast<CBasicTerrain*>(m_pGameInstance->Add_GameObject(
 		LEVEL_GAMETOOL,
 		LAYERTAG::TERRAIN,
 		TEXT("Prototype_GameObject_BasicTerrain")));
-	if (nullptr == m_pBasicTerrain) return E_FAIL;*/
+	if (nullptr == m_pBasicTerrain) return E_FAIL;
 
 	return S_OK;
 }
@@ -198,11 +198,14 @@ HRESULT CLevel_GameTool::Ready_Layer_Camera()
 {
 	CGameObject* pGameObject = nullptr;
 
+	pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMETOOL, LAYERTAG::CAMERA, TEXT("Prototype_GameObject_MainCamera"));
+	if (nullptr == pGameObject)	return E_FAIL;
+
 	pGameObject = m_pGameInstance->Add_GameObject(LEVEL_GAMETOOL, LAYERTAG::CAMERA, TEXT("Prototype_GameObject_FlyingCamera"));
 	if (nullptr == pGameObject)	return E_FAIL;
 	pGameObject->GetTransform()->Translate(Vec3(0.0f, 500.0f, 0.0f));
 
-	m_pGameInstance->ChangeCamera(TEXT("FlyingCamera"));
+	m_pGameInstance->ChangeCamera(TEXT("FlyingCamera"));	
 
 	return S_OK;
 }

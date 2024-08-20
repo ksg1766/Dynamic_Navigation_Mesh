@@ -183,10 +183,7 @@ HRESULT CLoader::Loading_Scripts_For_Level_GamePlay()
 {
 	CGameInstance* pGameInstance = GET_INSTANCE(CGameInstance);
 
-	/* For.Prototype_Component_MainCameraController*/
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_MainCameraController"),
-		CMainCameraController::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
+
 
 	RELEASE_INSTANCE(CGameInstance);
 
@@ -304,6 +301,10 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GameTool()
 
 	/* For.Prototype_GameObject_FlyingCamera */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_FlyingCamera"), CFlyingCamera::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* For.Prototype_GameObject_FlyingCamera */
+	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_MainCamera"), CMainCamera::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_GameObject_Agent */
