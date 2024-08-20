@@ -7,6 +7,7 @@ BEGIN(Engine)
 
 class CGameInstance;
 class CGameObject;
+class CTerrain;
 
 END
 
@@ -34,6 +35,7 @@ public:
 	void	OnNotifiedPlaceObstacle(CGameObject* const pGameObject);
 	void	OnNotifiedPlaceObstacle(const wstring& strObjectTag, const Vec3& vPickPos);
 	void	OnNotifiedTransformChanged(CGameObject* const pGameObject);
+	void	OnNotifiedTerrainChanged(CTerrain* const pTerrainBuffer);
 
 	void	SetPrefabsView(CPrefabsView* pPrefabsView);
 	void	SetLayersView(CLayersView* pLayersView);

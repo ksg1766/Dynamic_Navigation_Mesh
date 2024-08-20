@@ -58,15 +58,26 @@ HRESULT CAgentController::Initialize(void* pArg)
 	m_pGameObject->GetNavMeshAgent()->SetLinearSpeed(m_vLinearSpeed);
 
 	CStaticBase* pHoldingObst = nullptr;
-	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
-	pHoldingObst->SetObjectTag(TEXT("Cart_a"));
-	pHoldingObst->Initialize(nullptr);
-	m_HoldingObstacles.emplace_back(TEXT("Cart_a"), pHoldingObst);
 
 	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
-	pHoldingObst->SetObjectTag(TEXT("Crate"));
+	pHoldingObst->SetObjectTag(TEXT("Bus"));
 	pHoldingObst->Initialize(nullptr);
-	m_HoldingObstacles.emplace_back(TEXT("Crate"), pHoldingObst);
+	m_HoldingObstacles.emplace_back(TEXT("Bus"), pHoldingObst);
+
+	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
+	pHoldingObst->SetObjectTag(TEXT("Dumpster"));
+	pHoldingObst->Initialize(nullptr);
+	m_HoldingObstacles.emplace_back(TEXT("Dumpster"), pHoldingObst);
+
+	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
+	pHoldingObst->SetObjectTag(TEXT("Picnic_Table"));
+	pHoldingObst->Initialize(nullptr);
+	m_HoldingObstacles.emplace_back(TEXT("Picnic_Table"), pHoldingObst);
+
+	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
+	pHoldingObst->SetObjectTag(TEXT("Receptacle_Recycling"));
+	pHoldingObst->Initialize(nullptr);
+	m_HoldingObstacles.emplace_back(TEXT("Receptacle_Recycling"), pHoldingObst);
 
 #pragma region AStarPerformance
 	/*if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
@@ -132,7 +143,11 @@ void CAgentController::Input(_float fTimeDelta)
 		if (VIEWMODE::THIRD == m_eViewMode)
 		{
 			dynamic_cast<CMainCamera*>(m_pGameInstance->GetCurrentCamera())->GetController()->SetTarget(m_pTransform);
-			::SetCursorPos(0, 0);
+			//::ShowCursor(false);
+		}
+		else
+		{
+			//::ShowCursor(true);
 		}
 	}
 
@@ -152,6 +167,8 @@ void CAgentController::Input(_float fTimeDelta)
 
 		MoveDirectly(fTimeDelta);
 		PlaceObstacle();
+		
+		::SetCursorPos(g_iWinSizeX / 2, g_iWinSizeY / 2);
 	}
 }
 

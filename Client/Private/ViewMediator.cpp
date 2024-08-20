@@ -59,6 +59,11 @@ void CViewMediator::OnNotifiedTransformChanged(CGameObject* const pGameObject)
 	m_pNavMeshView->UpdateObstacleTransform(pGameObject);
 }
 
+void CViewMediator::OnNotifiedTerrainChanged(CTerrain* const pTerrainBuffer)
+{
+	m_pPrefabsView->ChangeTerrain(pTerrainBuffer);
+}
+
 void CViewMediator::SetPrefabsView(CPrefabsView* pPrefabsView)
 { 
 	m_pPrefabsView = pPrefabsView;

@@ -313,7 +313,14 @@ HRESULT CMainApp::Ready_Prototype_Components()
 					TEXT("Picnic_table8") == strFileName ||
 					TEXT("Red_Maple_Young1") == strFileName ||
 					TEXT("Red_Maple_Young2") == strFileName ||
-					TEXT("White_Oak_13") == strFileName)
+					TEXT("White_Oak_13") == strFileName ||
+					TEXT("Dumpster") == strFileName ||
+					TEXT("Receptacle_Recycling") == strFileName ||
+					TEXT("Light_Lamppost") == strFileName ||
+					TEXT("Picnic_Table") == strFileName ||
+					TEXT("Bus") == strFileName ||
+					TEXT("Signal_Separated") == strFileName ||
+					TEXT("Signal_Separated_No_Stoplight") == strFileName)
 			{
 				//continue;
 

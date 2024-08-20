@@ -1639,11 +1639,11 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	//for (_int i = -64; i < 64; ++i)
 	{
 		//cVerticalRay.position = Vec3((_float)i, 2.0f, -64.0f);
-		cVerticalRay.position = Vec3((_float)i, 9.f, -512.0f);
+		cVerticalRay.position = Vec3((_float)i, 0.1f, -512.0f);
 		cVerticalRay.direction = Vec3::Backward;
 
 		//cHorizontalRay.position = Vec3(-64.0f, 2.0f, (_float)i);
-		cHorizontalRay.position = Vec3(-512.0f, 9.f, (_float)i);
+		cHorizontalRay.position = Vec3(-512.0f, 0.1f, (_float)i);
 		cHorizontalRay.direction = Vec3::Right;
 		
 		_float fDistance = FLT_MAX;
@@ -1691,8 +1691,6 @@ HRESULT CNavMeshView::CalculateObstacleOutline(CGameObject* const pGameObject, O
 	vector<Vec3> vecExpandedOutline;
 	vector<iVec3> vecTightOutline;
 	vector<Vec3> vecClearOutline;
-
-	setPoints.emplace(iVec3(-330, 9, 336));
 
 	Dfs(vStart, setPoints, vecTightOutline);
 
@@ -2232,7 +2230,6 @@ HRESULT CNavMeshView::LoadMainScene()
 	if (nullptr == m_pGameInstance->CreateObject(TEXT("Prototype_GameObject_EmeraldSquare_Base"), LAYERTAG::GROUND))
 		return E_FAIL;
 
-	// TODO : 아래 더 확인해 볼 것.
 	CTerrain* pDefaultBuffer = dynamic_cast<CTerrain*>(m_pGameInstance->Clone_Component(
 		m_pTerrainBuffer->GetGameObject(),
 		LEVEL_STATIC,
@@ -2249,6 +2246,7 @@ HRESULT CNavMeshView::LoadMainScene()
 		return E_FAIL;
 
 	m_pTerrainBuffer = pDefaultBuffer;
+	m_pMediator->OnNotifiedTerrainChanged(pDefaultBuffer);
 
 	pDefaultBuffer->GetGameObject()->GetShader()->SetPassIndex(3);
 
@@ -2322,6 +2320,7 @@ HRESULT CNavMeshView::LoadMazeTestScene()
 		return E_FAIL;
 
 	m_pTerrainBuffer = pMazeBuffer;
+	m_pMediator->OnNotifiedTerrainChanged(pMazeBuffer);
 
 	pMazeBuffer->GetGameObject()->GetShader()->SetPassIndex(0);
 

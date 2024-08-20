@@ -26,6 +26,7 @@ public:
 
 public:
 	HRESULT	PlaceObstacle(const wstring& strObjectTag, const Matrix& matWorld, OUT CGameObject*& pGameObjectRet);
+	void	ChangeTerrain(CTerrain* pTerrainBuffer) { m_pTerrainBuffer = pTerrainBuffer; };
 
 private:
 	void	Input();
