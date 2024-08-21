@@ -78,46 +78,16 @@ HRESULT CNavMeshView::Tick()
 
 	ObstaclesGroup();
 
-	if (ImGui::TreeNode("Create Agent"))
+	if (ImGui::TreeNode("Debug Render Option"))
 	{
-		if (ImGui::Button("Create Playable"))
-		{
-			//if (FAILED(CreateAgent(0)))
-			if (FAILED(CreateAgent(Vec3::Zero)))
-			{
-				ImGui::End();
-				return E_FAIL;
-			}
-		}
-		ImGui::NewLine();
-
-		if (ImGui::Button("CreateAI"))
-		{
-			if (FAILED(CreateAI()))
-			{
-				ImGui::End();
-				return E_FAIL;
-			}
-		}ImGui::NewLine();
-		if (ImGui::Button("CreateAIStressTest"))
-		{
-			if (FAILED(StartAIStressTest()))
-			{
-				ImGui::End();
-				return E_FAIL;
-			}
-		}ImGui::NewLine();
-
+		ImGui::Checkbox("Render Debug", &m_bRenderDebug);
+		ImGui::Checkbox("Render Cells", &m_bRenderCells);
+		ImGui::Checkbox("Render Obstacle Outlines", &m_bRenderObstacleOutlines);
+		ImGui::Checkbox("Render Path Cells", &m_bRenderPathCells);
+		ImGui::Checkbox("Render Entry Lines", &m_bRenderEntries);
+		ImGui::Checkbox("Render Way Points", &m_bRenderWayPoints);
 		ImGui::TreePop();
 	}
-
-	ImGui::Checkbox("Render Debug", &m_bRenderDebug);
-	ImGui::Checkbox("Render Cells", &m_bRenderCells);
-	ImGui::Checkbox("Render Obstacle Outlines", &m_bRenderObstacleOutlines);
-	ImGui::Checkbox("Render Path Cells", &m_bRenderPathCells);
-	ImGui::Checkbox("Render Entry Lines", &m_bRenderEntries);
-	ImGui::Checkbox("Render Way Points", &m_bRenderWayPoints);
-	
 	// stress test
 	/*const _char* szStressButon = (true == m_bStressTest) ? "Stop Stress Test" : "Start Stress Test";
 	if (ImGui::Button(szStressButon))
@@ -1230,8 +1200,16 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 	}
 
 	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
-	auto func = ::bind(static_cast<HRESULT(CNavMeshView::*)(const wstring&, const Vec3&, Matrix)>(&CNavMeshView::DynamicCreate), this, placeholders::_1, placeholders::_2, placeholders::_3);
-	m_pAgent->GetController()->CB_PlaceObstacle += func;
+
+	auto func = ::bind(
+		static_cast<HRESULT(CNavMeshView::*)(const wstring&, const Vec3&, Matrix)>(&CNavMeshView::DynamicCreate),
+		this,
+		placeholders::_1,
+		placeholders::_2,
+		placeholders::_3
+	);
+
+	m_pAgent->GetController()->DLG_PlaceObstacle += func;
 
 	m_IsPickingActivated = true;
 
@@ -3133,6 +3111,36 @@ void CNavMeshView::InfoView()
 			MSG_BOX("Failed to Load MazeTestScene");
 		}
 	}ImGui::NewLine();
+
+	if (ImGui::TreeNode("Create Agent"))
+	{
+		if (ImGui::Button("Create Playable"))
+		{
+			//if (FAILED(CreateAgent(0)))
+			if (FAILED(CreateAgent(Vec3::Zero)))
+			{
+				ImGui::End();
+			}
+		}
+		ImGui::NewLine();
+
+		if (ImGui::Button("CreateAI"))
+		{
+			if (FAILED(CreateAI()))
+			{
+				ImGui::End();
+			}
+		}ImGui::NewLine();
+		if (ImGui::Button("CreateAIStressTest"))
+		{
+			if (FAILED(StartAIStressTest()))
+			{
+				ImGui::End();
+			}
+		}ImGui::NewLine();
+
+		ImGui::TreePop();
+	}
 
 	if (ImGui::TreeNode("BakeData"))
 	{

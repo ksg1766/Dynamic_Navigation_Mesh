@@ -39,7 +39,7 @@ public:
 
 	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
 
-	FDelegate<const wstring&, const Vec3&, Matrix&> CB_PlaceObstacle;
+	FDelegate<const wstring&, const Vec3&, Matrix&> DLG_PlaceObstacle;
 
 public:
 	void	SetRadius(const _float fRadius);
