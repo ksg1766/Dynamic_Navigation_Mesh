@@ -38,9 +38,8 @@ void CBasicTerrain::Tick(_float fTimeDelta)
 void CBasicTerrain::LateTick(_float fTimeDelta)
 {
 	Super::Tick(fTimeDelta);
-	//GetRenderer()->Add_RenderGroup(CRenderer::RG_NONBLEND, this);
+
 	GetRenderer()->Add_RenderGroup(CRenderer::RG_NONBLEND, this);
-	//GetRenderer()->Add_RenderGroup(CRenderer::RG_BLEND, this);
 }
 
 void CBasicTerrain::DebugRender()
@@ -106,7 +105,6 @@ HRESULT CBasicTerrain::Ready_FixedComponents(void* pArg)
 		GetShader()->SetPassIndex(0);
 
 		if (FAILED(GetShader()->Bind_RawValue("g_vMtrlDiffuse", &Colors::MediumSeaGreen, sizeof(Color))))
-		//if (FAILED(GetShader()->Bind_RawValue("g_vMtrlDiffuse", &Colors::White, sizeof(Color))))
 			return E_FAIL;
 	}
 
@@ -122,9 +120,7 @@ HRESULT CBasicTerrain::Bind_ShaderResources()
 {
 	if (FAILED(GetTransform()->Bind_ShaderResources(GetShader(), "g_WorldMatrix")) ||
 		FAILED(m_pGameInstance->Bind_TransformToShader(GetShader(), "g_ViewMatrix", CPipeLine::D3DTS_VIEW)) ||
-		FAILED(m_pGameInstance->Bind_TransformToShader(GetShader(), "g_ProjMatrix", CPipeLine::D3DTS_PROJ))/* ||
-		FAILED(GetShader()->Bind_RawValue("g_vCamPosition", &static_cast<const _float4&>(m_pGameInstance->Get_CamPosition_Float4()), sizeof(_float4))) ||
-		FAILED(GetTexture()->Bind_ShaderResource(GetShader(), "g_DiffuseTexture", 0))*/)
+		FAILED(m_pGameInstance->Bind_TransformToShader(GetShader(), "g_ProjMatrix", CPipeLine::D3DTS_PROJ)))
 	{
 		return E_FAIL;
 	}
