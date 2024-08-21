@@ -10,8 +10,9 @@ struct ENGINE_DLL Obst
 	Vec3 vInnerPoint = Vec3::Zero;
 	BoundingBox tAABB;
 	CGameObject* pGameObject = nullptr;
-
 	vector<Vec3> vecPoints;
+
+	_bool isDead = false;
 
 	explicit Obst() = default;
 	explicit Obst(const Obst& rhs) = default;
@@ -47,7 +48,6 @@ struct ENGINE_DLL Obst
 	{
 		_int iSize = vecPoints.size();
 
-		// RayCast
 		_int iCrosses = 0;
 
 		for (_int m = 0; m < iSize; ++m)

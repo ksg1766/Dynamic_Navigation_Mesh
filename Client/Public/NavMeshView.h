@@ -55,8 +55,8 @@ private:
 	HRESULT		UpdateHoleList(triangulateio& tIn, const Obst* pObst = nullptr);
 	HRESULT		UpdateRegionList(triangulateio& tIn, const Obst* pObst = nullptr);
 
-	HRESULT		DynamicCreate(const Obst& tObst);
-	HRESULT		DynamicDelete(const Obst& tObst);
+	HRESULT		DynamicCreate(Obst& tObst);
+	HRESULT		DynamicDelete(Obst& tObst);
 
 	HRESULT		CreateAgent(Vec3 vSpawnPosition);
 	HRESULT		CreateAgent(_int iSpawnIndex);
@@ -67,7 +67,7 @@ private:
 
 private:
 	void		SetPolygonHoleCenter(Obst& tObst);
-	HRESULT		GetIntersectedCells(const Obst& tObst, OUT set<Cell*>& setIntersected, _bool bPop = false, _bool bDelete = false);
+	HRESULT		GetIntersectedCells(Obst& tObst, OUT set<Cell*>& setIntersected, _bool bPop = false, _bool bDelete = false);
 
 private:
 	HRESULT		CalculateObstacleOutline(CGameObject* const pGameObject, OUT vector<Vec3>& vecOutline);
@@ -172,9 +172,6 @@ private:
 	vector<const _char*>	m_vecDataFiles;
 
 	map<wstring, Obst>		m_mapObstaclePrefabs;
-
-	// Legacy
-	//CShader*				m_pCS_TriTest = nullptr;
 
 public:
 	static class CNavMeshView* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, void* pArg = nullptr);

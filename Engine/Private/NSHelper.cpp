@@ -107,7 +107,7 @@ Vec3 CNSHelper::ProjectionPoint2Edge(const Vec3& vPoint, const Vec3& vP1, const 
 }
 
 _float CNSHelper::DistanceEdge2Edge(const Vec3& vP1, const Vec3& vP2, const Vec3& vQ1, const Vec3& vQ2)
-{	// Âü°í : https://wizardmania.tistory.com/21
+{
 	Vec3 U = vP2 - vP1;
 	Vec3 V = vQ2 - vQ1;
 	Vec3 W = vP1 - vQ1;

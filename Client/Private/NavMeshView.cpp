@@ -116,92 +116,104 @@ HRESULT CNavMeshView::LateTick()
 
 HRESULT CNavMeshView::DebugRender()
 {
-	if (false == m_bRenderDebug)
+	if (true == m_bRenderDebug)
 	{
-		return S_OK;
-	}
+		m_pEffect->SetWorld(XMMatrixIdentity());
 
-	m_pEffect->SetWorld(XMMatrixIdentity());
+		m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
+		m_pEffect->SetProjection(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_PROJ));
 
-	m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
-	m_pEffect->SetProjection(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_PROJ));
+		m_pEffect->Apply(m_pContext);
+		m_pContext->IASetInputLayout(m_pInputLayout);
 
-	m_pEffect->Apply(m_pContext);
-	m_pContext->IASetInputLayout(m_pInputLayout);
-	
-	m_pBatch->Begin();
-	
-	if (true == m_bRenderCells)
-	{
-		for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
+		m_pBatch->Begin();
+
+		if (true == m_bRenderCells)
 		{
-			if (nullptr != (*cell) && true == (*cell)->isDead)
+			for (auto cell = m_vecCells.begin(); cell != m_vecCells.end();)
 			{
-				Safe_Delete(*cell);
-				cell = m_vecCells.erase(cell);
-				continue;
+				if (nullptr != (*cell) && true == (*cell)->isDead)
+				{
+					Safe_Delete(*cell);
+					cell = m_vecCells.erase(cell);
+					continue;
+				}
+
+				Vec3 vP0 = (*cell)->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
+				Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
+				Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
+
+				DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
+
+				++cell;
 			}
-
-			Vec3 vP0 = (*cell)->vPoints[0] + Vec3(0.f, 0.05f, 0.f);
-			Vec3 vP1 = (*cell)->vPoints[1] + Vec3(0.f, 0.05f, 0.f);
-			Vec3 vP2 = (*cell)->vPoints[2] + Vec3(0.f, 0.05f, 0.f);
-
-			DX::DrawTriangle(m_pBatch, vP0, vP1, vP2, Colors::LimeGreen);
-
-			++cell;
 		}
-	}
 
-	if (true == m_bRenderObstacleOutlines)
-	{
-		for (_int i = 0; i < m_vecObstacles.size(); ++i)
+		if (true == m_bRenderObstacleOutlines)
 		{
-			for (_int j = 0; j < m_vecObstacles[i]->vecPoints.size() - 1; ++j)
+			for (auto obst = m_vecObstacles.begin(); obst != m_vecObstacles.end();)
 			{
+				if (true == (*obst)->isDead)
+				{
+					obst = m_vecObstacles.erase(obst);
+					continue;
+				}
+
+				for (_int j = 0; j < (*obst)->vecPoints.size() - 1; ++j)
+				{
+					Vec3 vLine1 =
+					{
+						(*obst)->vecPoints[j].x,
+						0.0f,
+						(*obst)->vecPoints[j].z
+					};
+					Vec3 vLine2 =
+					{
+						(*obst)->vecPoints[j + 1].x,
+						0.0f,
+						(*obst)->vecPoints[j + 1].z,
+					};
+
+					m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
+				}
+
 				Vec3 vLine1 =
 				{
-					m_vecObstacles[i]->vecPoints[j].x,
+					(*obst)->vecPoints[(*obst)->vecPoints.size() - 1].x,
 					0.0f,
-					m_vecObstacles[i]->vecPoints[j].z
+					(*obst)->vecPoints[(*obst)->vecPoints.size() - 1].z
 				};
 				Vec3 vLine2 =
 				{
-					m_vecObstacles[i]->vecPoints[j + 1].x,
+					(*obst)->vecPoints[0].x,
 					0.0f,
-					m_vecObstacles[i]->vecPoints[j + 1].z,
+					(*obst)->vecPoints[0].z
 				};
 
 				m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
+
+				++obst;
 			}
-
-			Vec3 vLine1 =
-			{
-				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].x,
-				0.0f,
-				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].z
-			};
-			Vec3 vLine2 =
-			{
-				m_vecObstacles[i]->vecPoints[0].x,
-				0.0f,
-				m_vecObstacles[i]->vecPoints[0].z
-			};
-
-			m_pBatch->DrawLine(VertexPositionColor(vLine1, Colors::Red), VertexPositionColor(vLine2, Colors::Red));
 		}
-	}
 
-	m_pBatch->End();
+		m_pBatch->End();
+	}
 
 	if (nullptr != m_pAgent)
 	{
-		m_pAgent->GetNavMeshAgent()->DebugRender(m_bRenderPathCells, m_bRenderEntries, m_bRenderWayPoints);
+		if (true == m_bRenderDebug)
+		{
+			m_pAgent->GetNavMeshAgent()->DebugRender(m_bRenderPathCells, m_bRenderEntries, m_bRenderWayPoints);
+		}
 		m_pAgent->DebugRender();
 	}
 
-	for (auto AI : m_vecAIAgents)
+	if (true == m_bRenderDebug)
 	{
-		AI->GetNavMeshAgent()->DebugRender(m_bRenderPathCells, m_bRenderEntries, m_bRenderWayPoints);
+		for (auto AI : m_vecAIAgents)
+		{
+			AI->GetNavMeshAgent()->DebugRender(m_bRenderPathCells, m_bRenderEntries, m_bRenderWayPoints);
+		}
 	}
 
 	return S_OK;
@@ -307,8 +319,6 @@ HRESULT CNavMeshView::BakeNavMesh()
 	
 	if (false == m_umapObstGrids.empty()) { m_umapObstGrids.clear(); }
 
-	//vector<Cell*> vecCells;
-
 	for (_int i = 0; i < m_tOut.numberoftriangles; ++i)
 	{
 		_int iIdx1 = m_tOut.trianglelist[i * 3 + POINT_A];
@@ -340,20 +350,6 @@ HRESULT CNavMeshView::BakeNavMesh()
 		cell->SetUpData();
 	}
 
-	/*HierarchyNode* pHierarchy = new HierarchyNode;
-	pHierarchy->pCells = vecCells;
-
-	if (false == m_vecPortalCache.empty())
-	{
-		pHierarchy->pPortals = m_vecPortalCache[0];
-
-		for (auto portal : pHierarchy->pPortals)
-		{
-			portal->pHierarchyNode = pHierarchy;
-		}
-	}
-
-	m_vecHierarchyNodes.push_back(pHierarchy);*/
 	SetUpCells2Grids(m_vecCells, m_umapCellGrids);
 	SetUpObsts2Grids(m_vecObstacles, m_umapObstGrids);
 
@@ -404,13 +400,6 @@ HRESULT CNavMeshView::BakeSingleObstacleData()
 
 	if (FAILED(DynamicCreate(*pObst)))
 		return E_FAIL;
-
-	/*for (auto& iter : pObst->vecPoints)
-	{
-		BoundingSphere tSphere(iter, 0.1f);
-
-		m_vecObstaclePointSpheres.emplace_back(tSphere);
-	}*/
 
 	return S_OK;
 }
@@ -463,11 +452,7 @@ HRESULT CNavMeshView::BakeObstacles()
 
 		m_vecObstacles.push_back(pObst);
 		s2cPushBack(m_strObstacles, to_string(m_vecObstacles.size()));
-
-		//DynamicCreate(*pObst);
 	}
-
-	//
 
 	for (auto pObst : m_vecObstacles)
 	{
@@ -573,22 +558,10 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 		}
 	}
 
-	/*if (false == m_umapPointHeights.empty()) { m_umapPointHeights.clear(); }
-
-	for (_int i = 0; i < m_vecPoints.size(); ++i)
-	{
-		m_umapPointHeights.emplace(m_vecPoints[i].x, pair(m_vecPoints[i].z, m_vecPoints[i].y));
-	}*/
-
 	UpdateHoleList(m_tIn);
 	UpdateRegionList(m_tIn);
 
 	triangulate(m_szTriswitches, &m_tIn, &m_tOut, nullptr);
-
-	/*if (FAILED(BakeNavMesh()))
-	{
-		return E_FAIL;
-	}*/
 
 	if (false == m_vecCells.empty())
 	{
@@ -610,10 +583,6 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 		_int iIdx2 = m_tOut.trianglelist[i * 3 + POINT_B];
 		_int iIdx3 = m_tOut.trianglelist[i * 3 + POINT_C];
 
-		//_float y1 = 0.0f, y2 = 0.0f, y3 = 0.0f;
-
-		//////////
-
 		Vec3 vtx[POINT_END] =
 		{
 			{ m_tOut.pointlist[iIdx1 * 2], 0.0f, m_tOut.pointlist[iIdx1 * 2 + 1] },
@@ -626,8 +595,6 @@ HRESULT CNavMeshView::BakeHeightMap3D()
 		pCell->vPoints[POINT_B] = vtx[POINT_B];
 		pCell->vPoints[POINT_C] = vtx[POINT_C];
 		pCell->CW();
-
-		//////////
 
 		for (uint8 p = POINT_A; p < POINT_END; ++p)
 		{
@@ -809,7 +776,7 @@ HRESULT CNavMeshView::DynamicCreate(const wstring& strObjectTag, const Vec3& vPi
 	return S_OK;
 }
 
-HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
+HRESULT CNavMeshView::DynamicCreate(Obst& tObst)
 {	
 	set<Cell*> setIntersected;
 	map<Vec3, pair<Vec3, Cell*>> mapOutlineCells;
@@ -895,7 +862,6 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 		pCell->vPoints[POINT_B] = vtx[POINT_B];
 		pCell->vPoints[POINT_C] = vtx[POINT_C];
 		pCell->CW();
-		//pCell->SetUpData();
 
 		vecNewCells.push_back(pCell);
 	}
@@ -937,7 +903,6 @@ HRESULT CNavMeshView::DynamicCreate(const Obst& tObst)
 			}
 		}
 
-		//cell->isNew = true;
 		m_vecCells.push_back(cell);
 	}
 
@@ -1002,7 +967,7 @@ HRESULT CNavMeshView::UpdateObstacleTransform(CGameObject* const pGameObject)
 	return S_OK;
 }
 
-HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
+HRESULT CNavMeshView::DynamicDelete(Obst& tObst)
 {
 	set<Cell*> setIntersected;
 	map<Vec3, pair<Vec3, Cell*>> mapOutlineCells;
@@ -1195,7 +1160,7 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 	);
 	
 	auto funcDynamicDelete = ::bind(
-		static_cast<HRESULT(CNavMeshView::*)(const Obst&)>(&CNavMeshView::DynamicDelete),
+		static_cast<HRESULT(CNavMeshView::*)(Obst&)>(&CNavMeshView::DynamicDelete),
 		this,
 		placeholders::_1
 	);
@@ -1464,7 +1429,7 @@ void CNavMeshView::SetPolygonHoleCenter(Obst& tObst)
 	}
 }
 
-HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<Cell*>& setIntersected, _bool bPop, _bool bDelete)
+HRESULT CNavMeshView::GetIntersectedCells(Obst& tObst, OUT set<Cell*>& setIntersected, _bool bPop, _bool bDelete)
 {
 	Vec3 vLB = tObst.tAABB.Center - tObst.tAABB.Extents;
 	Vec3 vRT = tObst.tAABB.Center + tObst.tAABB.Extents;
@@ -1537,10 +1502,10 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<Cell*>& set
 			{
 				if (true == tObst.tAABB.Intersects(cell->second->vPoints[POINT_A], cell->second->vPoints[POINT_B], cell->second->vPoints[POINT_C]))
 				{
-					fMinX = ::min(fMinX, ::min( cell->second->vPoints[POINT_A].x, ::min(cell->second->vPoints[POINT_B].x, cell->second->vPoints[POINT_C].x )));
-					fMinZ = ::min(fMinZ, ::min( cell->second->vPoints[POINT_A].z, ::min(cell->second->vPoints[POINT_B].z, cell->second->vPoints[POINT_C].z )));
-					fMaxX = ::max(fMaxX, ::max( cell->second->vPoints[POINT_A].x, ::max(cell->second->vPoints[POINT_B].x, cell->second->vPoints[POINT_C].x )));
-					fMaxZ = ::max(fMaxZ, ::max( cell->second->vPoints[POINT_A].z, ::max(cell->second->vPoints[POINT_B].z, cell->second->vPoints[POINT_C].z )));
+					fMinX = ::min(fMinX, ::min(cell->second->vPoints[POINT_A].x, ::min(cell->second->vPoints[POINT_B].x, cell->second->vPoints[POINT_C].x)));
+					fMinZ = ::min(fMinZ, ::min(cell->second->vPoints[POINT_A].z, ::min(cell->second->vPoints[POINT_B].z, cell->second->vPoints[POINT_C].z)));
+					fMaxX = ::max(fMaxX, ::max(cell->second->vPoints[POINT_A].x, ::max(cell->second->vPoints[POINT_B].x, cell->second->vPoints[POINT_C].x)));
+					fMaxZ = ::max(fMaxZ, ::max(cell->second->vPoints[POINT_A].z, ::max(cell->second->vPoints[POINT_B].z, cell->second->vPoints[POINT_C].z)));
 
 					setIntersected.emplace(cell->second);
 
@@ -1555,15 +1520,7 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<Cell*>& set
 
 	if (true == bDelete)
 	{
-		for (auto obst = m_vecObstacles.begin(); obst != m_vecObstacles.end(); ++obst)
-		{
-			if (*obst == &tObst)
-			{
-				m_vecObstacles.erase(obst);
-				break;
-			}
-		}
-
+		tObst.isDead = true;
 		m_pGameInstance->DeleteObject(tObst.pGameObject);
 	}
 
@@ -2228,6 +2185,17 @@ HRESULT CNavMeshView::LoadMainScene()
 
 	pDefaultBuffer->GetGameObject()->GetShader()->SetPassIndex(3);
 
+	if (nullptr != m_pAgent)
+	{
+		m_pGameInstance->DeleteObject(m_pAgent);
+		m_pAgent = nullptr;
+	}
+
+	for (auto AI : m_vecAIAgents)
+	{
+		m_pGameInstance->DeleteObject(AI);
+	} m_vecAIAgents.clear();
+
 	if (FAILED(LoadNvFile()))
 		return E_FAIL;
 
@@ -2304,6 +2272,17 @@ HRESULT CNavMeshView::LoadMazeTestScene()
 
 	if (FAILED(pMazeBuffer->GetGameObject()->GetShader()->Bind_RawValue("g_vMtrlDiffuse", &Colors::MediumSeaGreen, sizeof(Color))))
 		return E_FAIL;
+
+	if (nullptr != m_pAgent)
+	{
+		m_pGameInstance->DeleteObject(m_pAgent);
+		m_pAgent = nullptr;
+	}
+
+	for (auto AI : m_vecAIAgents)
+	{
+		m_pGameInstance->DeleteObject(AI);
+	} m_vecAIAgents.clear();
 
 	if (FAILED(LoadNvFile()))
 		return E_FAIL;
@@ -3574,6 +3553,17 @@ void CNavMeshView::Free()
 		Safe_Delete(obst);
 	}
 	m_strObstacles.clear();
+
+	if (nullptr != m_pAgent)
+	{
+		m_pGameInstance->DeleteObject(m_pAgent);
+		m_pAgent = nullptr;
+	}
+
+	for (auto AI : m_vecAIAgents)
+	{
+		m_pGameInstance->DeleteObject(AI);
+	} m_vecAIAgents.clear();
 
 	m_umapCellGrids.clear();
 	m_umapObstGrids.clear();

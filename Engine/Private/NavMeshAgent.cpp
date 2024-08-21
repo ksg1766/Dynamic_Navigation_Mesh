@@ -21,7 +21,6 @@ CNavMeshAgent::CNavMeshAgent(ID3D11Device* pDevice, ID3D11DeviceContext* pContex
 	, m_vLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
 	, m_vMaxLinearSpeed(Vec3(200.0f, 200.0f, 200.0f))
 	, m_fAgentRadius(3.4f)
-	//, m_fAgentRadius(5.0f)
 {
 }
 
@@ -73,13 +72,6 @@ HRESULT CNavMeshAgent::Initialize(void* pArg)
 		return E_FAIL;
 	}
 #pragma endregion DebugDraw
-
-	// m_vLinearSpeed = m_vMaxLinearSpeed;
-
-#pragma region AStarPerformance
-	/*if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
-		return E_FAIL;*/
-#pragma endregion AStarPerformance
 
 	return S_OK;
 }
@@ -352,9 +344,6 @@ _bool CNavMeshAgent::AStar()
 
 		if (nullptr == pCurrent)
 		{
-			/*m_isMoving = true;
-			m_pDestCell = m_dqPath.back().first;
-			m_vDestPos = m_dqPath.back().first->GetCenter();*/
 			return false;
 		}
 
@@ -380,9 +369,6 @@ _bool CNavMeshAgent::AStar()
 				));
 
 				m_dqExpandedVertices.push_front(m_dqEntries.front());
-
-				/*if (m_pCurrentCell == pNext)
-					break;*/
 
 				tNext = Path[pNext];
 			}
@@ -413,11 +399,9 @@ _bool CNavMeshAgent::AStar()
 			}
 
 			// portal length
-			// 4.1 Width Calculation
 			auto& [pParent, ePassedLine] = Path[pCurrent];
 
 			LINES eLine1 = LINE_END;
-
 			_float fHalfWidth = -FLT_MAX;
 
 			if (LINE_END != ePassedLine)
@@ -457,37 +441,6 @@ _bool CNavMeshAgent::AStar()
 			}
 			else
 			{
-				/*Vec3 vCurrEdgeDir = pParent->vPoints[(ePassedLine + 1) % POINT_END] - pParent->vPoints[ePassedLine];
-				vCurrEdgeDir.Normalize();
-
-				neighbor_g = tNode.g + CellData::CostBetweenEdge2Edge(
-					pParent->vPoints[ePassedLine] + m_fAgentRadius * vCurrEdgeDir,
-					pParent->vPoints[(ePassedLine + 1) % POINT_END] - m_fAgentRadius * vCurrEdgeDir,
-					pCurrent->vPoints[i] + m_fAgentRadius * vNextEdgeDir,
-					pCurrent->vPoints[(i + 1) % POINT_END] - m_fAgentRadius * vNextEdgeDir
-				);*/
-
-				//Vec3 vCurrEdgeDir = pParent->vPoints[(ePassedLine + 1) % POINT_END] - pParent->vPoints[ePassedLine];
-				//vCurrEdgeDir.Normalize();
-
-				//_float fTheta = acosf(vCurrEdgeDir.Dot(vNextEdgeDir));
-
-				/*_float fTheta = pCurrent->fTheta[((POINTS)eLine1 == (POINTS)i) ? (POINTS)eLine1 : (POINTS)((eLine1 + 1) % POINT_END)];
-
-				neighbor_g = tNode.g + m_fAgentRadius * fTheta;*/
-
-				/*neighbor_g = CellData::CostBetweenMax(
-					pParent->vPoints[ePassedLine],
-					pParent->vPoints[(ePassedLine + 1) % POINT_END],
-					pCurrent->vPoints[i],
-					pCurrent->vPoints[(i + 1) % POINT_END],
-					vStartPos,
-					m_vDestPos,
-					tNode.g,
-					tNode.f - tNode.g,
-					m_fAgentRadius
-				);*/
-
 				neighbor_g = pCurrent->CostBetweenMax(
 					(POINTS)eLine1,
 					(POINTS)((eLine1 + 1) % POINT_END),
@@ -505,15 +458,13 @@ _bool CNavMeshAgent::AStar()
 			{
 				Path[pNeighbor] = PATH(pCurrent, (LINES)i);	// pCurrent의 i번째 line을 통과한 노드가 pNeighbor
 
-				//Vec3 vEdgeMid = 0.5f * (pCurrent->vPoints[i] + pCurrent->vPoints[(i + 1) % POINT_END]);
 				Vec3 vClosestPoint2Edge = CNSHelper::ProjectionPoint2Edge(m_vDestPos, pCurrent->vPoints[i], pCurrent->vPoints[(i + 1) % POINT_END]);
 
 				Open.push(PQNode{
-					//neighbor_g + Cell::HeuristicCostEuclidean(vEdgeMid, m_vDestPos),
 					neighbor_g + Cell::HeuristicCostEuclidean(vClosestPoint2Edge, m_vDestPos),
 					neighbor_g,
 					pNeighbor
-					});
+				});
 			}
 		}
 	}
@@ -527,7 +478,6 @@ _bool CNavMeshAgent::AStar()
 
 _bool CNavMeshAgent::FunnelAlgorithm()
 {
-	//deque<pair<Vec3, Vec3>> dqOffset;
 	m_dqOffset.emplace_back(Vec3::Zero, Vec3::Zero); // for DebugRender
 
 	for (_int i = 2; i < m_dqEntries.size(); ++i)
@@ -632,7 +582,7 @@ _bool CNavMeshAgent::FunnelAlgorithm()
 		{
 			if (vPortalApex == vPortalRight || CNSHelper::TriArea2x(vPortalApex, vPortalLeft, vRight) > 0.0f)
 			{
-				vPortalRight = vRight;				// funnel 당기기
+				vPortalRight = vRight;					// funnel 당기기
 				iRightIndex = i;
 			}
 			else
@@ -680,12 +630,8 @@ _bool CNavMeshAgent::FunnelAlgorithm()
 
 _bool CNavMeshAgent::SetPath(const Vec3& vDestPos)
 {
-	//m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-
 	m_pCurrentCell = FindCellByPosition(m_pTransform->GetPosition());	// TODO: ...
 	m_pDestCell = FindCellByPosition(vDestPos);
-
-	//m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
 
 	if (nullptr != m_pDestCell)
 	{
@@ -693,8 +639,6 @@ _bool CNavMeshAgent::SetPath(const Vec3& vDestPos)
 
 		if (true == AStar())
 		{
-			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-			fAStarPerformance = fAStarPerformance;*/
 			return FunnelAlgorithm();
 		}
 		else
@@ -712,8 +656,6 @@ _bool CNavMeshAgent::SetPath(const Vec3& vDestPos)
 
 		if (true == AStar())
 		{
-			/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-			fAStarPerformance = fAStarPerformance;*/
 			return FunnelAlgorithm();
 		}
 		else
@@ -724,8 +666,6 @@ _bool CNavMeshAgent::SetPath(const Vec3& vDestPos)
 		m_vDestPos = m_pTransform->GetPosition();
 	}
 
-	/*volatile _float fAStarPerformance = m_pGameInstance->Compute_TimeDelta(TEXT("Timer_AStar"));
-	fAStarPerformance = fAStarPerformance;*/
 	return false;
 }
 

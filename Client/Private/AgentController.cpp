@@ -14,7 +14,6 @@ CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* p
 	:Super(pDevice, pContext)
 	, m_vLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
 	, m_fAgentRadius(3.4f)
-	//, m_fAgentRadius(5.0f)
 {
 }
 
@@ -340,7 +339,10 @@ void CAgentController::DebugRender()
 		vLook *= 20.0f;
 		vLook.y = 0.25f;
 
-		DX::DrawRing(m_pBatch, m_pTransform->GetPosition() + vLook, 2.0f * Vec3::UnitX, 2.0f * Vec3::UnitZ, Colors::IndianRed);
+		Vec3 vTargetPos = m_pTransform->GetPosition() + vLook;
+
+		DX::DrawRing(m_pBatch, vTargetPos, 1.0f * Vec3::UnitX, 1.0f * Vec3::UnitZ, Colors::Red);
+		DX::DrawRing(m_pBatch, vTargetPos, 2.2f * Vec3::UnitX, 2.2f * Vec3::UnitZ, Colors::IndianRed);
 
 		m_pBatch->End();
 
