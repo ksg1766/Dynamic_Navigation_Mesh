@@ -281,7 +281,7 @@ void CAgentController::PlaceObstacle()
 		{
 			Matrix& matObst = Object->GetTransform()->WorldMatrix();
 
-			CB_PlaceObstacle(Name, vPlacePosition, matObst);
+			DLG_PlaceObstacle(Name, vPlacePosition, matObst);
 		}
 	}
 }
