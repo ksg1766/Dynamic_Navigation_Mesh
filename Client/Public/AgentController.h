@@ -40,6 +40,7 @@ public:
 	_bool	Pick(CTerrain* pTerrain, _uint screenX, _uint screenY);
 
 	FDelegate<const wstring&, const Vec3&, Matrix&> DLG_PlaceObstacle;
+	FDelegate<const Obst&>							DLG_RemoveObstacle;
 
 public:
 	void	SetRadius(const _float fRadius);
@@ -49,7 +50,6 @@ private:
 	void	Input(_float fTimeDelta);
 	_bool	MoveDirectly(_float fTimeDelta);
 	void	PlaceObstacle();
-
 
 private:
 	CTransform*	m_pTransform = nullptr;
@@ -67,6 +67,8 @@ private:
 
 private:
 	// DebugDraw
+	_bool			m_bTargetCursor = false;
+
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = nullptr;
 	BasicEffect*	m_pEffect = nullptr;
 	ID3D11InputLayout* m_pInputLayout = nullptr;

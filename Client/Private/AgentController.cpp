@@ -277,20 +277,75 @@ void CAgentController::PlaceObstacle()
 
 		Object->GetRenderer()->Add_RenderGroup(CRenderer::RG_NONBLEND_INSTANCE, Object);
 
-		if (m_pGameInstance->Mouse_Down(DIM_LB))
+		if (m_pGameInstance->Mouse_Up(DIM_LB))
 		{
 			Matrix& matObst = Object->GetTransform()->WorldMatrix();
 
 			DLG_PlaceObstacle(Name, vPlacePosition, matObst);
+		}
+		else if (m_pGameInstance->Mouse_Up(DIM_RB))
+		{
+			m_iObstacleIndex = -1;
+		}
+	}
+	else
+	{
+		if (m_pGameInstance->Mouse_Up(DIM_RB))
+		{
+			Vec3 vLook = m_pTransform->GetForward();
+			vLook.y = 0.0f;
+			vLook.Normalize();
+
+			const Vec3 vTargetPosition = m_pTransform->GetPosition() + 20.0f * vLook;
+			Obst* pObst = m_pGameObject->GetNavMeshAgent()->FindObstByPosition(vTargetPosition);
+			
+			if (nullptr != pObst)
+			{
+				for (_int i = 0; i < m_HoldingObstacles.size(); ++i)
+				{
+					if (pObst->pGameObject->GetObjectTag() == m_HoldingObstacles[i].first)
+					{
+						m_iObstacleIndex = i;
+						break;
+					}
+				}
+
+				DLG_RemoveObstacle(*pObst);
+			}
+		}
+		else if(m_pGameInstance->Mouse_Pressing(DIM_RB))
+		{
+			m_bTargetCursor = true;
 		}
 	}
 }
 
 void CAgentController::DebugRender()
 {
-	/*m_pBatch->Begin();
+	if (true == m_bTargetCursor)
+	{
+		m_pEffect->SetWorld(XMMatrixIdentity());
 
-	m_pBatch->End();*/
+		m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
+		m_pEffect->SetProjection(m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_PROJ));
+
+		m_pEffect->Apply(m_pContext);
+		m_pContext->IASetInputLayout(m_pInputLayout);
+
+		m_pBatch->Begin();
+
+		Vec3 vLook = m_pTransform->GetForward();
+		vLook.y = 0.0f;
+		vLook.Normalize();
+		vLook *= 20.0f;
+		vLook.y = 0.25f;
+
+		DX::DrawRing(m_pBatch, m_pTransform->GetPosition() + vLook, 2.0f * Vec3::UnitX, 2.0f * Vec3::UnitZ, Colors::IndianRed);
+
+		m_pBatch->End();
+
+		m_bTargetCursor = false;
+	}
 }
 
 CAgentController* CAgentController::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -325,6 +380,11 @@ void CAgentController::Free()
 	Safe_Delete(m_pBatch);
 	Safe_Delete(m_pEffect);
 	Safe_Release(m_pInputLayout);
+
+	for (auto& pair : m_HoldingObstacles)
+	{
+		Safe_Release(pair.second);
+	} m_HoldingObstacles.clear();
 
 	Super::Free();
 }

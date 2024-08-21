@@ -65,6 +65,8 @@ public:
 	void	SetState(_bool isMoving)					{ m_isMoving = isMoving; }
 	void	SetMoveDirectly(_bool isMovingDirectly);
 
+	Obst*	FindObstByPosition(const Vec3& vPosition);
+
 public:
 	void	ClearWayPoints();
 
@@ -74,7 +76,6 @@ private:
 private:
 	_bool	AdjustLocation();
 	Cell*	FindCellByPosition(const Vec3& vPosition);
-	Obst*	FindObstByPosition(const Vec3& vPosition);
 
 private:
 	CTransform*		m_pTransform = nullptr;

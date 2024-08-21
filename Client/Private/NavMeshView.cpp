@@ -179,7 +179,6 @@ HRESULT CNavMeshView::DebugRender()
 				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].x,
 				0.0f,
 				m_vecObstacles[i]->vecPoints[m_vecObstacles[i]->vecPoints.size() - 1].z
-
 			};
 			Vec3 vLine2 =
 			{
@@ -197,6 +196,7 @@ HRESULT CNavMeshView::DebugRender()
 	if (nullptr != m_pAgent)
 	{
 		m_pAgent->GetNavMeshAgent()->DebugRender(m_bRenderPathCells, m_bRenderEntries, m_bRenderWayPoints);
+		m_pAgent->DebugRender();
 	}
 
 	for (auto AI : m_vecAIAgents)
@@ -969,7 +969,6 @@ HRESULT CNavMeshView::DynamicCreate(CGameObject* const pGameObject)
 			return E_FAIL;
 		}
 
-		//m_hmapObstacleIndex[pGameObject] = m_vecObstacles.size();	// 불편하지만 트랜스폼 변환을 위해... 일단은 이렇게 해두자.
 		m_vecObstacles.push_back(pObst);
 	}
 
@@ -991,12 +990,9 @@ HRESULT CNavMeshView::UpdateObstacleTransform(CGameObject* const pGameObject)
 	}
 
 	Safe_Delete(m_vecObstacles[Obst->second]);
-	//Safe_Delete(m_strObstacles[Obst->second]);
 
 	auto iter = m_vecObstacles.begin() + Obst->second;
-	//auto iterStr = m_strObstacles.begin() + Obst->second;
 	m_vecObstacles.erase(iter);
-	//m_strObstacles.erase(iterStr);
 
 	if (FAILED(DynamicCreate(pGameObject)))
 	{
@@ -1103,7 +1099,6 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 		pCell->vPoints[POINT_B] = vtx[POINT_B];
 		pCell->vPoints[POINT_C] = vtx[POINT_C];
 		pCell->CW();
-		//pCell->SetUpData();
 
 		vecNewCells.emplace_back(pCell);
 	}
@@ -1145,22 +1140,12 @@ HRESULT CNavMeshView::DynamicDelete(const Obst& tObst)
 			}
 		}
 
-		//cell->isNew = true;
 		m_vecCells.emplace_back(cell);
 	}
 
-	/*Cell* pDummy = nullptr;
-	_bool bFound = false;*/
 	for (auto cell : vecNewCells)
 	{
 		cell->SetUpData();
-		/*if (false == bFound && false == cell->IsOut(m_pAgent->GetTransform()->GetPosition(), pDummy))
-		{
-			if (false == m_pAgent->AdjustLocation())
-				return E_FAIL;
-
-			bFound = true;
-		}*/
 	}
 
 	SetUpCells2Grids(vecNewCells, m_umapCellGrids);
@@ -1201,16 +1186,22 @@ HRESULT CNavMeshView::CreateAgent(Vec3 vSpawnPosition)
 
 	m_pAgent->GetTransform()->SetPosition(vSpawnPosition);
 
-	auto func = ::bind(
+	auto funcDynamicCreate = ::bind(
 		static_cast<HRESULT(CNavMeshView::*)(const wstring&, const Vec3&, Matrix)>(&CNavMeshView::DynamicCreate),
 		this,
 		placeholders::_1,
 		placeholders::_2,
 		placeholders::_3
 	);
+	
+	auto funcDynamicDelete = ::bind(
+		static_cast<HRESULT(CNavMeshView::*)(const Obst&)>(&CNavMeshView::DynamicDelete),
+		this,
+		placeholders::_1
+	);
 
-	m_pAgent->GetController()->DLG_PlaceObstacle += func;
-
+	m_pAgent->GetController()->DLG_PlaceObstacle += funcDynamicCreate;
+	m_pAgent->GetController()->DLG_RemoveObstacle += funcDynamicDelete;
 	m_IsPickingActivated = true;
 
 	return S_OK;
@@ -1564,6 +1555,15 @@ HRESULT CNavMeshView::GetIntersectedCells(const Obst& tObst, OUT set<Cell*>& set
 
 	if (true == bDelete)
 	{
+		for (auto obst = m_vecObstacles.begin(); obst != m_vecObstacles.end(); ++obst)
+		{
+			if (*obst == &tObst)
+			{
+				m_vecObstacles.erase(obst);
+				break;
+			}
+		}
+
 		m_pGameInstance->DeleteObject(tObst.pGameObject);
 	}
 
