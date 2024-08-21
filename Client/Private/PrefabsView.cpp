@@ -152,7 +152,7 @@ void CPrefabsView::TapGroups()
 				"Fence_a", "Fence_b", "Fence_c", "Grass", "Lantern_post", "Logs_a", "Mushroom_a", "Mushroom_b", "Mushroom_c", "Mushroom_d",
 				"Rock_a", "Rock_c", "Rock_d", "Sack_a", "Sewers_entrance", "Sign_a", "Sign_b", "Sign_c", "Tent", "Well"*/
 
-				"Dumpster", "Receptacle_Recycling", "Light_Lamppost", "Picnic_Table", "Receptacle_Recycling", "Signal_Separated", "Signal_Separated_No_Stoplight"
+				"Bus", "Dumpster", "Receptacle_Recycling", "Light_Lamppost", "Picnic_Table", "Receptacle_Recycling", "Signal_Separated", "Signal_Separated_No_Stoplight"
 			};
 
 			if (m_Item_Current >= IM_ARRAYSIZE(items))

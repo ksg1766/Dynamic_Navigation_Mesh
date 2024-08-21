@@ -86,7 +86,7 @@ void CFlyingCameraController::Input(_float fTimeDelta)
 
 	_long		dwMouseMove = 0;
 
-	if (dwMouseMove = m_pGameInstance->Get_DIMouseMove(DIMS_X))
+	/*if (dwMouseMove = m_pGameInstance->Get_DIMouseMove(DIMS_X))
 	{
 		if (m_pGameInstance->Mouse_Pressing(DIM_LB))
 			m_pTransform->RotateYAxisFixed(Vec3(0.0f, -dwMouseMove * fTimeDelta * 3.5f, 0.0f));
@@ -96,7 +96,7 @@ void CFlyingCameraController::Input(_float fTimeDelta)
 	{
 		if (m_pGameInstance->Mouse_Pressing(DIM_LB))
 			m_pTransform->RotateYAxisFixed(Vec3(-dwMouseMove * fTimeDelta * 3.5f, 0.0f, 0.0f));
-	}
+	}*/
 
 	if (dwMouseMove = m_pGameInstance->Get_DIMouseMove(DIMS_X))
 	{
