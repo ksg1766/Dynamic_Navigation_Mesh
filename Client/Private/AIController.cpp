@@ -5,8 +5,8 @@
 
 CAIController::CAIController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	:Super(pDevice, pContext)
-	, m_vLinearSpeed(Vec3(70.0f, 70.0f, 70.0f))
-	, m_fAgentRadius(3.4f)
+	, m_vLinearSpeed(Vec3(60.0f, 60.0f, 60.0f))
+	, m_fAgentRadius(2.6f)
 {
 }
 
@@ -69,6 +69,7 @@ void CAIController::SetRadius(const _float fRadius)
 {
 	m_fAgentRadius = fRadius;
 	m_pGameObject->GetNavMeshAgent()->SetRadius(m_fAgentRadius);
+	m_pTransform->SetScale(m_fAgentRadius * 2.0f * Vec3::One);
 }
 
 void CAIController::SetLinearSpeed(const Vec3& vLinearSpeed)

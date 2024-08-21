@@ -24,8 +24,6 @@ HRESULT CMainCameraController::Initialize_Prototype()
 HRESULT CMainCameraController::Initialize(void* pArg)
 {
 	m_pTransform = m_pGameObject->GetTransform();
-	
-	m_vOffset = Vec3(0.0f, 40.0f, 0.0f);
 
 	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
 	auto iter = mapLayers.find(LAYERTAG::PLAYER);
@@ -55,8 +53,6 @@ void CMainCameraController::Tick(_float fTimeDelta)
 		Trace(fTimeDelta);
 		break;
 	}
-
-	//Input(fTimeDelta);
 }
 
 void CMainCameraController::LateTick(_float fTimeDelta)

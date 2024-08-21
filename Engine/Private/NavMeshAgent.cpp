@@ -44,7 +44,6 @@ HRESULT CNavMeshAgent::Initialize_Prototype()
 HRESULT CNavMeshAgent::Initialize(void* pArg)
 {
 	m_pTransform = GetTransform();
-	m_pTransform->SetScale(m_fAgentRadius * 2.0f * Vec3::One);
 
 	if (nullptr != pArg)
 	{
@@ -78,11 +77,12 @@ HRESULT CNavMeshAgent::Initialize(void* pArg)
 
 void CNavMeshAgent::Tick(_float fTimeDelta)
 {
-	ForceHeight();
 	if (true == IsMoving() || false == IsOutOfWorld(m_vPrePos))
 	{
 		Slide(Move(fTimeDelta));
 	} PopPath();
+
+	ForceHeight();
 }
 
 void CNavMeshAgent::LateTick(_float fTimeDelta)
@@ -667,6 +667,11 @@ _bool CNavMeshAgent::SetPath(const Vec3& vDestPos)
 	}
 
 	return false;
+}
+
+void CNavMeshAgent::SetRadius(const _float fRadius)
+{
+	m_fAgentRadius = fRadius;
 }
 
 void CNavMeshAgent::SetMoveDirectly(_bool isMovingDirectly)

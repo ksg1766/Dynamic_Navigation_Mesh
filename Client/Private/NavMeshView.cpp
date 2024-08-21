@@ -15,6 +15,7 @@
 #include "Agent.h"
 #include "AgentController.h"
 #include "AIAgent.h"
+#include "AIController.h"
 #include "Cell.h"
 #include "Obstacle.h"
 #include "BasicTerrain.h"
@@ -1209,6 +1210,8 @@ HRESULT CNavMeshView::CreateAI()
 	uniform_real_distribution<_float>	RandomX(-512.0f, 512.0f);
 	uniform_real_distribution<_float>	RandomZ(-512.0f, 512.0f);
 
+	uniform_real_distribution<_float>	RandomR(1.5f, 6.0f);
+
 	Vec3 vRandomPoint = Vec3(RandomX(RandomFloat), 0.0f, RandomZ(RandomFloat));
 
 	Cell* pCell = nullptr;
@@ -1235,6 +1238,7 @@ HRESULT CNavMeshView::CreateAI()
 	pAIAgent->GetTransform()->SetPosition(vRandomPoint);
 	
 	pAIAgent->AddWayPoint(vRandomPoint);
+	static_cast<CAIController*>(pAIAgent->GetController())->SetRadius(RandomR(RandomFloat));
 
 	for (_int i = 0; i < 3; ++i)
 	{
@@ -2430,6 +2434,11 @@ void CNavMeshView::Input()
 			const POINT& p = m_pGameInstance->GetMousePos();
 			m_pAgent->Pick(m_pTerrainBuffer, p.x, p.y);
 		}
+	}
+
+	if (KEY_PRESSING(KEY::CTRL) && KEY_PRESSING(KEY::SHIFT) && KEY_DOWN(KEY::D))
+	{
+		m_bRenderDebug = !m_bRenderDebug;
 	}
 }
 

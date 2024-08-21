@@ -60,7 +60,7 @@ public:
 	_bool	SetPath(const Vec3& vDestPos);
 
 	void	SetLinearSpeed(const Vec3& vLinearSpeed)	{ m_vLinearSpeed = vLinearSpeed; }
-	void	SetRadius(const _float fRadius)				{ m_fAgentRadius = fRadius; }
+	void	SetRadius(const _float fRadius);
 
 	void	SetState(_bool isMoving)					{ m_isMoving = isMoving; }
 	void	SetMoveDirectly(_bool isMovingDirectly);

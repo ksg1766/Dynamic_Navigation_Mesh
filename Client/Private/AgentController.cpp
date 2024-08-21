@@ -12,8 +12,8 @@
 
 CAgentController::CAgentController(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	:Super(pDevice, pContext)
-	, m_vLinearSpeed(Vec3(100.0f, 100.0f, 100.0f))
-	, m_fAgentRadius(3.4f)
+	, m_vLinearSpeed(Vec3(80.0f, 80.0f, 80.0f))
+	, m_fAgentRadius(2.7f)
 {
 }
 
@@ -141,6 +141,7 @@ void CAgentController::SetRadius(const _float fRadius)
 {
 	m_fAgentRadius = fRadius;
 	m_pGameObject->GetNavMeshAgent()->SetRadius(m_fAgentRadius);
+	m_pTransform->SetScale(m_fAgentRadius * 2.0f * Vec3::One);
 }
 
 void CAgentController::SetLinearSpeed(const Vec3& vLinearSpeed)
@@ -223,33 +224,19 @@ _bool CAgentController::MoveDirectly(_float fTimeDelta)
 void CAgentController::PlaceObstacle()
 {
 	if (KEY_DOWN(KEY::F1))
-	{
 		(0 != m_iObstacleIndex) ? m_iObstacleIndex = 0 : m_iObstacleIndex = -1;
-	}
 	else if (KEY_DOWN(KEY::F2))
-	{
 		(1 != m_iObstacleIndex) ? m_iObstacleIndex = 1 : m_iObstacleIndex = -1;
-	}
 	else if (KEY_DOWN(KEY::F3))
-	{
 		(2 != m_iObstacleIndex) ? m_iObstacleIndex = 2 : m_iObstacleIndex = -1;
-	}
 	else if (KEY_DOWN(KEY::F4))
-	{
 		(3 != m_iObstacleIndex) ? m_iObstacleIndex = 3 : m_iObstacleIndex = -1;
-	}
 	else if (KEY_DOWN(KEY::F5))
-	{
 		(4 != m_iObstacleIndex) ? m_iObstacleIndex = 4 : m_iObstacleIndex = -1;
-	}
 	else if (KEY_DOWN(KEY::F6))
-	{
 		(5 != m_iObstacleIndex) ? m_iObstacleIndex = 5 : m_iObstacleIndex = -1;
-	}
 	else if (KEY_DOWN(KEY::F7))
-	{
 		(6 != m_iObstacleIndex) ? m_iObstacleIndex = 6 : m_iObstacleIndex = -1;
-	}
 
 	if (0 <= m_iObstacleIndex)
 	{
@@ -270,7 +257,7 @@ void CAgentController::PlaceObstacle()
 		Object->GetTransform()->SetUp(vUp);
 		Object->GetTransform()->SetForward(vLook);
 
-		vPlacePosition += 20.0f * -vLook;
+		vPlacePosition += 18.0f * -vLook;
 
 		Object->GetTransform()->SetPosition(vPlacePosition);
 
@@ -295,7 +282,7 @@ void CAgentController::PlaceObstacle()
 			vLook.y = 0.0f;
 			vLook.Normalize();
 
-			const Vec3 vTargetPosition = m_pTransform->GetPosition() + 20.0f * vLook;
+			const Vec3 vTargetPosition = m_pTransform->GetPosition() + 18.0f * vLook;
 			Obst* pObst = m_pGameObject->GetNavMeshAgent()->FindObstByPosition(vTargetPosition);
 			
 			if (nullptr != pObst)
@@ -336,7 +323,7 @@ void CAgentController::DebugRender()
 		Vec3 vLook = m_pTransform->GetForward();
 		vLook.y = 0.0f;
 		vLook.Normalize();
-		vLook *= 20.0f;
+		vLook *= 18.0f;
 		vLook.y = 0.25f;
 
 		Vec3 vTargetPos = m_pTransform->GetPosition() + vLook;

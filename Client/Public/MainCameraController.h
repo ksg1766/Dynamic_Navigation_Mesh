@@ -36,8 +36,8 @@ private:
 	CTransform*		m_pTransform = nullptr;
 	CTransform*		m_pTargetTransform = nullptr;
 
-	Vec3			m_vOffset = Vec3(0.0f, 40.0f, 0.0f);
-	_float			m_fDistance = 180.0f;
+	Vec3			m_vOffset = Vec3(0.0f, 25.0f, 0.0f);
+	_float			m_fDistance = 130.0f;
 
 	CAMERAMODE		m_eCameraMode = CAMERAMODE::THIRD;
 
