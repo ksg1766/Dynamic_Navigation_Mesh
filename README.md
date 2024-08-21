@@ -1,4 +1,5 @@
 마지막 주차 진행 내용 및 정리 : https://equal-paw-e8f.notion.site/7-2cde6cb5ca1e48b1a2f32d6c58ddbe67?pvs=4
+
 Youtube : https://youtu.be/T7Dz_uO24As
 
 ---
