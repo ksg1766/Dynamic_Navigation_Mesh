@@ -1,4 +1,41 @@
 ---
+# 📅 2024.08.20
+📋 진행 사항
+  * 인게임 시뮬레이션을 위한 약간의 기능을 추가했습니다.
+    * debug render option을 추가했습니다.
+    * 3인칭 back view 시점의 카메라를 추가했습니다. 이 카메라는 playable agent를 따라다닙니다.
+    * 3인칭 view에서는 마우스가 아닌 키보드 입력만을 통해 조작하도록 변경했습니다.
+    * obstacle 모델을 추가로 추출했습니다.
+    * playerble agent가 자신의 위치 앞에 dynamic obstacle을 직접 설치 할 수 있도록 구현했습니다.
+
+	```  	
+	CAgentController::FDelegate<const wstring&, const Vec3&, Matrix&> DLG_PlaceObstacle;
+  	```
+  
+	```
+	auto func = ::bind(
+		static_cast<HRESULT(CNavMeshView::*)(const wstring&, const Vec3&, Matrix)>(&CNavMeshView::DynamicCreate),
+		this,
+		placeholders::_1,
+		placeholders::_2,
+		placeholders::_3
+	);
+
+	m_pAgent->GetController()->DLG_PlaceObstacle += func;
+	```
+  
+    * 결과 화면은 아래와 같습니다.
+
+      ![FPS_244-RELEASE2024-08-2110-59-45-ezgif com-optimize](https://github.com/user-attachments/assets/849119fa-b7d2-4152-8d11-83c7478c9bf3)
+
+      ![FPS_244-RELEASE2024-08-2110-59-45-ezgif com-optimize (2)](https://github.com/user-attachments/assets/6f670276-ea33-4ac6-b2dc-b0064d262ec5)
+      
+      
+⚽ 이후 계획
+  * 3인칭 view에서 obstacle 삭제할 수 있도록 구현중입니다.
+  * 남은 시간은 추가로 최적화 할 수 있는지 더 고민해보겠습니다.
+
+---
 # 📅 2024.08.19
 📋 진행 사항
   * navigation mesh의 cell에 포함된 불필요한 데이터를 제거했습니다.
