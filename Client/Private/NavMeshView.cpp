@@ -830,7 +830,7 @@ HRESULT CNavMeshView::DynamicCreate(const wstring& strObjectTag, const Vec3& vPi
 
 		const wstring strPrototypeTag = TEXT("Prototype_GameObject_") + strObjectTag;
 		pObst->pGameObject = m_pGameInstance->CreateObject(strPrototypeTag, LAYERTAG::WALL);
-		pObst->pGameObject->GetTransform()->SetPosition(vPickPos);
+		pObst->pGameObject->GetTransform()->Set_WorldMatrix(matWorld);
 
 		m_vecObstacles.push_back(pObst);
 		s2cPushBack(m_strObstacles, Utils::ToString(strObjectTag));

@@ -86,10 +86,10 @@ HRESULT CNavMeshAgent::Initialize(void* pArg)
 
 void CNavMeshAgent::Tick(_float fTimeDelta)
 {
+	ForceHeight();
 	if (true == IsMoving() || false == IsOutOfWorld(m_vPrePos))
 	{
 		Slide(Move(fTimeDelta));
-		ForceHeight();
 	} PopPath();
 }
 
@@ -193,7 +193,7 @@ void CNavMeshAgent::ForceHeight()
 
 _float CNavMeshAgent::GetHeightOffset()
 {
-	Vec3 vPos(m_pTransform->GetPosition());
+	Vec3 vPos = m_pTransform->GetPosition();
 
 	if (nullptr == m_pCurrentCell)
 		return 0.0f;

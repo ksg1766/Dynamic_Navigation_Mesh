@@ -124,12 +124,15 @@ _bool CAgentController::IsMoving()
 
 _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 {
-	_float fDistance = 0.0f;
-	Vec3 vPickedPos = Vec3::Zero;
-
-	if (true == pTerrain->Pick(screenX, screenY, vPickedPos, fDistance, pTerrain->GetTransform()->WorldMatrix()))
+	if (VIEWMODE::THIRD != m_eViewMode)
 	{
-		return m_pGameObject->GetNavMeshAgent()->SetPath(vPickedPos);
+		_float fDistance = 0.0f;
+		Vec3 vPickedPos = Vec3::Zero;
+
+		if (true == pTerrain->Pick(screenX, screenY, vPickedPos, fDistance, pTerrain->GetTransform()->WorldMatrix()))
+		{
+			return m_pGameObject->GetNavMeshAgent()->SetPath(vPickedPos);
+		}
 	}
 
 	return false;
