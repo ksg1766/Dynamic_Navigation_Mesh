@@ -70,6 +70,11 @@ HRESULT CAgentController::Initialize(void* pArg)
 	m_HoldingObstacles.emplace_back(TEXT("Dumpster"), pHoldingObst);
 
 	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
+	pHoldingObst->SetObjectTag(TEXT("Light_Lamppost"));
+	pHoldingObst->Initialize(nullptr);
+	m_HoldingObstacles.emplace_back(TEXT("Light_Lamppost"), pHoldingObst);
+	
+	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
 	pHoldingObst->SetObjectTag(TEXT("Picnic_Table"));
 	pHoldingObst->Initialize(nullptr);
 	m_HoldingObstacles.emplace_back(TEXT("Picnic_Table"), pHoldingObst);
@@ -78,6 +83,16 @@ HRESULT CAgentController::Initialize(void* pArg)
 	pHoldingObst->SetObjectTag(TEXT("Receptacle_Recycling"));
 	pHoldingObst->Initialize(nullptr);
 	m_HoldingObstacles.emplace_back(TEXT("Receptacle_Recycling"), pHoldingObst);
+	
+	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
+	pHoldingObst->SetObjectTag(TEXT("Signal_Separated"));
+	pHoldingObst->Initialize(nullptr);
+	m_HoldingObstacles.emplace_back(TEXT("Signal_Separated"), pHoldingObst);
+	
+	pHoldingObst = CStaticBase::Create(m_pDevice, m_pContext);
+	pHoldingObst->SetObjectTag(TEXT("Signal_Separated_No_Stoplight"));
+	pHoldingObst->Initialize(nullptr);
+	m_HoldingObstacles.emplace_back(TEXT("Signal_Separated_No_Stoplight"), pHoldingObst);
 
 #pragma region AStarPerformance
 	/*if (FAILED(m_pGameInstance->Add_Timer(TEXT("Timer_AStar"))))
@@ -114,7 +129,6 @@ _bool CAgentController::Pick(CTerrain* pTerrain, _uint screenX, _uint screenY)
 
 	if (true == pTerrain->Pick(screenX, screenY, vPickedPos, fDistance, pTerrain->GetTransform()->WorldMatrix()))
 	{
-		m_pGameObject->GetNavMeshAgent()->SetMoveDirectly(false);
 		return m_pGameObject->GetNavMeshAgent()->SetPath(vPickedPos);
 	}
 
@@ -143,11 +157,13 @@ void CAgentController::Input(_float fTimeDelta)
 		if (VIEWMODE::THIRD == m_eViewMode)
 		{
 			dynamic_cast<CMainCamera*>(m_pGameInstance->GetCurrentCamera())->GetController()->SetTarget(m_pTransform);
-			//::ShowCursor(false);
+			m_pGameObject->GetNavMeshAgent()->SetMoveDirectly(true);
+			::ShowCursor(false);
 		}
 		else
 		{
-			//::ShowCursor(true);
+			m_pGameObject->GetNavMeshAgent()->SetMoveDirectly(false);
+			::ShowCursor(true);
 		}
 	}
 
@@ -188,7 +204,6 @@ _bool CAgentController::MoveDirectly(_float fTimeDelta)
 
 	if (Vec3::Zero != m_vNetMove)
 	{
-		m_pGameObject->GetNavMeshAgent()->SetMoveDirectly(true);
 		m_pGameObject->GetNavMeshAgent()->SetState(true);
 
 		m_vNetMove.Normalize();
@@ -213,6 +228,26 @@ void CAgentController::PlaceObstacle()
 	{
 		(1 != m_iObstacleIndex) ? m_iObstacleIndex = 1 : m_iObstacleIndex = -1;
 	}
+	else if (KEY_DOWN(KEY::F3))
+	{
+		(2 != m_iObstacleIndex) ? m_iObstacleIndex = 2 : m_iObstacleIndex = -1;
+	}
+	else if (KEY_DOWN(KEY::F4))
+	{
+		(3 != m_iObstacleIndex) ? m_iObstacleIndex = 3 : m_iObstacleIndex = -1;
+	}
+	else if (KEY_DOWN(KEY::F5))
+	{
+		(4 != m_iObstacleIndex) ? m_iObstacleIndex = 4 : m_iObstacleIndex = -1;
+	}
+	else if (KEY_DOWN(KEY::F6))
+	{
+		(5 != m_iObstacleIndex) ? m_iObstacleIndex = 5 : m_iObstacleIndex = -1;
+	}
+	else if (KEY_DOWN(KEY::F7))
+	{
+		(6 != m_iObstacleIndex) ? m_iObstacleIndex = 6 : m_iObstacleIndex = -1;
+	}
 
 	if (0 <= m_iObstacleIndex)
 	{
@@ -233,7 +268,7 @@ void CAgentController::PlaceObstacle()
 		Object->GetTransform()->SetUp(vUp);
 		Object->GetTransform()->SetForward(vLook);
 
-		vPlacePosition += 25.0f * -vLook;
+		vPlacePosition += 20.0f * -vLook;
 
 		Object->GetTransform()->SetPosition(vPlacePosition);
 
