@@ -327,7 +327,7 @@ HRESULT CRenderer::Render_Deferred()
 	if (FAILED(m_pTargetManager->Bind_SRV(m_pShader, TEXT("Target_Specular"), "g_SpecularTarget")))
 		return E_FAIL;
 
-	m_pShader->SetPassIndex(3);
+	m_pShader->SetPassIndex(2);
 	if (FAILED(m_pShader->Begin()))
 		return E_FAIL;
 

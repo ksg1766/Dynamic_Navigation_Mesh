@@ -106,8 +106,6 @@ HRESULT CBasicTerrain::Ready_FixedComponents(void* pArg)
 			return E_FAIL;
 	}
 
-	GetShader()->SetPassIndex(0);
-
 	return S_OK;
 }
 

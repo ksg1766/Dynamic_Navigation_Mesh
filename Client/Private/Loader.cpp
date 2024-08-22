@@ -14,7 +14,6 @@
 #include "StaticScene.h"
 #include "Agent.h"
 #include "AIAgent.h"
-#include "SkyBox.h"
 
 CLoader::CLoader(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: m_pDevice(pDevice)
@@ -203,14 +202,6 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GamePlay()
 
 	/* For.Prototype_GameObject_AIAgent */
   	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_AIAgent"), CAIAgent::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_SkyBox */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_SkyBox"), CSkyBox::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_GameObject_StaticScene */
-	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_StaticScene"), CStaticScene::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_GameObject_Static */

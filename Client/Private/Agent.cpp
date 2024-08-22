@@ -56,7 +56,7 @@ HRESULT CAgent::Render()
 	if (FAILED(Bind_ShaderResources()))
 		return E_FAIL;
 
-	if (FAILED(GetTexture()->Bind_ShaderResource(GetShader(), "g_Diffuse2DTexture", 0)))
+	if (FAILED(GetTexture()->Bind_ShaderResource(GetShader(), "g_DiffuseTexture", 0)))
 			return E_FAIL;
 
 	if (FAILED(GetShader()->Begin()))
@@ -133,8 +133,6 @@ HRESULT CAgent::Bind_ShaderResources()
 	{
 		return E_FAIL;
 	}
-	
-	GetShader()->SetPassIndex(3);
 
 	return S_OK;
 }

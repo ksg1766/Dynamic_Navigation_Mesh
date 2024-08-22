@@ -18,7 +18,7 @@ HRESULT CAIAgent::Initialize_Prototype()
 	return S_OK;
 }
 
-HRESULT CAIAgent::Initialize(void * pArg)
+HRESULT CAIAgent::Initialize(void* pArg)
 {
 	if (FAILED(Ready_FixedComponents(pArg)))
 		return E_FAIL;
@@ -50,7 +50,7 @@ HRESULT CAIAgent::Render()
 	if (FAILED(Bind_ShaderResources()))
 		return E_FAIL;
 
-	if (FAILED(GetTexture()->Bind_ShaderResource(GetShader(), "g_Diffuse2DTexture", 0)))
+	if (FAILED(GetTexture()->Bind_ShaderResource(GetShader(), "g_DiffuseTexture", 0)))
 		return E_FAIL;
 
 	if (FAILED(GetShader()->Begin()))
@@ -133,8 +133,6 @@ HRESULT CAIAgent::Bind_ShaderResources()
 	{
 		return E_FAIL;
 	}
-
-	GetShader()->SetPassIndex(3);
 
 	return S_OK;
 }

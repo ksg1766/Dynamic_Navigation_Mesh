@@ -16,107 +16,101 @@
     <Filter Include="01.Levels\00.Logo">
       <UniqueIdentifier>{f7bf0f5d-9c1a-409d-ba96-8f25a183dad7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="97.ShaderFiles">
+      <UniqueIdentifier>{a631185a-1555-4b19-8534-272c809d77b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\01.GameTool">
+      <UniqueIdentifier>{0ddb6f36-aab9-4683-8131-d89aef354c4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\01.GameTool\ImGUI">
+      <UniqueIdentifier>{0750d5ff-76a3-4d8d-b06d-a7f58ab341ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\01.GameTool\View">
+      <UniqueIdentifier>{6c765137-c226-4bbb-b3bd-6e7922a9b843}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\01.GameTool\View\PrefabsView">
+      <UniqueIdentifier>{16c8a98b-47ea-4c7b-8334-f9880d99f349}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\01.GameTool\View\ViewBase">
+      <UniqueIdentifier>{0bf6b0f8-774d-4ce2-b52b-07a8a7d02bb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\01.GameTool\View\NavMeshView">
+      <UniqueIdentifier>{c6dc7fa4-a266-4b6f-98b6-de967c3ebeea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\01.GameTool\Mediator">
+      <UniqueIdentifier>{1182e448-9f3a-4696-9518-0160744598f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects">
+      <UniqueIdentifier>{d435cd37-10c5-4f6c-a2f1-ee72504bbb59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\00.Static">
+      <UniqueIdentifier>{c4e8b885-4768-40de-8227-7c9b20688169}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\00.Static\StaticBase">
+      <UniqueIdentifier>{1b05fad7-47fa-4638-b885-25a871718926}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\00.Static\BasicTerrain">
+      <UniqueIdentifier>{eb9b11a4-c3c9-4f3b-a50d-cbb0f833a983}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\00.Static\BasicTerrain\GameObject">
+      <UniqueIdentifier>{79a39662-8215-4a70-b672-949f35bc41ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\00.Static\BasicTerrain\Script">
+      <UniqueIdentifier>{c8081918-9961-4612-a3ca-15cf00eb28a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\01.Playable">
+      <UniqueIdentifier>{5dff5009-41f4-424a-bffb-51a193eb5a78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\01.Playable\00.Agent">
+      <UniqueIdentifier>{0fbf463f-1bb6-4749-a99e-32622afe4f0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\99.BackGround">
+      <UniqueIdentifier>{327a42a0-45f0-4b4d-b8cd-bb209baedc94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\98.Camera">
+      <UniqueIdentifier>{548fcad8-b15c-480f-be95-7ac6cffde6c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\98.Camera\00.FlyingCamera">
+      <UniqueIdentifier>{58335612-64ea-4fb8-9646-d008b3eaed74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\98.Camera\01.MainCamera">
+      <UniqueIdentifier>{957dc45a-e064-4c63-a0de-15a961b42e61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\02.AI">
+      <UniqueIdentifier>{367a9a79-09c7-43f4-82e0-d3c6acf6d785}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\02.AI\00.AIAgent">
+      <UniqueIdentifier>{e292aea5-e692-4d18-9fff-2738cfc049d9}</UniqueIdentifier>
+    </Filter>
     <Filter Include="01.Levels\99.Loading">
       <UniqueIdentifier>{d3df9124-96f6-4c1d-a02e-1d2d51e29c9b}</UniqueIdentifier>
     </Filter>
     <Filter Include="01.Levels\99.Loading\Loader">
       <UniqueIdentifier>{04c05968-cb34-4cec-89e2-639b898c25fc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="97.ShaderFiles">
-      <UniqueIdentifier>{a631185a-1555-4b19-8534-272c809d77b7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levels\02.GameTool">
-      <UniqueIdentifier>{0ddb6f36-aab9-4683-8131-d89aef354c4b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levels\02.GameTool\ImGUI">
-      <UniqueIdentifier>{0750d5ff-76a3-4d8d-b06d-a7f58ab341ea}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levels\02.GameTool\View">
-      <UniqueIdentifier>{6c765137-c226-4bbb-b3bd-6e7922a9b843}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levels\02.GameTool\View\PrefabsView">
-      <UniqueIdentifier>{16c8a98b-47ea-4c7b-8334-f9880d99f349}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levels\02.GameTool\Mediator">
-      <UniqueIdentifier>{1182e448-9f3a-4696-9518-0160744598f8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levels\02.GameTool\View\ViewBase">
-      <UniqueIdentifier>{0bf6b0f8-774d-4ce2-b52b-07a8a7d02bb1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects">
-      <UniqueIdentifier>{d435cd37-10c5-4f6c-a2f1-ee72504bbb59}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static">
-      <UniqueIdentifier>{c4e8b885-4768-40de-8227-7c9b20688169}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\StaticBase">
-      <UniqueIdentifier>{1b05fad7-47fa-4638-b885-25a871718926}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\BasicTerrain">
-      <UniqueIdentifier>{eb9b11a4-c3c9-4f3b-a50d-cbb0f833a983}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\BasicTerrain\GameObject">
-      <UniqueIdentifier>{79a39662-8215-4a70-b672-949f35bc41ba}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\BasicTerrain\Script">
-      <UniqueIdentifier>{c8081918-9961-4612-a3ca-15cf00eb28a3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable">
-      <UniqueIdentifier>{5dff5009-41f4-424a-bffb-51a193eb5a78}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\99.BackGround">
-      <UniqueIdentifier>{327a42a0-45f0-4b4d-b8cd-bb209baedc94}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\98.Camera">
-      <UniqueIdentifier>{548fcad8-b15c-480f-be95-7ac6cffde6c8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\98.Camera\00.FlyingCamera">
-      <UniqueIdentifier>{58335612-64ea-4fb8-9646-d008b3eaed74}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\98.Camera\00.FlyingCamera\GameObject">
+    <Filter Include="02.GameObjects\98.Camera\00.FlyingCamera\GameObject">
       <UniqueIdentifier>{bdcf4e26-ba9b-418c-93cf-9fe79e0e688c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\98.Camera\00.FlyingCamera\Script">
+    <Filter Include="02.GameObjects\98.Camera\00.FlyingCamera\Script">
       <UniqueIdentifier>{dd15396f-49de-4631-a0d5-97aa141723a3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\98.Camera\01.MainCamera">
-      <UniqueIdentifier>{957dc45a-e064-4c63-a0de-15a961b42e61}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\98.Camera\01.MainCamera\GameObject">
+    <Filter Include="02.GameObjects\98.Camera\01.MainCamera\GameObject">
       <UniqueIdentifier>{939637c6-34cf-4fda-b60b-f7891e65c8c2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\98.Camera\01.MainCamera\Script">
+    <Filter Include="02.GameObjects\98.Camera\01.MainCamera\Script">
       <UniqueIdentifier>{5c7e68d7-8b95-4ea2-868c-2f65d5a1612c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Levels\02.GameTool\View\NavMeshView">
-      <UniqueIdentifier>{c6dc7fa4-a266-4b6f-98b6-de967c3ebeea}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\SkyBox">
-      <UniqueIdentifier>{f4a2fcae-ca40-4f7a-bed8-a4f0c9f40e69}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\00.Static\StaticScene">
-      <UniqueIdentifier>{29654f1c-3463-4ee1-a341-7d0cc73610ad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.Agent">
-      <UniqueIdentifier>{0fbf463f-1bb6-4749-a99e-32622afe4f0e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.AI">
-      <UniqueIdentifier>{367a9a79-09c7-43f4-82e0-d3c6acf6d785}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.Agent\00.GameObject">
-      <UniqueIdentifier>{19d28c0f-5b95-45e7-ba13-448c9514203b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\01.Playable\00.Agent\01.Script">
-      <UniqueIdentifier>{cc513126-8d06-4a05-86f2-19b84d62430f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.AI\00.AIAgent">
-      <UniqueIdentifier>{e292aea5-e692-4d18-9fff-2738cfc049d9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.GameObjects\02.AI\00.AIAgent\00.GameObject">
+    <Filter Include="02.GameObjects\02.AI\00.AIAgent\GameObject">
       <UniqueIdentifier>{b17b4c1b-b792-4db7-9b23-90940fce33a0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03.GameObjects\02.AI\00.AIAgent\01.Script">
+    <Filter Include="02.GameObjects\02.AI\00.AIAgent\Script">
       <UniqueIdentifier>{55bff19f-cc5b-4634-997a-3cd2a3a214de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\01.Playable\00.Agent\GameObject">
+      <UniqueIdentifier>{19d28c0f-5b95-45e7-ba13-448c9514203b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\01.Playable\00.Agent\Script">
+      <UniqueIdentifier>{cc513126-8d06-4a05-86f2-19b84d62430f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -151,85 +145,79 @@
       <Filter>01.Levels\99.Loading\Loader</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Level_GameTool.h">
-      <Filter>01.Levels\02.GameTool</Filter>
+      <Filter>01.Levels\01.GameTool</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ImGUI\imconfig.h">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ImGUI\imgui.h">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ImGUI\imgui_impl_dx11.h">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ImGUI\imgui_impl_win32.h">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ImGUI\imgui_internal.h">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ImGUI\imstb_rectpack.h">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ImGUI\imstb_textedit.h">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ImGUI\imstb_truetype.h">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\AIAgent.h">
-      <Filter>03.GameObjects\02.AI\00.AIAgent\00.GameObject</Filter>
+      <Filter>02.GameObjects\02.AI\00.AIAgent\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\AIController.h">
-      <Filter>03.GameObjects\02.AI\00.AIAgent\01.Script</Filter>
+      <Filter>02.GameObjects\02.AI\00.AIAgent\Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\FlyingCamera.h">
-      <Filter>03.GameObjects\98.Camera\00.FlyingCamera\GameObject</Filter>
+      <Filter>02.GameObjects\98.Camera\00.FlyingCamera\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\FlyingCameraController.h">
-      <Filter>03.GameObjects\98.Camera\00.FlyingCamera\Script</Filter>
+      <Filter>02.GameObjects\98.Camera\00.FlyingCamera\Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\BasicTerrain.h">
-      <Filter>03.GameObjects\00.Static\BasicTerrain\GameObject</Filter>
+      <Filter>02.GameObjects\00.Static\BasicTerrain\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\DebugTerrainGrid.h">
-      <Filter>03.GameObjects\00.Static\BasicTerrain\Script</Filter>
+      <Filter>02.GameObjects\00.Static\BasicTerrain\Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\PrefabsView.h">
-      <Filter>01.Levels\02.GameTool\View\PrefabsView</Filter>
+      <Filter>01.Levels\01.GameTool\View\PrefabsView</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\View.h">
-      <Filter>01.Levels\02.GameTool\View\ViewBase</Filter>
+      <Filter>01.Levels\01.GameTool\View\ViewBase</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\StaticBase.h">
-      <Filter>03.GameObjects\00.Static\StaticBase</Filter>
+      <Filter>02.GameObjects\00.Static\StaticBase</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ViewMediator.h">
-      <Filter>01.Levels\02.GameTool\Mediator</Filter>
+      <Filter>01.Levels\01.GameTool\Mediator</Filter>
     </ClInclude>
     <ClInclude Include="..\public\BackGround.h">
-      <Filter>03.GameObjects\99.BackGround</Filter>
+      <Filter>02.GameObjects\99.BackGround</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\MainCamera.h">
-      <Filter>03.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
+      <Filter>02.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\MainCameraController.h">
-      <Filter>03.GameObjects\98.Camera\01.MainCamera\Script</Filter>
+      <Filter>02.GameObjects\98.Camera\01.MainCamera\Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\AgentController.h">
-      <Filter>03.GameObjects\01.Playable\00.Agent\01.Script</Filter>
+      <Filter>02.GameObjects\01.Playable\00.Agent\Script</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\NavMeshView.h">
-      <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
+      <Filter>01.Levels\01.GameTool\View\NavMeshView</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\DebugDraw.h">
       <Filter>99.Defines</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\SkyBox.h">
-      <Filter>03.GameObjects\00.Static\SkyBox</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\StaticScene.h">
-      <Filter>03.GameObjects\00.Static\StaticScene</Filter>
     </ClInclude>
     <ClInclude Include="Client_Macro.h">
       <Filter>99.Defines</Filter>
@@ -238,7 +226,7 @@
       <Filter>99.Defines</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Agent.h">
-      <Filter>03.GameObjects\01.Playable\00.Agent\00.GameObject</Filter>
+      <Filter>02.GameObjects\01.Playable\00.Agent\GameObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -261,88 +249,82 @@
       <Filter>01.Levels\99.Loading\Loader</Filter>
     </ClCompile>
     <ClCompile Include="..\private\BackGround.cpp">
-      <Filter>03.GameObjects\99.BackGround</Filter>
+      <Filter>02.GameObjects\99.BackGround</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Level_GameTool.cpp">
-      <Filter>01.Levels\02.GameTool</Filter>
+      <Filter>01.Levels\01.GameTool</Filter>
     </ClCompile>
     <ClCompile Include="..\Public\ImGUI\imgui.cpp">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="..\Public\ImGUI\imgui_demo.cpp">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="..\Public\ImGUI\imgui_draw.cpp">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="..\Public\ImGUI\imgui_impl_dx11.cpp">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="..\Public\ImGUI\imgui_impl_win32.cpp">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="..\Public\ImGUI\imgui_tables.cpp">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="..\Public\ImGUI\imgui_widgets.cpp">
-      <Filter>01.Levels\02.GameTool\ImGUI</Filter>
+      <Filter>01.Levels\01.GameTool\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\AIAgent.cpp">
-      <Filter>03.GameObjects\02.AI\00.AIAgent\00.GameObject</Filter>
+      <Filter>02.GameObjects\02.AI\00.AIAgent\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\AIController.cpp">
-      <Filter>03.GameObjects\02.AI\00.AIAgent\01.Script</Filter>
+      <Filter>02.GameObjects\02.AI\00.AIAgent\Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\FlyingCamera.cpp">
-      <Filter>03.GameObjects\98.Camera\00.FlyingCamera\GameObject</Filter>
+      <Filter>02.GameObjects\98.Camera\00.FlyingCamera\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\FlyingCameraController.cpp">
-      <Filter>03.GameObjects\98.Camera\00.FlyingCamera\Script</Filter>
+      <Filter>02.GameObjects\98.Camera\00.FlyingCamera\Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\BasicTerrain.cpp">
-      <Filter>03.GameObjects\00.Static\BasicTerrain\GameObject</Filter>
+      <Filter>02.GameObjects\00.Static\BasicTerrain\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\DebugTerrainGrid.cpp">
-      <Filter>03.GameObjects\00.Static\BasicTerrain\Script</Filter>
+      <Filter>02.GameObjects\00.Static\BasicTerrain\Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\PrefabsView.cpp">
-      <Filter>01.Levels\02.GameTool\View\PrefabsView</Filter>
+      <Filter>01.Levels\01.GameTool\View\PrefabsView</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\View.cpp">
-      <Filter>01.Levels\02.GameTool\View\ViewBase</Filter>
+      <Filter>01.Levels\01.GameTool\View\ViewBase</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\StaticBase.cpp">
-      <Filter>03.GameObjects\00.Static\StaticBase</Filter>
+      <Filter>02.GameObjects\00.Static\StaticBase</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\ViewMediator.cpp">
-      <Filter>01.Levels\02.GameTool\Mediator</Filter>
+      <Filter>01.Levels\01.GameTool\Mediator</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\MainCamera.cpp">
-      <Filter>03.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
+      <Filter>02.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\MainCameraController.cpp">
-      <Filter>03.GameObjects\98.Camera\01.MainCamera\Script</Filter>
+      <Filter>02.GameObjects\98.Camera\01.MainCamera\Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\AgentController.cpp">
-      <Filter>03.GameObjects\01.Playable\00.Agent\01.Script</Filter>
+      <Filter>02.GameObjects\01.Playable\00.Agent\Script</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\NavMeshView.cpp">
-      <Filter>01.Levels\02.GameTool\View\NavMeshView</Filter>
+      <Filter>01.Levels\01.GameTool\View\NavMeshView</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\DebugDraw.cpp">
       <Filter>99.Defines</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\SkyBox.cpp">
-      <Filter>03.GameObjects\00.Static\SkyBox</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\StaticScene.cpp">
-      <Filter>03.GameObjects\00.Static\StaticScene</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\tinyxml2.cpp">
       <Filter>99.Defines</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Agent.cpp">
-      <Filter>03.GameObjects\01.Playable\00.Agent\00.GameObject</Filter>
+      <Filter>02.GameObjects\01.Playable\00.Agent\GameObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -362,22 +344,10 @@
     <FxCompile Include="..\Bin\ShaderFiles\Client_Shader_Defines.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Matrix.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Lighting_Functions.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimInstancing.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh.hlsl">
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_Functions.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeNom.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeTex.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxDebug.hlsl">
@@ -393,9 +363,6 @@
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex.hlsl">
-      <Filter>97.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxTexFetchAnim.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_TriangleTest.hlsl">

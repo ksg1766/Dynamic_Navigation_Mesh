@@ -30,7 +30,7 @@ public:
 private:
 	HRESULT			Ready_FixedComponents(void* pArg);
 	HRESULT			Ready_Scripts();
-	HRESULT			Bind_ShaderResources(); /* 셰이더 전역변수에 값 던진다. */
+	HRESULT			Bind_ShaderResources();
 
 private:
 	CAIController*	m_pController = nullptr;

@@ -6,11 +6,7 @@
 #include "BasicTerrain.h"
 #include "Terrain.h"
 
-#include "AnimationView.h"
 #include "PrefabsView.h"
-#include "LayersView.h"
-#include "TransformView.h"
-#include "SaveLoadView.h"
 #include "NavMeshView.h"
 
 #include "ViewMediator.h"

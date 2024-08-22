@@ -199,9 +199,7 @@
     <ClInclude Include="..\public\MainApp.h" />
     <ClInclude Include="..\Public\PrefabsView.h" />
     <ClInclude Include="..\Public\AgentController.h" />
-    <ClInclude Include="..\Public\SkyBox.h" />
     <ClInclude Include="..\Public\StaticBase.h" />
-    <ClInclude Include="..\Public\StaticScene.h" />
     <ClInclude Include="..\Public\AIController.h" />
     <ClInclude Include="..\Public\tinyxml2.h" />
     <ClInclude Include="..\Public\ViewMediator.h" />
@@ -238,9 +236,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Private\AgentController.cpp" />
-    <ClCompile Include="..\Private\SkyBox.cpp" />
     <ClCompile Include="..\Private\StaticBase.cpp" />
-    <ClCompile Include="..\Private\StaticScene.cpp" />
     <ClCompile Include="..\Private\AIController.cpp" />
     <ClCompile Include="..\Private\tinyxml2.cpp" />
     <ClCompile Include="..\Private\ViewMediator.cpp" />
@@ -309,19 +305,14 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Bin\ShaderFiles\Client_Shader_Defines.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Matrix.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_TriangleTest.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_Lighting_Functions.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimInstancing.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_Functions.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeNom.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxCubeTex.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxDebug.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMesh.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMeshInstancing.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl" />
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex.hlsl" />
-    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxTexFetchAnim.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
