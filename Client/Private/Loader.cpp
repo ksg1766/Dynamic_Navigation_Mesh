@@ -8,7 +8,6 @@
 #include "BasicTerrain.h"
 #include "AgentController.h"
 #include "MainCameraController.h"
-#include "StateMachine.h"
 #include "FlyingCamera.h"
 #include "MainCamera.h"
 #include "StaticBase.h"
@@ -66,9 +65,6 @@ _int CLoader::Loading()
 	{
 	case LEVEL_LOGO:
 		hr = Loading_For_Level_Logo();
-		break;
-	case LEVEL_GAMEPLAY:
-		hr = Loading_For_Level_GamePlay();
 		break;
 	case LEVEL_GAMETOOL:
 		hr = Loading_For_Level_GameTool();
@@ -168,11 +164,6 @@ HRESULT CLoader::Loading_For_Level_GamePlay()
 HRESULT CLoader::Loading_Components_For_Level_GamePlay()
 {
 	CGameInstance* pGameInstance = GET_INSTANCE(CGameInstance);
-
-	/* For.Prototype_Component_StateMachine */
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_StateMachine"),
-		CStateMachine::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
 
 	RELEASE_INSTANCE(CGameInstance);
 
@@ -290,14 +281,6 @@ HRESULT CLoader::Loading_GameObjects_For_Level_GameTool()
 	/* For.Prototype_GameObject_Terrain*/
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_BasicTerrain"), CBasicTerrain::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
-	
-	/* For.Prototype_GameObject_Terrain*/
-	/*if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_BasicTerrain"), CBasicTerrain::Create(m_pDevice, m_pContext))))
-		return E_FAIL;*/
-
-	/* For.Prototype_GameObject_SkyBox*/
-	/*if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_SkyBox"), CSkyBox::Create(m_pDevice, m_pContext))))
-		return E_FAIL;*/
 
 	/* For.Prototype_GameObject_FlyingCamera */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_FlyingCamera"), CFlyingCamera::Create(m_pDevice, m_pContext))))

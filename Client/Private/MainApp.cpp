@@ -203,39 +203,9 @@ HRESULT CMainApp::Ready_Prototype_Components()
 		CVIBuffer_Grid::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* For.Prototype_Component_VIBuffer_Point */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Point"),
-		CVIBuffer_Point::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
 	/* For.Prototype_Component_Terrain */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Terrain"),
 		CTerrain::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_Model */
-	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Model"),
-		CModel::Create(m_pDevice, m_pContext))))
-		return E_FAIL;*/
-
-	/* For.Prototype_Component_RigidStatic */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_RigidStatic"),
-		CRigidStatic::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_RigidDynamic */
-	if(FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_RigidDynamic"),
-		CRigidDynamic::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_SphereCollider */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_SphereCollider"),
-		CSphereCollider::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-	/* For.Prototype_Component_OBBCollider */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_OBBCollider"),
-		COBBCollider::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_Component_OBBCollider */
@@ -259,17 +229,6 @@ HRESULT CMainApp::Ready_Prototype_Components()
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_NavMeshAgent"),
 		CNavMeshAgent::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
-
-
-	/* For.Prototype_Component_Texture_SkyBox */
-	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_SkyBox"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SkyBox/SkyBox1.dds")))))
-		return E_FAIL;*/
-	
-	/* For.Prototype_Component_Texture_Terrain_Alpha */
-	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Terrain_Alpha"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Terrain_Alpha_%d.png"), 8))))
-		return E_FAIL;*/
 
 	/* For.Prototype_Component_Model_Static */
 	{

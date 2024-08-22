@@ -2,8 +2,6 @@
 
 #include "ComponentManager.h"
 #include "PipeLine.h"
-/* 클라이언트개발자가 엔진의 기능을 이용하고자할 때 접촉하는 객체.  */
-/* 클라이언트에 보여줘야할 함수들을 모두 정의하고 있는다. */
 
 BEGIN(Engine)
 
@@ -31,11 +29,6 @@ public: /* For.GraphicDevice */
 	Viewport&		GetViewPort();
 	HRESULT			Present();
 
-public: /* For.QuadTRee */
-	HRESULT			Build_QuadTree(_uint iNumLevels);
-	void			Update_QuadTree();
-	void			Render_QuadTree(const _float& fTimeDelta);
-
 public: /* For.LevelManager */
 	HRESULT			Open_Level(_uint iLevelIndex, class CLevel* pNewLevel);
 	_uint			GetCurrentLevelIndex();
@@ -56,18 +49,12 @@ public: /* For.EventManager */
 	void			DeleteObject(CGameObject* pObj);
 	void			LevelChange(class CLevel* pLevel, _uint iLevelId);
 
-public: /* For.CollisionManager */
-	void			LateTick_Collision(const _float& fTimeDelta);
-
 public: /* For.CameraManager */
 	HRESULT			AddCamera(const wstring& strName, CGameObject* pCamera);
 	HRESULT			DeleteCamera(const wstring& strName);
 	HRESULT			ChangeCamera(const wstring& strName);
 	HRESULT			ChangeCamera();
 	CGameObject*	GetCurrentCamera();
-
-public: /* For.PoolManager */
-	HRESULT			Reserve_Pool(const wstring& strObjectName, const _uint& iReserveCount, void* pArg = nullptr);	// 매니저 초기화 아님.
 
 public: /* For.InputDevice */
 	_bool			Key_Down(_ubyte byKeyID);
@@ -116,16 +103,13 @@ public: /* For.SoundManager */
 private:
 	class CTimerManager*			m_pTimerManager = { nullptr };
 	class CGraphicDevice*			m_pGraphicDevice = { nullptr };
-	class CQuadTree*				m_pQuadTree = { nullptr };
 	class CInputDevice*				m_pInputDevice = { nullptr };
 	class CKeyManager*				m_pKeyManager = { nullptr };
 	class CLevelManager*			m_pLevelManager = { nullptr };
 	class CObjectManager*			m_pObjectManager = { nullptr };
 	class CComponentManager*		m_pComponentManager = { nullptr };
-	class CCollisionManager*		m_pCollisionManager = { nullptr };
 	class CCameraManager*			m_pCameraManager = { nullptr };
 	class CEventManager*			m_pEventManager = { nullptr };
-	class CPoolManager*				m_pPoolManager = { nullptr };
 	class CShaderManager*			m_pShaderManager = { nullptr };
 	class CPipeLine*				m_pPipeLine = { nullptr };
 	class CLightManager*			m_pLightManager = { nullptr };

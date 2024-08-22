@@ -172,16 +172,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Public\AnimationView.h" />
     <ClInclude Include="..\public\BackGround.h" />
     <ClInclude Include="..\Public\BasicTerrain.h" />
     <ClInclude Include="..\Public\DebugDraw.h" />
-    <ClInclude Include="..\Public\DissolveManager.h" />
     <ClInclude Include="..\Public\MainCamera.h" />
     <ClInclude Include="..\Public\MainCameraController.h" />
     <ClInclude Include="..\Public\NavMeshView.h" />
     <ClInclude Include="..\Public\Agent.h" />
-    <ClInclude Include="..\Public\SaveLoadView.h" />
     <ClInclude Include="..\Public\DebugTerrainGrid.h" />
     <ClInclude Include="..\Public\FlyingCameraController.h" />
     <ClInclude Include="..\Public\Client_Defines.h" />
@@ -195,8 +192,6 @@
     <ClInclude Include="..\Public\ImGUI\imstb_rectpack.h" />
     <ClInclude Include="..\Public\ImGUI\imstb_textedit.h" />
     <ClInclude Include="..\Public\ImGUI\imstb_truetype.h" />
-    <ClInclude Include="..\Public\LayersView.h" />
-    <ClInclude Include="..\Public\Level_GamePlay.h" />
     <ClInclude Include="..\Public\Level_GameTool.h" />
     <ClInclude Include="..\Public\Level_Loading.h" />
     <ClInclude Include="..\public\Level_Logo.h" />
@@ -210,7 +205,6 @@
     <ClInclude Include="..\Public\AIController.h" />
     <ClInclude Include="..\Public\tinyxml2.h" />
     <ClInclude Include="..\Public\ViewMediator.h" />
-    <ClInclude Include="..\Public\TransformView.h" />
     <ClInclude Include="..\Public\View.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Client_Macro.h" />
@@ -219,30 +213,19 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Private\AnimationView.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\private\BackGround.cpp" />
     <ClCompile Include="..\Private\BasicTerrain.cpp" />
     <ClCompile Include="..\Private\DebugDraw.cpp" />
-    <ClCompile Include="..\Private\DissolveManager.cpp" />
     <ClCompile Include="..\Private\MainCamera.cpp" />
     <ClCompile Include="..\Private\MainCameraController.cpp" />
     <ClCompile Include="..\Private\NavMeshView.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Private\Agent.cpp" />
-    <ClCompile Include="..\Private\SaveLoadView.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\Private\DebugTerrainGrid.cpp" />
     <ClCompile Include="..\Private\FlyingCameraController.cpp" />
     <ClCompile Include="..\Private\AIAgent.cpp" />
     <ClCompile Include="..\Private\FlyingCamera.cpp" />
-    <ClCompile Include="..\Private\LayersView.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Private\Level_GamePlay.cpp" />
     <ClCompile Include="..\Private\Level_GameTool.cpp">
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
@@ -261,9 +244,6 @@
     <ClCompile Include="..\Private\AIController.cpp" />
     <ClCompile Include="..\Private\tinyxml2.cpp" />
     <ClCompile Include="..\Private\ViewMediator.cpp" />
-    <ClCompile Include="..\Private\TransformView.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\Private\View.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>

@@ -13,7 +13,6 @@
 #include "Model.h"
 #include "Shader.h"
 #include "VIBuffer_Instance.h"
-#include "VIBuffer_Point.h"
 #include "StructuredBuffer.h"
 
 CRenderer::CRenderer(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
@@ -256,13 +255,6 @@ HRESULT CRenderer::Render_NonBlend_Instance()
 			pHead->GetModel()->PushTweenData(*tweenDesc);
 
 			Safe_Delete(tweenDesc);
-		}
-		else
-		{
-			for (auto& iter : vecInstances)
-			{
-				iter->InitRendered();
-			}
 		}
 
 		pHead->RenderInstance();	// BindShaderResource 호출을 위함.

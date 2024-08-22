@@ -1,8 +1,6 @@
 #include "..\Public\ObjectManager.h"
 #include "Layer.h"
 #include "GameObject.h"
-#include "RigidBodyBase.h"
-#include "CollisionManager.h"
 #include "CameraManager.h"
 
 IMPLEMENT_SINGLETON(CObjectManager)
@@ -37,12 +35,10 @@ HRESULT CObjectManager::Add_Prototype(const wstring& strPrototypeTag, CGameObjec
 
 CGameObject* CObjectManager::Add_GameObject(_uint iLevelIndex, const LAYERTAG& eLayerTag, const wstring& strPrototypeTag, void * pArg)
 {
-	/* 복제할 사본을 찾는다. */
 	CGameObject*		pPrototype = Find_Prototype(strPrototypeTag);
 	if (nullptr == pPrototype)
 		return nullptr;
 
-	/* 원형을 복제하여 사본을 만든다. */
 	CGameObject*		pGameObject = pPrototype->Clone(pArg);
 	if (nullptr == pGameObject)
 		return nullptr;
@@ -57,28 +53,22 @@ CGameObject* CObjectManager::Add_GameObject(_uint iLevelIndex, const LAYERTAG& e
 
 			pLayer->SetLayerTag(e);
 
-			//m_pLayers[iLevelIndex].emplace(eLayerTag, pLayer);
 			m_vecLayers[iLevelIndex].emplace(eLayerTag, pLayer);
 		}
 	}
 
 	CLayer*		pLayer = Find_Layer(iLevelIndex, eLayerTag);
 
-	/* 내가 추가할려고 하는 레이어가 없었다. */
 	if (nullptr == pLayer)
 	{
-		/* 레이어를 만들자. */
 		pLayer = CLayer::Create();
 		pLayer->SetLayerTag(eLayerTag);
 
-		/* 생성한 레이어를 iLevelIndex용 레이어로 추가하였다. */
 		m_vecLayers[iLevelIndex].emplace(eLayerTag, pLayer);
 		
-		/* 레이어에 객체를 추가하자. */
 		pLayer->Add_GameObject(pGameObject, eLayerTag);
-		//
 	}
-	else /* 추가하고자 하는 레이어가 있었다. */
+	else
 		pLayer->Add_GameObject(pGameObject, eLayerTag);
 
 	return pGameObject;
@@ -88,46 +78,23 @@ void CObjectManager::Tick(const _float& fTimeDelta)
 {
 	for (size_t i = 0; i < m_iNumLevels; i++)
 	{
-		if (i == 2)		// GAMEPLAY
+		for (auto& Pair : m_vecLayers[i])
 		{
-			for (auto& Pair : m_vecLayers[i])
+			if ((_uint)Pair.first == (_uint)LAYERTAG::DEFAULT_LAYER_END
+				|| (_uint)Pair.first == (_uint)LAYERTAG::DYNAMIC_LAYER_END)
+				continue;
+
+			if ((_uint)Pair.first == (_uint)LAYERTAG::CAMERA)
 			{
-				if ((_uint)Pair.first == (_uint)LAYERTAG::DEFAULT_LAYER_END)
-					continue;
-				
-				if ((_uint)Pair.first == (_uint)LAYERTAG::CAMERA)
-				{
-					CCameraManager::GetInstance()->Tick(fTimeDelta);
-					continue;
-				}
-
-				if ((_uint)Pair.first < (_uint)LAYERTAG::DYNAMIC_LAYER_END)
-					Pair.second->Tick(fTimeDelta);
-				// Temp
-				if (Pair.first == LAYERTAG::TERRAIN)
-					Pair.second->Tick(fTimeDelta);
+				CCameraManager::GetInstance()->Tick(fTimeDelta);
+				continue;
 			}
-		}
-		else if (i != 2)		// !GAMEPLAY
-		{
-			for (auto& Pair : m_vecLayers[i])
-			{
-				if ((_uint)Pair.first == (_uint)LAYERTAG::DEFAULT_LAYER_END
-					|| (_uint)Pair.first == (_uint)LAYERTAG::DYNAMIC_LAYER_END)
-					continue;
 
-				if ((_uint)Pair.first == (_uint)LAYERTAG::CAMERA)
-				{
-					CCameraManager::GetInstance()->Tick(fTimeDelta);
-					continue;
-				}
-
-				if ((_uint)Pair.first < (_uint)LAYERTAG::STATIC_LAYER_END)
-					Pair.second->Tick(fTimeDelta);
-				// Temp
-				if (Pair.first == LAYERTAG::TERRAIN)
-					Pair.second->Tick(fTimeDelta);
-			}
+			if ((_uint)Pair.first < (_uint)LAYERTAG::STATIC_LAYER_END)
+				Pair.second->Tick(fTimeDelta);
+			// Temp
+			if (Pair.first == LAYERTAG::TERRAIN)
+				Pair.second->Tick(fTimeDelta);
 		}
 	}
 }
@@ -136,46 +103,23 @@ void CObjectManager::LateTick(const _float& fTimeDelta)
 {
 	for (size_t i = 0; i < m_iNumLevels; i++)
 	{
-		if (i == 2)		// GAMEPLAY
+		for (auto& Pair : m_vecLayers[i])
 		{
-			for (auto& Pair : m_vecLayers[i])
+			if ((_uint)Pair.first == (_uint)LAYERTAG::DEFAULT_LAYER_END
+				|| (_uint)Pair.first == (_uint)LAYERTAG::DYNAMIC_LAYER_END)
+				continue;
+
+			if ((_uint)Pair.first == (_uint)LAYERTAG::CAMERA)
 			{
-				if ((_uint)Pair.first == (_uint)LAYERTAG::DEFAULT_LAYER_END)
-					continue;
-
-				if ((_uint)Pair.first == (_uint)LAYERTAG::CAMERA)
-				{
-					CCameraManager::GetInstance()->LateTick(fTimeDelta);
-					continue;
-				}
-
-				if ((_uint)Pair.first < (_uint)LAYERTAG::DYNAMIC_LAYER_END)
-					Pair.second->LateTick(fTimeDelta);
-				// Temp
-				if (Pair.first == LAYERTAG::TERRAIN)
-					Pair.second->LateTick(fTimeDelta);
+				CCameraManager::GetInstance()->LateTick(fTimeDelta);
+				continue;
 			}
-		}
-		else if (i != 2)	// GAMEPLAY
-		{
-			for (auto& Pair : m_vecLayers[i])
-			{
-				if ((_uint)Pair.first == (_uint)LAYERTAG::DEFAULT_LAYER_END
-					|| (_uint)Pair.first == (_uint)LAYERTAG::DYNAMIC_LAYER_END)
-					continue;
 
-				if ((_uint)Pair.first == (_uint)LAYERTAG::CAMERA)
-				{
-					CCameraManager::GetInstance()->LateTick(fTimeDelta);
-					continue;
-				}
-
-				if ((_uint)Pair.first < (_uint)LAYERTAG::STATIC_LAYER_END)
-					Pair.second->LateTick(fTimeDelta);
-				// Temp
-				if (Pair.first == LAYERTAG::TERRAIN)
-					Pair.second->LateTick(fTimeDelta);
-			}
+			if ((_uint)Pair.first < (_uint)LAYERTAG::STATIC_LAYER_END)
+				Pair.second->LateTick(fTimeDelta);
+			// Temp
+			if (Pair.first == LAYERTAG::TERRAIN)
+				Pair.second->LateTick(fTimeDelta);
 		}
 	}
 }
@@ -184,48 +128,27 @@ void CObjectManager::DebugRender()
 {
 	for (size_t i = 0; i < m_iNumLevels; i++)
 	{
-		if (i == 2)		// GAMEPLAY
+		for (auto& Pair : m_vecLayers[i])
 		{
-			//for (auto& Pair : m_pLayers[i])
-			for (auto& Pair : m_vecLayers[i])
-			{
-				if ((_uint)Pair.first == (_uint)LAYERTAG::DEFAULT_LAYER_END)
-					continue;
+			if ((_uint)Pair.first == (_uint)LAYERTAG::DEFAULT_LAYER_END
+				|| (_uint)Pair.first == (_uint)LAYERTAG::DYNAMIC_LAYER_END)
+				continue;
 
-				if ((_uint)Pair.first < (_uint)LAYERTAG::DYNAMIC_LAYER_END)
-					Pair.second->DebugRender();
-				// Temp
-				if (Pair.first == LAYERTAG::TERRAIN)
-					Pair.second->DebugRender();
-			}
-		}
-		else if (i != 2)	// !GAMEPLAY
-		{
-			//for (auto& Pair : m_pLayers[i])
-			for (auto& Pair : m_vecLayers[i])
-			{
-				if ((_uint)Pair.first == (_uint)LAYERTAG::DEFAULT_LAYER_END
-					|| (_uint)Pair.first == (_uint)LAYERTAG::DYNAMIC_LAYER_END)
-					continue;
-
-				if ((_uint)Pair.first < (_uint)LAYERTAG::STATIC_LAYER_END)
-					Pair.second->DebugRender();
-				// Temp
-				if (Pair.first == LAYERTAG::TERRAIN)
-					Pair.second->DebugRender();
-			}
+			if ((_uint)Pair.first < (_uint)LAYERTAG::STATIC_LAYER_END)
+				Pair.second->DebugRender();
+			// Temp
+			if (Pair.first == LAYERTAG::TERRAIN)
+				Pair.second->DebugRender();
 		}
 	}
 }
 
 void CObjectManager::Clear(_uint iLevelIndex)
 {
-	//for (auto& Pair : m_pLayers[iLevelIndex])
 	for (auto& Pair : m_vecLayers[iLevelIndex])
 	{
 		Safe_Release(Pair.second);
 	}
-	//m_pLayers[iLevelIndex].clear();
 	m_vecLayers[iLevelIndex].clear();
 }
 
@@ -244,10 +167,8 @@ CLayer* CObjectManager::Find_Layer(_uint iLevelIndex, const LAYERTAG& eLayerTag)
 	if (iLevelIndex >= m_iNumLevels)
 		return nullptr;
 
-	//auto	iter = m_pLayers[iLevelIndex].find(eLayerTag);
 	auto	iter = m_vecLayers[iLevelIndex].find(eLayerTag);
 
-	//if (iter == m_pLayers[iLevelIndex].end())
 	if (iter == m_vecLayers[iLevelIndex].end())
 		return nullptr;
 
@@ -260,16 +181,13 @@ void CObjectManager::Free()
 
 	for (size_t i = 0; i < m_iNumLevels; i++)
 	{
-		//for (auto& Pair : m_pLayers[i])
 		for (auto& Pair : m_vecLayers[i])
 		{
 			Safe_Release(Pair.second);
 		}
-		//m_pLayers[i].clear();
 		m_vecLayers[i].clear();
 	}
 
-	//Safe_Delete_Array(m_pLayers);
 	m_vecLayers.clear();
 
 	for (auto& Pair : m_Prototypes)

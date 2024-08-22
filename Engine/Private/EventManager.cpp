@@ -3,10 +3,6 @@
 #include "ObjectManager.h"
 #include "GameObject.h"
 #include "Layer.h"
-#include "RigidDynamic.h"
-#include "ColliderSphere.h"
-#include "QuadTree.h"
-#include "QuadTreeNode.h"
 
 IMPLEMENT_SINGLETON(CEventManager);
 

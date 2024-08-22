@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "..\Public\SkyBox.h"
 #include "GameInstance.h"
-#include "VIBuffer_Point_Instance.h"
 #include "Layer.h"
 
 CSkyBox::CSkyBox(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -95,11 +94,6 @@ HRESULT CSkyBox::Ready_FixedComponents()
 
 HRESULT CSkyBox::Ready_Scripts(void* pArg)
 {
-	if (LEVEL_GAMEPLAY == m_pGameInstance->GetCurrentLevelIndex())
-	{
-
-	}
-
 	return S_OK;
 }
 

@@ -3,7 +3,6 @@
 #include "GameInstance.h"
 
 #include "AgentController.h"
-#include "StateMachine.h"
 
 CAgent::CAgent(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: Super(pDevice, pContext)

@@ -16,9 +16,6 @@
     <Filter Include="01.Levels\00.Logo">
       <UniqueIdentifier>{f7bf0f5d-9c1a-409d-ba96-8f25a183dad7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Levels\01.GamePlay">
-      <UniqueIdentifier>{001c8170-e0a0-429b-96c3-38ac67fa7a9c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Levels\99.Loading">
       <UniqueIdentifier>{d3df9124-96f6-4c1d-a02e-1d2d51e29c9b}</UniqueIdentifier>
     </Filter>
@@ -37,17 +34,8 @@
     <Filter Include="01.Levels\02.GameTool\View">
       <UniqueIdentifier>{6c765137-c226-4bbb-b3bd-6e7922a9b843}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Levels\02.GameTool\View\DataFilesView">
-      <UniqueIdentifier>{66f7e3a7-467b-497d-9833-b00708cdaf9c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levels\02.GameTool\View\LayerView">
-      <UniqueIdentifier>{e8297b84-e47e-4349-9297-d86c1c376c01}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Levels\02.GameTool\View\PrefabsView">
       <UniqueIdentifier>{16c8a98b-47ea-4c7b-8334-f9880d99f349}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levels\02.GameTool\View\TransformView">
-      <UniqueIdentifier>{b46c1ed3-d354-4b4d-a943-ef92ca7c4781}</UniqueIdentifier>
     </Filter>
     <Filter Include="01.Levels\02.GameTool\Mediator">
       <UniqueIdentifier>{1182e448-9f3a-4696-9518-0160744598f8}</UniqueIdentifier>
@@ -57,15 +45,6 @@
     </Filter>
     <Filter Include="03.GameObjects">
       <UniqueIdentifier>{d435cd37-10c5-4f6c-a2f1-ee72504bbb59}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02.ClientManagers">
-      <UniqueIdentifier>{91592fbc-d0e9-4b34-a846-d3a78316b95d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02.ClientManagers\00. DissolveManager">
-      <UniqueIdentifier>{a6b76977-e714-49b4-abd7-42d081d38d26}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levels\02.GameTool\View\AnimationView">
-      <UniqueIdentifier>{13c85ca6-1738-412d-bdc4-c574d1d87906}</UniqueIdentifier>
     </Filter>
     <Filter Include="03.GameObjects\00.Static">
       <UniqueIdentifier>{c4e8b885-4768-40de-8227-7c9b20688169}</UniqueIdentifier>
@@ -165,9 +144,6 @@
     <ClInclude Include="..\public\Level_Logo.h">
       <Filter>01.Levels\00.Logo</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Level_GamePlay.h">
-      <Filter>01.Levels\01.GamePlay</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Level_Loading.h">
       <Filter>01.Levels\99.Loading</Filter>
     </ClInclude>
@@ -228,26 +204,11 @@
     <ClInclude Include="..\Public\StaticBase.h">
       <Filter>03.GameObjects\00.Static\StaticBase</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\LayersView.h">
-      <Filter>01.Levels\02.GameTool\View\LayerView</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\TransformView.h">
-      <Filter>01.Levels\02.GameTool\View\TransformView</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\ViewMediator.h">
       <Filter>01.Levels\02.GameTool\Mediator</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\SaveLoadView.h">
-      <Filter>01.Levels\02.GameTool\View\DataFilesView</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\DissolveManager.h">
-      <Filter>02.ClientManagers\00. DissolveManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\BackGround.h">
       <Filter>03.GameObjects\99.BackGround</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\AnimationView.h">
-      <Filter>01.Levels\02.GameTool\View\AnimationView</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\MainCamera.h">
       <Filter>03.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>
@@ -292,9 +253,6 @@
     </ClCompile>
     <ClCompile Include="..\private\Level_Logo.cpp">
       <Filter>01.Levels\00.Logo</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Level_GamePlay.cpp">
-      <Filter>01.Levels\01.GamePlay</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Level_Loading.cpp">
       <Filter>01.Levels\99.Loading</Filter>
@@ -356,23 +314,8 @@
     <ClCompile Include="..\Private\StaticBase.cpp">
       <Filter>03.GameObjects\00.Static\StaticBase</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\LayersView.cpp">
-      <Filter>01.Levels\02.GameTool\View\LayerView</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\TransformView.cpp">
-      <Filter>01.Levels\02.GameTool\View\TransformView</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\ViewMediator.cpp">
       <Filter>01.Levels\02.GameTool\Mediator</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\SaveLoadView.cpp">
-      <Filter>01.Levels\02.GameTool\View\DataFilesView</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\DissolveManager.cpp">
-      <Filter>02.ClientManagers\00. DissolveManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\AnimationView.cpp">
-      <Filter>01.Levels\02.GameTool\View\AnimationView</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\MainCamera.cpp">
       <Filter>03.GameObjects\98.Camera\01.MainCamera\GameObject</Filter>

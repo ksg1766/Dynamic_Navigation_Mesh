@@ -2,9 +2,6 @@
 
 #include "Component.h"
 
-/* CVIBuffer : Vertices + Indices */
-/* 정점과 인덱스를 할당하고 초기화한다. */
-/* 렌더함수에서  이 두 버퍼를 이용하여 그린다.  */
 BEGIN(Engine)
 
 class ENGINE_DLL CVIBuffer abstract : public CComponent

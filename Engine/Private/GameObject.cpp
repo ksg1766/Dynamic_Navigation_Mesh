@@ -78,12 +78,6 @@ CTransform* CGameObject::GetTransform()
 	return static_cast<CTransform*>(pComponent);
 }
 
-CRigidBody* CGameObject::GetRigidBody()
-{
-	CComponent* pComponent = GetFixedComponent(ComponentType::RigidBody);
-	return static_cast<CRigidBody*>(pComponent);
-}
-
 CVIBuffer* const CGameObject::GetBuffer()
 {
 	CComponent* pComponent = GetFixedComponent(ComponentType::Buffer);

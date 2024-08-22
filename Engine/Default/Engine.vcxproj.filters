@@ -34,15 +34,6 @@
     <Filter Include="01.Utiltiy\04.Component">
       <UniqueIdentifier>{2f7b0f55-c192-41e7-bb1e-3795db1aeefc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="00.System\02.Optimization">
-      <UniqueIdentifier>{7af7aff7-b7dc-40d0-a93b-389c50c1ce2d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="00.System\02.Optimization\00.QuadTree">
-      <UniqueIdentifier>{338d3082-21a8-40eb-a0b9-a0da9d01bfab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\03.RigidBody">
-      <UniqueIdentifier>{28490583-5e58-4595-aca3-34fad1b3e0bf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Utiltiy\04.Component\02.MonoBehaviour">
       <UniqueIdentifier>{eb3fe51d-7f63-4c54-877e-1af4cdc714ec}</UniqueIdentifier>
     </Filter>
@@ -67,9 +58,6 @@
     <Filter Include="98.Utils">
       <UniqueIdentifier>{9b481797-b051-40d9-84e3-d6453d71b21c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Utiltiy\04.Component\04.Collider">
-      <UniqueIdentifier>{3cfff0a5-604b-4fa6-bbda-77e090963ecb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Utiltiy\04.Component\09.Camera">
       <UniqueIdentifier>{914bfac7-bfca-467b-8c41-8be38d4d6f0a}</UniqueIdentifier>
     </Filter>
@@ -84,12 +72,6 @@
     </Filter>
     <Filter Include="01.Utiltiy\01.Managers\00.LevelManager">
       <UniqueIdentifier>{da26101b-b96a-4e1f-bda4-a436441cd5b5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\01.Managers\05.PoolManager">
-      <UniqueIdentifier>{31fd3432-8951-4562-a76c-f6cc74163a23}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\01.Managers\04.CollisionManager">
-      <UniqueIdentifier>{e4f354c2-d7d4-43c9-8815-b2a2def14990}</UniqueIdentifier>
     </Filter>
     <Filter Include="01.Utiltiy\01.Managers\02.ComponentManager">
       <UniqueIdentifier>{7968f281-42c6-4235-8f9b-215c2a933d89}</UniqueIdentifier>
@@ -139,15 +121,6 @@
     <Filter Include="01.Utiltiy\01.Managers\08.CameraManager">
       <UniqueIdentifier>{eb362217-7826-4ea1-a1a3-e93e59e38e25}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Utiltiy\04.Component\12.StateMachine">
-      <UniqueIdentifier>{73b7215a-e731-4b18-9915-043f905ec4cb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\12.StateMachine\States">
-      <UniqueIdentifier>{50ac689e-a2f2-402e-a3d3-b04becd36484}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\01.Managers\09.PhysicsManager">
-      <UniqueIdentifier>{23e4686d-5a4b-4c51-9ff0-2a25e5fb8ef0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Utiltiy\04.Component\14.NavMeshAgent">
       <UniqueIdentifier>{228aeb8a-e769-4144-8fe0-1ab558dba68d}</UniqueIdentifier>
     </Filter>
@@ -169,17 +142,11 @@
     <Filter Include="01.Utiltiy\04.Component\05.Buffer\Debug">
       <UniqueIdentifier>{7a7f8416-5029-409e-90b4-c7880d5bc385}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Utiltiy\04.Component\05.Buffer\Cell">
-      <UniqueIdentifier>{4357e5ce-414c-4088-9694-dbf441ed8fff}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Utiltiy\04.Component\05.Buffer\Base">
       <UniqueIdentifier>{1bd2348f-60a2-4d93-b7ab-43f10ba67e11}</UniqueIdentifier>
     </Filter>
     <Filter Include="01.Utiltiy\04.Component\05.Buffer\Instance">
       <UniqueIdentifier>{6336c820-c8c2-4239-9081-bbc16e7d47fe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\05.Buffer\Point">
-      <UniqueIdentifier>{5dd87908-3bc5-4471-bc14-770af0b4407c}</UniqueIdentifier>
     </Filter>
     <Filter Include="01.Utiltiy\04.Component\05.Buffer\StructuredBuffer">
       <UniqueIdentifier>{29c64f62-f767-46f8-b180-c0c1aa5940d3}</UniqueIdentifier>
@@ -201,9 +168,6 @@
     </Filter>
     <Filter Include="01.Utiltiy\04.Component\11.Model\01.Mesh">
       <UniqueIdentifier>{ca11ab3f-e0c9-44a0-9e86-9f5eafa4d113}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utiltiy\04.Component\05.Buffer\ParticleSystem">
-      <UniqueIdentifier>{e0f2570e-850f-4cbe-bfff-561a47893bd3}</UniqueIdentifier>
     </Filter>
     <Filter Include="01.Utiltiy\01.Managers\11.SoundManager">
       <UniqueIdentifier>{bcba0e35-4e7c-4a58-9bc8-63ae0768a8e0}</UniqueIdentifier>
@@ -270,38 +234,8 @@
     <ClInclude Include="..\public\Texture.h">
       <Filter>01.Utiltiy\04.Component\08.Texture</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\TransformEx.h">
-      <Filter>01.Utiltiy\04.Component\01.Transform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ColliderAABB.h">
-      <Filter>01.Utiltiy\04.Component\04.Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ColliderOBB.h">
-      <Filter>01.Utiltiy\04.Component\04.Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ColliderBase.h">
-      <Filter>01.Utiltiy\04.Component\04.Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ColliderSphere.h">
-      <Filter>01.Utiltiy\04.Component\04.Collider</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\MonoBehaviour.h">
       <Filter>01.Utiltiy\04.Component\02.MonoBehaviour</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\RigidBodyBase.h">
-      <Filter>01.Utiltiy\04.Component\03.RigidBody</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\RigidDynamic.h">
-      <Filter>01.Utiltiy\04.Component\03.RigidBody</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\RigidStatic.h">
-      <Filter>01.Utiltiy\04.Component\03.RigidBody</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\QuadTree.h">
-      <Filter>00.System\02.Optimization\00.QuadTree</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\QuadTreeNode.h">
-      <Filter>00.System\02.Optimization\00.QuadTree</Filter>
     </ClInclude>
     <ClInclude Include="..\public\Component.h">
       <Filter>01.Utiltiy\04.Component\00.ComponentBase</Filter>
@@ -312,17 +246,8 @@
     <ClInclude Include="..\Public\Utils.h">
       <Filter>98.Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\TransformBurger.h">
-      <Filter>01.Utiltiy\04.Component\01.Transform</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Engine_Enum.h">
       <Filter>99.Defines</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ColliderCylinder.h">
-      <Filter>01.Utiltiy\04.Component\04.Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\CollisionManager.h">
-      <Filter>01.Utiltiy\01.Managers\04.CollisionManager</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Camera.h">
       <Filter>01.Utiltiy\04.Component\09.Camera</Filter>
@@ -350,9 +275,6 @@
     </ClInclude>
     <ClInclude Include="..\Public\Transform.h">
       <Filter>01.Utiltiy\04.Component\01.Transform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\PoolManager.h">
-      <Filter>01.Utiltiy\01.Managers\05.PoolManager</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\VIBuffer_Cube.h">
       <Filter>01.Utiltiy\04.Component\05.Buffer\Cube</Filter>
@@ -396,23 +318,11 @@
     <ClInclude Include="..\Public\Hasher.h">
       <Filter>98.Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\StateMachine.h">
-      <Filter>01.Utiltiy\04.Component\12.StateMachine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\State.h">
-      <Filter>01.Utiltiy\04.Component\12.StateMachine\States</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\PhysicsManager.h">
-      <Filter>01.Utiltiy\01.Managers\09.PhysicsManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\VIBuffer.h">
       <Filter>01.Utiltiy\04.Component\05.Buffer\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\VIBuffer_Instance.h">
       <Filter>01.Utiltiy\04.Component\05.Buffer\Instance</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\VIBuffer_Cell.h">
-      <Filter>01.Utiltiy\04.Component\05.Buffer\Cell</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\NavMeshAgent.h">
       <Filter>01.Utiltiy\04.Component\14.NavMeshAgent</Filter>
@@ -422,9 +332,6 @@
     </ClInclude>
     <ClInclude Include="..\Public\ShaderManager.h">
       <Filter>01.Utiltiy\01.Managers\10.ShaderManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\VIBuffer_Point.h">
-      <Filter>01.Utiltiy\04.Component\05.Buffer\Point</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\StructuredBuffer.h">
       <Filter>01.Utiltiy\04.Component\05.Buffer\StructuredBuffer</Filter>
@@ -440,9 +347,6 @@
     </ClInclude>
     <ClInclude Include="..\Public\Light.h">
       <Filter>01.Utiltiy\04.Component\15.Light</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\VIBuffer_ParticleSystem.h">
-      <Filter>01.Utiltiy\04.Component\05.Buffer\ParticleSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\SoundManager.h">
       <Filter>01.Utiltiy\01.Managers\11.SoundManager</Filter>
@@ -530,38 +434,8 @@
     <ClCompile Include="..\private\Texture.cpp">
       <Filter>01.Utiltiy\04.Component\08.Texture</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\TransformEx.cpp">
-      <Filter>01.Utiltiy\04.Component\01.Transform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ColliderAABB.cpp">
-      <Filter>01.Utiltiy\04.Component\04.Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ColliderOBB.cpp">
-      <Filter>01.Utiltiy\04.Component\04.Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ColliderBase.cpp">
-      <Filter>01.Utiltiy\04.Component\04.Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ColliderSphere.cpp">
-      <Filter>01.Utiltiy\04.Component\04.Collider</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\MonoBehaviour.cpp">
       <Filter>01.Utiltiy\04.Component\02.MonoBehaviour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\RigidBodyBase.cpp">
-      <Filter>01.Utiltiy\04.Component\03.RigidBody</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\RigidDynamic.cpp">
-      <Filter>01.Utiltiy\04.Component\03.RigidBody</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\RigidStatic.cpp">
-      <Filter>01.Utiltiy\04.Component\03.RigidBody</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\QuadTree.cpp">
-      <Filter>00.System\02.Optimization\00.QuadTree</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\QuadTreeNode.cpp">
-      <Filter>00.System\02.Optimization\00.QuadTree</Filter>
     </ClCompile>
     <ClCompile Include="..\private\Component.cpp">
       <Filter>01.Utiltiy\04.Component\00.ComponentBase</Filter>
@@ -574,15 +448,6 @@
     </ClCompile>
     <ClCompile Include="..\Private\Engine_Struct.cpp">
       <Filter>99.Defines</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\TransformBurger.cpp">
-      <Filter>01.Utiltiy\04.Component\01.Transform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ColliderCylinder.cpp">
-      <Filter>01.Utiltiy\04.Component\04.Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\CollisionManager.cpp">
-      <Filter>01.Utiltiy\01.Managers\04.CollisionManager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Camera.cpp">
       <Filter>01.Utiltiy\04.Component\09.Camera</Filter>
@@ -610,9 +475,6 @@
     </ClCompile>
     <ClCompile Include="..\Private\Transform.cpp">
       <Filter>01.Utiltiy\04.Component\01.Transform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\PoolManager.cpp">
-      <Filter>01.Utiltiy\01.Managers\05.PoolManager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\VIBuffer_Cube.cpp">
       <Filter>01.Utiltiy\04.Component\05.Buffer\Cube</Filter>
@@ -653,23 +515,11 @@
     <ClCompile Include="..\Private\CameraManager.cpp">
       <Filter>01.Utiltiy\01.Managers\08.CameraManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\StateMachine.cpp">
-      <Filter>01.Utiltiy\04.Component\12.StateMachine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\State.cpp">
-      <Filter>01.Utiltiy\04.Component\12.StateMachine\States</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\PhysicsManager.cpp">
-      <Filter>01.Utiltiy\01.Managers\09.PhysicsManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\private\VIBuffer.cpp">
       <Filter>01.Utiltiy\04.Component\05.Buffer\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\VIBuffer_Instance.cpp">
       <Filter>01.Utiltiy\04.Component\05.Buffer\Instance</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\VIBuffer_Cell.cpp">
-      <Filter>01.Utiltiy\04.Component\05.Buffer\Cell</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\NavMeshAgent.cpp">
       <Filter>01.Utiltiy\04.Component\14.NavMeshAgent</Filter>
@@ -679,9 +529,6 @@
     </ClCompile>
     <ClCompile Include="..\Private\ShaderManager.cpp">
       <Filter>01.Utiltiy\01.Managers\10.ShaderManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\VIBuffer_Point.cpp">
-      <Filter>01.Utiltiy\04.Component\05.Buffer\Point</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\StructuredBuffer.cpp">
       <Filter>01.Utiltiy\04.Component\05.Buffer\StructuredBuffer</Filter>
@@ -697,9 +544,6 @@
     </ClCompile>
     <ClCompile Include="..\Private\Light.cpp">
       <Filter>01.Utiltiy\04.Component\15.Light</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\VIBuffer_ParticleSystem.cpp">
-      <Filter>01.Utiltiy\04.Component\05.Buffer\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\SoundManager.cpp">
       <Filter>01.Utiltiy\01.Managers\11.SoundManager</Filter>

@@ -35,14 +35,10 @@ void CStaticScene::Tick(_float fTimeDelta)
 
 void CStaticScene::LateTick(_float fTimeDelta)
 {
-	if (m_bRendered)
-		return;
-
 	CGameObject::LateTick(fTimeDelta);
 
 	//GetRenderer()->Add_RenderGroup(CRenderer::RG_SHADOW, this);
 	GetRenderer()->Add_RenderGroup(CRenderer::RG_NONBLEND, this);
-	m_bRendered = true;
 }
 
 void CStaticScene::DebugRender()
@@ -62,8 +58,6 @@ HRESULT CStaticScene::Render()
 #ifdef _DEBUG
 	Super::DebugRender();
 #endif
-
-	m_bRendered = false;
 
 	return S_OK;
 }
@@ -85,9 +79,6 @@ HRESULT CStaticScene::RenderInstance()
 
 HRESULT CStaticScene::Ready_FixedComponents()
 {
-	///* Com_Shader */
-	//if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Shader, TEXT("Prototype_Component_Shader_VtxMesh"))))
-	//	return E_FAIL;
 	/* Com_Shader */
 	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Shader, TEXT("Prototype_Component_Shader_VtxMeshInstancing"))))
 		return E_FAIL;
@@ -103,15 +94,6 @@ HRESULT CStaticScene::Ready_FixedComponents()
 	/* Com_Renderer */
 	if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::Renderer, TEXT("Prototype_Component_Renderer"))))
 		return E_FAIL;
-
-
-	if (LEVEL_GAMETOOL == m_pGameInstance->GetCurrentLevelIndex())
-	{/* Com_RigidBody */
-		if (FAILED(Super::AddComponent(LEVEL_STATIC, ComponentType::RigidBody, TEXT("Prototype_Component_RigidStatic"))))
-			return E_FAIL;
-		if (FAILED(GetRigidBody()->InitializeCollider()))
-			return E_FAIL;
-	}
 
 	return S_OK;
 }

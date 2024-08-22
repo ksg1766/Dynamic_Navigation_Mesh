@@ -2,15 +2,12 @@
 #include "TimerManager.h"
 #include "GraphicDevice.h"
 #include "InputDevice.h"
-#include "QuadTree.h"
 #include "KeyManager.h"
 #include "LevelManager.h"
 #include "ObjectManager.h"
-#include "CollisionManager.h"
 #include "CameraManager.h"
 #include "EventManager.h"
 #include "ShaderManager.h"
-#include "PoolManager.h"
 #include "LightManager.h"
 #include "SoundManager.h"
 #include "TargetManager.h"
@@ -26,10 +23,7 @@ CGameInstance::CGameInstance()
 	, m_pComponentManager(CComponentManager::GetInstance())
 	, m_pObjectManager(CObjectManager::GetInstance())
 	, m_pLevelManager(CLevelManager::GetInstance())
-	, m_pQuadTree(CQuadTree::GetInstance())
-	, m_pCollisionManager(CCollisionManager::GetInstance())
 	, m_pCameraManager(CCameraManager::GetInstance())
-	, m_pPoolManager(CPoolManager::GetInstance())
 	, m_pShaderManager(CShaderManager::GetInstance())
 	, m_pPipeLine(CPipeLine::GetInstance())
 	, m_pLightManager(CLightManager::GetInstance())
@@ -44,11 +38,8 @@ CGameInstance::CGameInstance()
 	Safe_AddRef(m_pComponentManager);
 	Safe_AddRef(m_pObjectManager);
 	Safe_AddRef(m_pLevelManager);
-	Safe_AddRef(m_pQuadTree);
-	Safe_AddRef(m_pCollisionManager);
 	Safe_AddRef(m_pCameraManager);
 	Safe_AddRef(m_pShaderManager);
-	Safe_AddRef(m_pPoolManager);
 	Safe_AddRef(m_pPipeLine);
 	Safe_AddRef(m_pLightManager);
 	//Safe_AddRef(m_pSoundManager);
@@ -79,10 +70,6 @@ HRESULT CGameInstance::Initialize_Engine(_uint iNumLevels, const GRAPHIC_DESC& G
 	/* 오브젝트 매니져의 예약 처리. */
 	if (FAILED(m_pObjectManager->Reserve_Manager(iNumLevels)))
 		return E_FAIL;
-
-	/* 콜리전 매니져의 예약 처리. */
-	if (FAILED(m_pCollisionManager->Reserve_Manager(iNumLevels)))
-		return E_FAIL;
 	
 	/* 카메라 매니져의 예약 처리. */
 	if (FAILED(m_pCameraManager->Reserve_Manager(iNumLevels)))
@@ -112,24 +99,17 @@ void CGameInstance::Tick(const _float& fTimeDelta)
 	m_pCameraManager->LateTick(fTimeDelta);
 
 	m_pPipeLine->Tick();
-	//m_pCollisionManager->LateTick_Collision(fTimeDelta);
 }
 
 void CGameInstance::DebugRender()
 {
-	// m_pObjectManager->DebugRender();
 	m_pLevelManager->DebugRender();
-#ifdef _DEBUG
-	//if (2 == m_pLevelManager->GetCurrentLevelIndex())
-	//	m_pQuadTree->Render_QuadTree(fTimeDelta);
-#endif // DEBUG
 
 }
 
 void CGameInstance::Clear(_uint iLevelIndex)
 {
 	m_pObjectManager->Clear(iLevelIndex);
-	// m_pComponent_Manager->Clear(iLevelIndex);
 }
 
 _float CGameInstance::Compute_TimeDelta(const wstring & strTimerTag)
@@ -175,24 +155,6 @@ HRESULT CGameInstance::Present()
 		return E_FAIL;
 
 	return m_pGraphicDevice->Present();
-}
-
-HRESULT CGameInstance::Build_QuadTree(_uint iNumLevels)
-{
-	if (nullptr == m_pQuadTree)
-		return E_FAIL;
-
-	return m_pQuadTree->Build_QuadTree(iNumLevels);
-}
-
-void CGameInstance::Update_QuadTree()
-{
-	m_pQuadTree->Update_QuadTree();
-}
-
-void CGameInstance::Render_QuadTree(const _float& fTimeDelta)
-{
-	m_pQuadTree->Render_QuadTree(fTimeDelta);
 }
 
 HRESULT CGameInstance::Open_Level(_uint iLevelIndex, CLevel * pNewLevel)
@@ -274,11 +236,6 @@ void CGameInstance::LevelChange(CLevel* pLevel, _uint iLevelId)
 	m_pEventManager->LevelChange(pLevel, iLevelId);
 }
 
-void CGameInstance::LateTick_Collision(const _float& fTimeDelta)
-{
-	m_pCollisionManager->LateTick_Collision(fTimeDelta);
-}
-
 HRESULT CGameInstance::AddCamera(const wstring& strName, CGameObject* pCamera)
 {
 	if(nullptr == m_pCameraManager)
@@ -314,14 +271,6 @@ HRESULT CGameInstance::ChangeCamera()
 CGameObject* CGameInstance::GetCurrentCamera()
 {
 	return m_pCameraManager->GetCurrentCamera();
-}
-
-HRESULT CGameInstance::Reserve_Pool(const wstring& strObjectName, const _uint& iReserveCount, void* pArg)
-{
-	if (nullptr == m_pPoolManager)
-		return E_FAIL;
-
-	return m_pPoolManager->Reserve_Pool(strObjectName, iReserveCount, pArg);
 }
 
 _bool CGameInstance::Key_Down(_ubyte byKeyID)
@@ -479,13 +428,10 @@ void CGameInstance::Release_Engine()
 	CComponentManager::GetInstance()->DestroyInstance();
 	CTimerManager::GetInstance()->DestroyInstance();		
 	CGraphicDevice::GetInstance()->DestroyInstance();
-	CQuadTree::GetInstance()->DestroyInstance();
 	CInputDevice::GetInstance()->DestroyInstance();
 	CKeyManager::GetInstance()->DestroyInstance();
-	CCollisionManager::GetInstance()->DestroyInstance();
 	CEventManager::GetInstance()->DestroyInstance();
 	CShaderManager::GetInstance()->DestroyInstance();
-	CPoolManager::GetInstance()->DestroyInstance();
 	CPipeLine::GetInstance()->DestroyInstance();
 	CSoundManager::GetInstance()->DestroyInstance();
 	CLightManager::GetInstance()->DestroyInstance();
@@ -502,11 +448,8 @@ void CGameInstance::Free()
 	Safe_Release(m_pTimerManager);
 	Safe_Release(m_pInputDevice);
 	Safe_Release(m_pKeyManager);
-	Safe_Release(m_pQuadTree);
-	Safe_Release(m_pCollisionManager);
 	Safe_Release(m_pEventManager);
 	Safe_Release(m_pShaderManager);
-	Safe_Release(m_pPoolManager);
 	Safe_Release(m_pPipeLine);
 	Safe_Release(m_pLightManager);
 	Safe_Release(m_pTargetManager);

@@ -49,80 +49,6 @@ void CLayersView::Input()
 {
 	if (ImGui::GetIO().WantCaptureMouse)
 		return;
-
-	if (m_pGameInstance->Mouse_Down(DIM_LB))
-	{
-		if (m_IsPickingActivated)
-		{
-			const POINT& p = m_pGameInstance->GetMousePos();
-			m_pPrePickedObject = m_pCurPickedObject;
-			m_pCurPickedObject = Pick(p.x, p.y);
-		}
-	}
-}
-
-CGameObject* CLayersView::Pick(_int screenX, _int screenY)
-{
-	Viewport& vp = m_pGameInstance->GetViewPort();
-
-	_float fWidth = vp.width;
-	_float fHeight = vp.height;
-
-	Matrix projectionMatrix = m_pGameInstance->Get_Transform_float4x4(CPipeLine::D3DTS_PROJ);
-
-	_float viewX = (+2.0f * screenX / fWidth - 1.0f) / projectionMatrix(0, 0);
-	_float viewY = (-2.0f * screenY / fHeight + 1.0f) / projectionMatrix(1, 1);
-
-	Matrix matViewMatrixInv = m_pGameInstance->Get_Transform_float4x4_Inverse(CPipeLine::D3DTS_VIEW);
-
-	CGameObject* pPicked = nullptr;
-	_float fMinDistance = FLT_MAX;
-
-	map<LAYERTAG, CLayer*>& mapLayers = m_pGameInstance->GetCurrentLevelLayers();
-	for (_uint iLayer = DEFAULT_LAYER_COUNT + 1; iLayer < (_uint)LAYERTAG::LAYER_END; ++iLayer)
-	{
-		LAYERTAG eLayer = static_cast<LAYERTAG>(iLayer);
-
-		if (eLayer == LAYERTAG::DYNAMIC_LAYER_END ||
-			eLayer == LAYERTAG::STATIC_LAYER_END ||
-			eLayer == LAYERTAG::TERRAIN)
-			continue;
-
-		map<LAYERTAG, CLayer*>::iterator iter = mapLayers.find(eLayer);
-
-		if (iter == mapLayers.end())
-			continue;
-
-		vector<CGameObject*>& vecObjects = iter->second->GetGameObjects();
-
-		for (auto& iter : vecObjects)
-		{
-			CSphereCollider* pSphere = iter->GetRigidBody()->GetSphereCollider();
-			if (nullptr == pSphere)
-				continue;
-
-			Vec4 vRayOrigin = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
-			Vec4 vRayDir = Vec4(viewX, viewY, 1.0f, 0.0f);
-
-			Vec3 vWorldRayOrigin = XMVector3TransformCoord(vRayOrigin, matViewMatrixInv);
-			Vec3 vWorldRayDir = XMVector3TransformNormal(vRayDir, matViewMatrixInv);
-			vWorldRayDir.Normalize();
-
-			Ray cRay = Ray(vWorldRayOrigin, vWorldRayDir);
-
-			_float fDistance = 0.f;
-			if (false == pSphere->Intersects(cRay, OUT fDistance))
-				continue;
-
-			if (fDistance < fMinDistance)
-			{
-				fMinDistance = fDistance;
-				pPicked = iter;
-			}
-		}
-	}
-
-	return pPicked;
 }
 
 void CLayersView::InfoView()
@@ -175,7 +101,6 @@ void CLayersView::InfoView()
 		if (m_pCurPickedObject)	// TODO : DYING State 추가되면 예외처리 해줄 것.
 		{
 			m_pGameInstance->DeleteObject(m_pCurPickedObject);
-			//CDissolveManager::GetInstance()->AddDissolve(m_pCurPickedObject);
 			m_pCurPickedObject = m_pPrePickedObject;
 		}
 	}

@@ -2,7 +2,6 @@
 
 #include "Client_Defines.h"
 #include "MonoBehaviour.h"
-#include "RigidDynamic.h"
 
 BEGIN(Client)
 

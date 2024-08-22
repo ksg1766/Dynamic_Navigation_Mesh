@@ -29,7 +29,6 @@ public:
 
 private:
 	void		Input();
-	CGameObject* Pick(_int screenX, _int screenY);
 
 private:
 	void	InfoView();

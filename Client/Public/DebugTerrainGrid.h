@@ -2,7 +2,6 @@
 
 #include "Client_Defines.h"
 #include "MonoBehaviour.h"
-#include "RigidDynamic.h"
 
 BEGIN(Engine)
 
@@ -33,7 +32,7 @@ private:
 	HRESULT			Bind_ShaderResources();
 
 private:
-	CShader*			m_pShader;
+	CShader*		m_pShader;
 	CVIBuffer_Grid*	m_pBufferGrid;
 
 public:

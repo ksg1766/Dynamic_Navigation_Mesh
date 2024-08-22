@@ -224,18 +224,6 @@ HRESULT CLevel_GameTool::Ready_Tools()
 	m_pPrefabsView = CPrefabsView::Create(m_pDevice, m_pContext, dynamic_cast<CTerrain*>(m_pBasicTerrain->GetFixedComponent(ComponentType::Terrain)));
 	m_pMediator->SetPrefabsView(m_pPrefabsView);	// TODO:나중에 Initialize에서 하게 하든지 하자...
 
-	m_pLayersView = CLayersView::Create(m_pDevice, m_pContext);
-	m_pMediator->SetLayersView(m_pLayersView);
-	
-	m_pTransformView = CTransformView::Create(m_pDevice, m_pContext);
-	m_pMediator->SetTransformView(m_pTransformView);
-
-	m_pSaveLoadView = CSaveLoadView::Create(m_pDevice, m_pContext);
-	m_pMediator->SetSaveLoadView(m_pSaveLoadView);
-
-	m_pAnimationView = CAnimationView::Create(m_pDevice, m_pContext);
-	m_pMediator->SetAnimationView(m_pAnimationView);
-	
 	m_pNavMeshView = CNavMeshView::Create(m_pDevice, m_pContext, dynamic_cast<CTerrain*>(m_pBasicTerrain->GetFixedComponent(ComponentType::Terrain)));
 	m_pMediator->SetNavMeshView(m_pNavMeshView);
 
