@@ -2187,8 +2187,6 @@ HRESULT CNavMeshView::LoadMainScene()
 	m_pTerrainBuffer = pDefaultBuffer;
 	m_pMediator->OnNotifiedTerrainChanged(pDefaultBuffer);
 
-	pDefaultBuffer->GetGameObject()->GetShader()->SetPassIndex(3);
-
 	if (nullptr != m_pAgent)
 	{
 		m_pGameInstance->DeleteObject(m_pAgent);
@@ -2271,8 +2269,6 @@ HRESULT CNavMeshView::LoadMazeTestScene()
 
 	m_pTerrainBuffer = pMazeBuffer;
 	m_pMediator->OnNotifiedTerrainChanged(pMazeBuffer);
-
-	pMazeBuffer->GetGameObject()->GetShader()->SetPassIndex(0);
 
 	if (FAILED(pMazeBuffer->GetGameObject()->GetShader()->Bind_RawValue("g_vMtrlDiffuse", &Colors::MediumSeaGreen, sizeof(Color))))
 		return E_FAIL;

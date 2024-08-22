@@ -258,6 +258,7 @@ void CAgentController::PlaceObstacle()
 		Object->GetTransform()->SetForward(vLook);
 
 		vPlacePosition += 18.0f * -vLook;
+		vPlacePosition.y = 0.0f;
 
 		Object->GetTransform()->SetPosition(vPlacePosition);
 
@@ -282,7 +283,9 @@ void CAgentController::PlaceObstacle()
 			vLook.y = 0.0f;
 			vLook.Normalize();
 
-			const Vec3 vTargetPosition = m_pTransform->GetPosition() + 18.0f * vLook;
+			Vec3 vTargetPosition = m_pTransform->GetPosition() + 18.0f * vLook;
+			vTargetPosition.y = 0.0f;
+
 			Obst* pObst = m_pGameObject->GetNavMeshAgent()->FindObstByPosition(vTargetPosition);
 			
 			if (nullptr != pObst)
