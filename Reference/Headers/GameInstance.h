@@ -92,14 +92,6 @@ public: /* For.LightManager */
 	HRESULT			Add_Light(const LIGHT_DESC& LightDesc);
 	HRESULT			Add_Sun(CGameObject* pSun);
 
-public: /* For.SoundManager */
-	HRESULT			PlaySoundFile(const wstring& strSoundKey, CHANNELID eCh, _float fVolume);
-	HRESULT			CheckPlaySoundFile(const wstring& strSoundKey, CHANNELID eCh, _float fVolume);
-	HRESULT			PlayBGM(const wstring& strSoundKey, _float fVolume);
-	HRESULT			StopSound(CHANNELID eCh);
-	HRESULT			StopSoundAll();
-	HRESULT			SetChannelVolume(CHANNELID eCh, _float fVolume);
-
 private:
 	class CTimerManager*			m_pTimerManager = { nullptr };
 	class CGraphicDevice*			m_pGraphicDevice = { nullptr };
@@ -114,7 +106,6 @@ private:
 	class CPipeLine*				m_pPipeLine = { nullptr };
 	class CLightManager*			m_pLightManager = { nullptr };
 	class CTargetManager*			m_pTargetManager = { nullptr };
-	class CSoundManager*			m_pSoundManager = { nullptr };
 
 public:
 	static void Release_Engine();

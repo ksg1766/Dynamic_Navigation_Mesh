@@ -11,7 +11,6 @@
 #include "FlyingCamera.h"
 #include "MainCamera.h"
 #include "StaticBase.h"
-#include "StaticScene.h"
 #include "Agent.h"
 #include "AIAgent.h"
 

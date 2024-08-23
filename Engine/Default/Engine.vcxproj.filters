@@ -100,9 +100,6 @@
     <Filter Include="01.Utiltiy\01.Managers\07.ShaderManager">
       <UniqueIdentifier>{91e43967-acbd-4c97-bd1e-0976f90d7976}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Utiltiy\01.Managers\08.SoundManager">
-      <UniqueIdentifier>{bcba0e35-4e7c-4a58-9bc8-63ae0768a8e0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Utiltiy\02.Level\Layer">
       <UniqueIdentifier>{8c2666f7-7eb6-4c1f-98fa-b493cdf2443c}</UniqueIdentifier>
     </Filter>
@@ -348,9 +345,6 @@
     <ClInclude Include="..\Public\Light.h">
       <Filter>01.Utiltiy\04.Component\11.Light</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\SoundManager.h">
-      <Filter>01.Utiltiy\01.Managers\08.SoundManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\FMOD\fmod.h">
       <Filter>00.System\01.Device\02.Sound\FMOD</Filter>
     </ClInclude>
@@ -383,15 +377,6 @@
     </ClInclude>
     <ClInclude Include="..\Public\Obstacle.h">
       <Filter>01.Utiltiy\04.Component\10.NavMeshAgent</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\fpm\fixed.hpp">
-      <Filter>98.Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\fpm\ios.hpp">
-      <Filter>98.Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\fpm\math.hpp">
-      <Filter>98.Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Delegate.h">
       <Filter>98.Utils</Filter>
@@ -544,9 +529,6 @@
     </ClCompile>
     <ClCompile Include="..\Private\Light.cpp">
       <Filter>01.Utiltiy\04.Component\11.Light</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\SoundManager.cpp">
-      <Filter>01.Utiltiy\01.Managers\08.SoundManager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\VIBuffer_Sphere.cpp">
       <Filter>01.Utiltiy\04.Component\03.Buffer\Sphere</Filter>

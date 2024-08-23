@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "ViewMediator.h"
-#include "AnimationView.h"
 #include "PrefabsView.h"
-#include "LayersView.h"
-#include "TransformView.h"
-#include "SaveLoadView.h"
 #include "NavMeshView.h"
 
 CViewMediator::CViewMediator()

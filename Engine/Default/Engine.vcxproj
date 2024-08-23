@@ -174,9 +174,6 @@ call Copy.bat</Command>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\Downloads\Framework\Engine\Public\RenderTarget.h" />
     <ClInclude Include="..\Public\Delegate.h" />
-    <ClInclude Include="..\Public\fpm\fixed.hpp" />
-    <ClInclude Include="..\Public\fpm\ios.hpp" />
-    <ClInclude Include="..\Public\fpm\math.hpp" />
     <ClInclude Include="..\Public\NSHelper.h" />
     <ClInclude Include="..\Public\Obstacle.h" />
     <ClInclude Include="..\Public\VIBuffer_Sphere.h" />
@@ -223,7 +220,6 @@ call Copy.bat</Command>
     <ClInclude Include="..\Public\PipeLine.h" />
     <ClInclude Include="..\Public\ShaderManager.h" />
     <ClInclude Include="..\Public\Socket.h" />
-    <ClInclude Include="..\Public\SoundManager.h" />
     <ClInclude Include="..\Public\StructuredBuffer.h" />
     <ClInclude Include="..\Public\TargetManager.h" />
     <ClInclude Include="..\Public\Terrain.h" />
@@ -280,7 +276,6 @@ call Copy.bat</Command>
     <ClCompile Include="..\Private\RenderTarget.cpp" />
     <ClCompile Include="..\Private\ShaderManager.cpp" />
     <ClCompile Include="..\Private\Socket.cpp" />
-    <ClCompile Include="..\Private\SoundManager.cpp" />
     <ClCompile Include="..\Private\StructuredBuffer.cpp" />
     <ClCompile Include="..\Private\TargetManager.cpp" />
     <ClCompile Include="..\Private\Terrain.cpp" />

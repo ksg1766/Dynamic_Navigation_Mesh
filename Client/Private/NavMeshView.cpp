@@ -286,7 +286,7 @@ void CNavMeshView::SetUpObsts2Grids(vector<Obst*>& vecObstacles, OUT unordered_m
 	BoundingBox tAABB;
 	tAABB.Extents = Vec3(iGridCX * 0.5f, 10.0f, iGridCZ * 0.5f);
 
-	for (auto pObst : vecObstacles)	// TODO : 불필요한 영역 거사 배제
+	for (auto pObst : vecObstacles)
 	{
 		for (_int iX = 0; iX < gWorldCX / iGridCX; ++iX)
 		{
@@ -798,11 +798,7 @@ HRESULT CNavMeshView::DynamicCreate(Obst& tObst)
 		{	// neighbor가 유효한 edge 추출
 			if (setIntersected.end() == setIntersected.find(tCell->pNeighbors[i]))
 			{	// 해당 edge는 outline
-				if (mapOutlineCells.end() != mapOutlineCells.find(tCell->vPoints[i]))
-				{
-					_int a = 0;
-				}
-				else
+				if (mapOutlineCells.end() == mapOutlineCells.find(tCell->vPoints[i]))
 				{
 					mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->pNeighbors[i]));
 				}
@@ -816,11 +812,7 @@ HRESULT CNavMeshView::DynamicCreate(Obst& tObst)
 	while (vecOutlineCW.size() < mapOutlineCells.size())
 	{
 		auto pair = mapOutlineCells.find(vecOutlineCW.back());
-		if (mapOutlineCells.end() == pair)
-		{
-			_int a = 0;
-		}
-		else
+		if (mapOutlineCells.end() != pair)
 		{
 			vecOutlineCW.push_back(pair->second.first);
 		}
@@ -984,11 +976,7 @@ HRESULT CNavMeshView::DynamicDelete(Obst& tObst)
 		{	// neighbor가 유효한 edge 추출
 			if (setIntersected.end() == setIntersected.find(tCell->pNeighbors[i]))
 			{	// 해당 edge는 outline
-				if (mapOutlineCells.end() != mapOutlineCells.find(tCell->vPoints[i]))
-				{
-					_int a = 0;
-				}
-				else
+				if (mapOutlineCells.end() == mapOutlineCells.find(tCell->vPoints[i]))
 				{
 					mapOutlineCells.emplace(tCell->vPoints[i], pair(tCell->vPoints[(i + 1) % POINT_END], tCell->pNeighbors[i]));
 				}
@@ -1350,8 +1338,6 @@ HRESULT CNavMeshView::StressTest()
 
 	if (nullptr == m_pStressObst)
 	{
-		//m_matStressOffset = XMMatrixRotationY(fTimeDelta);
-
 		static _float fStressRadian = 0;
 		static Vec3 vStressPosition = Vec3::Zero;
 		if (fStressRadian > XM_PI)
@@ -1363,7 +1349,7 @@ HRESULT CNavMeshView::StressTest()
 			fStressRadian += 0.03f;
 		}
 
-		static const _float fSpeed = 0.03f;
+		static const _float fSpeed = 0.2f;
 
 		if (KEY_PRESSING(KEY::LEFT_ARROW))
 			vStressPosition.x -= fSpeed;
@@ -1525,7 +1511,10 @@ HRESULT CNavMeshView::GetIntersectedCells(Obst& tObst, OUT set<Cell*>& setInters
 	if (true == bDelete)
 	{
 		tObst.isDead = true;
-		m_pGameInstance->DeleteObject(tObst.pGameObject);
+		if (nullptr != tObst.pGameObject)
+		{
+			m_pGameInstance->DeleteObject(tObst.pGameObject);
+		}
 	}
 
 	iLB_X = (fMinX + gWorldCX * 0.5f) / gGridCX;
