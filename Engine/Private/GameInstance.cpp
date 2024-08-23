@@ -81,7 +81,6 @@ void CGameInstance::Tick(const _float& fTimeDelta)
 void CGameInstance::DebugRender()
 {
 	m_pLevelManager->DebugRender();
-
 }
 
 void CGameInstance::Clear(_uint iLevelIndex)
