@@ -115,6 +115,12 @@ Youtube : https://youtu.be/T7Dz_uO24As
 
       ![FPS_55-RELEASE2024-08-2010-04-17-ezgif com-optimize](https://github.com/user-attachments/assets/26bf0a02-7cde-4c2c-a622-c4eac81bca5d)
 
+    * 아래와 같이 obstacle을 외곽에 배치해 이동하지 못하도록 묶어둔 후, 매 프레임 맵의 중앙으로 AStar와 Funnel 알고리즘 등의 경로 탐색을 수행할 경우 FPS 60을 유지할 수 있는 agent의 수는 평균 약 160개 정도입니다. 즉, 미로 테스트 맵에서는 160번의 경로 탐색을 수행할 수 있습니다.
+      
+      ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/301c8a7c-ac35-479a-8586-a09bee529249/d57c7c46-ac23-49ff-a880-615e4cedb391/image.png)
+
+    * 동일한 과정을 메인 씬에서 수행할 경우 FPS 60은 agent가 약 500개 정도일 때까지 유지할 수 있었습니다. 메인 씬에서는 프레임당 약 500번의 경로 탐색을 수행할 수 있습니다.
+
   * position이 world의 범위를 벗어나거나 경로 탐색에 실패했을 때 등, 예외 상황에 프로그램이 종료되지 않도록 수정했습니다.
 
 ⚽ 이후 계획
